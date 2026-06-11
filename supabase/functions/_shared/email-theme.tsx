@@ -4,8 +4,7 @@ import { Img, Section, Text, Hr } from 'npm:@react-email/components@0.0.22'
 
 export const SITE_NAME = 'Codice Interiore'
 export const BASE_URL = Deno.env.get('PUBLIC_SITE_URL') || 'https://codiceinteriore.it'
-export const LOGO_URL =
-  'https://bphmrjuvhcziimuxohnc.supabase.co/storage/v1/object/public/email-assets/logo.png'
+export const LOGO_URL = `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/logo.png`
 
 export const colors = {
   heading: '#3D2B1F',

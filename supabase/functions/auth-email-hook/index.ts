@@ -1,3 +1,9 @@
+// NOTE (migrazione da Lovable): questa funzione riceveva il webhook email di
+// Lovable Cloud (firma x-lovable-signature). Al momento NON è collegata: le
+// email di auth partono dai template nativi Supabase via SMTP Brevo. Per
+// riattivare i template React custom va adattata al Send Email Hook nativo
+// di Supabase (firma standardwebhooks, payload user/email_data).
+
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { parseEmailWebhookPayload } from 'npm:@lovable.dev/email-js'
@@ -91,7 +97,7 @@ async function handlePreview(req: Request): Promise<Response> {
     return new Response(null, { headers: previewCorsHeaders })
   }
 
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  const apiKey = Deno.env.get('ADMIN_SECRET')
   const authHeader = req.headers.get('Authorization')
 
   if (!apiKey || authHeader !== `Bearer ${apiKey}`) {

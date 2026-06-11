@@ -36,9 +36,9 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "";
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
 
-const MODEL = "google/gemini-3-flash-preview";
+const MODEL = "gemini-3-flash-preview";
 const MAX_RETRIES = 3;
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
 const HISTORY_LIMIT = 10;
@@ -442,7 +442,7 @@ const callGemini = async (
   questionId: string,
   attempt: number,
 ) => {
-  if (!LOVABLE_API_KEY) throw new Error("AI not configured");
+  if (!GEMINI_API_KEY) throw new Error("AI not configured");
 
   const aiRequestBody = {
     model: MODEL,
@@ -473,10 +473,10 @@ const callGemini = async (
     attempt,
   };
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${GEMINI_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(aiRequestBody),

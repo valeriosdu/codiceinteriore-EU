@@ -809,8 +809,8 @@ Deno.serve(async (req) => {
 
     const generationTask = (async () => {
       try {
-        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-        if (!LOVABLE_API_KEY) throw new Error("AI not configured");
+        const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+        if (!GEMINI_API_KEY) throw new Error("AI not configured");
 
         const planetsDescription = Array.isArray(natalChart.planets)
           ? natalChart.planets
@@ -1029,7 +1029,7 @@ Genera il report completo personalizzato.`;
           : ["identity", "emotions", "relationships", "work", "patterns_blocks", "advice", "poem"];
 
         const aiRequestBody = {
-          model: "google/gemini-3.1-pro-preview",
+          model: "gemini-3.1-pro-preview",
           max_tokens: 16384,
           messages: [
             { role: "system", content: systemPrompt },
@@ -1079,10 +1079,10 @@ Genera il report completo personalizzato.`;
           const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
           let response: Response;
           try {
-            response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                Authorization: `Bearer ${GEMINI_API_KEY}`,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(aiRequestBody),
@@ -1342,7 +1342,7 @@ function safeParseJson(raw: string): unknown {
 
 // Walks the parsed AI tool-call payload and converts literal escape
 // sequences (e.g. "\\n", "\\r\\n", "\\t") inside string values back into
-// real whitespace characters. The Lovable AI Gateway occasionally returns
+// real whitespace characters. The model occasionally returns
 // arguments where these sequences survived JSON.parse as plain text,
 // which then renders as visible "\n\n" in both the on-page report and
 // the generated PDF.

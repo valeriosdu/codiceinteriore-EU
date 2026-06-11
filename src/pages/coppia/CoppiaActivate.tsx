@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { clearSynastryStorage } from '@/context/SynastryContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,20 +127,22 @@ export default function CoppiaActivate() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSSOLogin = async (provider: 'google' | 'apple') => {
+  const handleSSOLogin = async (provider: 'google') => {
     setSsoLoading(provider);
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin + '/coppia/activate' + window.location.search,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin + '/coppia/activate' + window.location.search,
+        },
       });
-      if (result.error) {
-        toast({ title: 'Errore di autenticazione', description: String(result.error), variant: 'destructive' });
+      if (error) {
+        toast({ title: 'Errore di autenticazione', description: error.message, variant: 'destructive' });
         setSsoLoading(null);
         return;
       }
-      if (result.redirected) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) doRedirect(); else setSsoLoading(null);
+      // Browser will redirect to provider; on return the auth listener
+      // picks up SIGNED_IN and redirects.
     } catch (err) {
       console.error('SSO login error:', err);
       toast({ title: 'Errore di autenticazione', variant: 'destructive' });
@@ -263,23 +264,6 @@ export default function CoppiaActivate() {
                 </svg>
               )}
               Continua con Google
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 rounded-xl border-muted bg-card text-foreground font-medium gap-3"
-              onClick={() => handleSSOLogin('apple')}
-              disabled={!!ssoLoading}
-            >
-              {ssoLoading === 'apple' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-                </svg>
-              )}
-              Continua con Apple
             </Button>
           </div>
         )}

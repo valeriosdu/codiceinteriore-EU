@@ -105,7 +105,7 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const origin = req.headers.get("origin") || "https://codiceinteriore.lovable.app";
+    const origin = req.headers.get("origin") || Deno.env.get("PUBLIC_SITE_URL") || "https://www.codiceinteriore.it";
     const successUrl = `${origin}${product.successPath ?? "/success?session_id={CHECKOUT_SESSION_ID}"}`;
     const cancelUrl = `${origin}${product.cancelPath ?? "/offer"}`;
 

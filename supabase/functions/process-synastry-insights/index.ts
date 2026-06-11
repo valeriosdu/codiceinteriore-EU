@@ -32,7 +32,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") ?? "";
 
 const SYSTEM_PROMPT = `# Chi sei
@@ -259,7 +259,7 @@ async function generateTeaserHighlight(
     `Restituisci via tool call return_synastry_teaser.`,
   ].join("\n");
 
-  const model = "google/gemini-3-flash-preview";
+  const model = "gemini-3-flash-preview";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-synastry-insights",
@@ -271,11 +271,11 @@ async function generateTeaserHighlight(
   };
 
   const response = await fetch(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

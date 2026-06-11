@@ -3,7 +3,12 @@
     "allow": [
       "Bash(*)",
       "PowerShell(*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "mcp__supabase"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }

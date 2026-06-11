@@ -1,4 +1,3 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const MAX_RETRIES = 5
@@ -7,9 +6,83 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email'
+
+// Structured send error: carries the HTTP status (and Retry-After when
+// present) so the 429/403 handling below keeps working.
+class EmailSendError extends Error {
+  status: number
+  retryAfterSeconds: number | null
+  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+    super(message)
+    this.status = status
+    this.retryAfterSeconds = retryAfterSeconds
+  }
+}
+
+// Parse a From header like `Name <email@domain>` into Brevo's sender shape.
+function parseFromAddress(from: string | undefined): { name?: string; email: string } {
+  const match = from?.match(/^(.*)<([^>]+)>\s*$/)
+  if (match) {
+    const name = match[1].trim().replace(/^"|"$/g, '')
+    const email = match[2].trim()
+    return name ? { name, email } : { email }
+  }
+  return { email: (from || '').trim() }
+}
+
+interface QueuedEmailPayload {
+  to: string
+  from?: string
+  reply_to?: string
+  subject: string
+  html: string
+  text?: string
+  unsubscribe_token?: string
+}
+
+async function sendBrevoEmail(
+  payload: QueuedEmailPayload,
+  opts: { apiKey: string; supabaseUrl: string },
+): Promise<void> {
+  const customHeaders: Record<string, string> = {}
+  if (payload.unsubscribe_token) {
+    const unsubscribeUrl = `${opts.supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${payload.unsubscribe_token}`
+    customHeaders['List-Unsubscribe'] = `<${unsubscribeUrl}>`
+    customHeaders['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click'
+  }
+
+  const res = await fetch(BREVO_SEND_URL, {
+    method: 'POST',
+    headers: {
+      'api-key': opts.apiKey,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: parseFromAddress(payload.from),
+      to: [{ email: payload.to }],
+      ...(payload.reply_to ? { replyTo: { email: payload.reply_to } } : {}),
+      subject: payload.subject,
+      htmlContent: payload.html,
+      ...(payload.text ? { textContent: payload.text } : {}),
+      ...(Object.keys(customHeaders).length > 0 ? { headers: customHeaders } : {}),
+    }),
+  })
+
+  if (!res.ok) {
+    const retryAfterRaw = res.headers.get('retry-after')
+    const retryAfter = retryAfterRaw ? Number.parseInt(retryAfterRaw, 10) : Number.NaN
+    const body = (await res.text().catch(() => '')).slice(0, 500)
+    throw new EmailSendError(
+      `Brevo ${res.status}: ${body}`,
+      res.status,
+      Number.isFinite(retryAfter) ? retryAfter : null,
+    )
+  }
+}
+
 // Check if an error is a rate-limit (429) response.
-// Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
-// falls back to parsing the error message for older versions.
 function isRateLimited(error: unknown): boolean {
   if (error && typeof error === 'object' && 'status' in error) {
     return (error as { status: number }).status === 429
@@ -79,7 +152,7 @@ async function moveToDlq(
 }
 
 Deno.serve(async (req) => {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  const apiKey = Deno.env.get('BREVO_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -249,26 +322,17 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendLovableEmail(
+        await sendBrevoEmail(
           {
-            run_id: payload.run_id,
             to: payload.to,
-            reply_to: payload.reply_to,
             from: payload.from,
-            sender_domain: payload.sender_domain,
+            reply_to: payload.reply_to,
             subject: payload.subject,
             html: payload.html,
             text: payload.text,
-            purpose: payload.purpose,
-            label: payload.label,
-            idempotency_key: payload.idempotency_key,
             unsubscribe_token: payload.unsubscribe_token,
-            message_id: payload.message_id,
           },
-          // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
-          // falls back to the default Lovable API endpoint (https://api.lovable.dev).
-          // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
-          { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
+          { apiKey, supabaseUrl }
         )
 
         // Log success: flip the existing pending row to 'sent' so the log is

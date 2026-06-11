@@ -128,7 +128,7 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://codiceinteriore.lovable.app";
+    const origin = req.headers.get("origin") || Deno.env.get("PUBLIC_SITE_URL") || "https://www.codiceinteriore.it";
     const customId = `${sessionId}|${purchaseType}`;
     const successPath = product.successPath || "/success";
     const cancelPath = product.cancelPath || "/offer";

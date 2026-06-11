@@ -13,7 +13,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY")!;
 const ASTROLOGY_BASE_URL = "https://api.freeastroapi.com/api/v1/natal/calculate";
 const ASTROLOGY_CHART_URL = "https://api.freeastroapi.com/api/v1/natal/chart/";
@@ -631,7 +631,7 @@ async function generateInsights(
 ) {
   const systemPrompt = systemPromptFor(funnelSlug);
   const userPrompt = buildUserPrompt(natalChart, funnelSlug, intake, userName);
-  const model = "google/gemini-3-flash-preview";
+  const model = "gemini-3-flash-preview";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-session-insights",
@@ -640,10 +640,10 @@ async function generateInsights(
     attempt: 1,
   };
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${GEMINI_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

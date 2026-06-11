@@ -1,6 +1,6 @@
 // sync-brevo-contact: upsert idempotente di un contatto su Brevo per marketing automation.
 // Chiamata SOLO da altre edge functions (service role) o dal trigger DB su profiles.
-// Mai usata per email transazionali — quelle restano su Lovable.
+// Mai usata per email transazionali — quelle passano da process-email-queue.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
