@@ -1,0 +1,460 @@
+{
+  "_note": "Prompt batch per le illustrazioni Sprint 3. Lanciate via Higgsfield CLI (loggato con `higgsfield auth login`). Il prompt finale = promptTemplate.replace('[SUBJECT]', subject). Lo script genera solo le voci enabled:true e salta quelle gia' presenti su disco (FORCE=1 per rigenerare). outputPath relativo alla root del progetto.",
+  "model": "nano_banana_flash",
+  "modelDisplayName": "Nano Banana 2",
+  "params": {
+    "aspect_ratio": "16:9",
+    "resolution": "1k"
+  },
+  "promptTemplate": "A 17th-century astronomical engraving illustration of [SUBJECT], intricate copperplate etching style with fine cross-hatching, warm aged ivory paper background with subtle foxing and edge wear, dark sepia-indigo ink lines, centered composition with a thin decorative border, contemplative scientific atmosphere, no human figures, no text, no labels, no zodiac symbols overlaid as logo, muted palette of cream, sepia and deep indigo only, soft natural lighting, museum quality",
+  "items": [
+    {
+      "slug": "luna",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a detailed waxing moon disk showing craters and subtle terrain, surrounded by faint orbital lines and small star markers, scientific lunar plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/pianeti/luna.webp"
+    },
+    {
+      "slug": "sole",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a stylized radiant sun disk with elaborate undulating ray patterns and concentric inner halos, surrounded by faint orbital rings and small fixed stars, scientific solar plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/sole.webp"
+    },
+    {
+      "slug": "mercurio",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a small detailed planet Mercury disk with fine surface texture and tiny craters, set against a star-studded celestial background with delicate orbital tracing lines and a hermetic caduceus motif rendered subtly in the background, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/mercurio.webp"
+    },
+    {
+      "slug": "venere",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a luminous planet Venus disk shown with subtle atmospheric banding and a soft inner glow, surrounded by faint floral garlands and small fixed stars, scientific planetary plate from an old astronomy treatise with a sense of quiet harmony",
+      "outputPath": "public/illustrations/glossario/pianeti/venere.webp"
+    },
+    {
+      "slug": "marte",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a planet Mars disk with prominent surface details polar caps and visible terrain, surrounded by faint orbital tracing lines and small fixed stars, an iron-tipped spear motif rendered subtly in the lower background, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/marte.webp"
+    },
+    {
+      "slug": "giove",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a large planet Jupiter disk with distinct atmospheric bands and the great red spot, surrounded by its four largest moons (the Galilean moons) shown as small disks with faint orbital lines connecting them, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/giove.webp"
+    },
+    {
+      "slug": "saturno",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a planet Saturn disk shown at a slight angle to display its iconic ring system with multiple thin gradations and the Cassini division, surrounded by faint orbital tracing lines and small fixed stars, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/saturno.webp"
+    },
+    {
+      "slug": "urano",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a planet Uranus disk shown tilted on its unusual sideways axis with thin faint rings perpendicular to its motion, surrounded by small distant stars and delicate orbital tracing lines, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/urano.webp"
+    },
+    {
+      "slug": "nettuno",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a planet Neptune disk with subtle atmospheric banding and a soft veiled luminosity, surrounded by delicate wave-like motifs and small distant stars, a trident motif rendered subtly in the lower background, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/nettuno.webp"
+    },
+    {
+      "slug": "plutone",
+      "kind": "glossario",
+      "tipo": "pianeti",
+      "enabled": true,
+      "subject": "a small dwarf planet Pluto disk with cratered icy surface and its largest moon Charon shown nearby as a smaller companion, surrounded by sparse distant stars and faint orbital tracing lines in deep space, scientific planetary plate from an old astronomy treatise",
+      "outputPath": "public/illustrations/glossario/pianeti/plutone.webp"
+    },
+    {
+      "slug": "ariete",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a dignified ram in profile standing on rocky terrain against a celestial background of small fixed stars and the constellation Aries outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/ariete.webp"
+    },
+    {
+      "slug": "leone",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a dignified lion in profile standing in serene pose against a celestial background of small fixed stars and the constellation Leo outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/leone.webp"
+    },
+    {
+      "slug": "sagittario",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a centaur archer drawing a bow aimed toward a distant horizon against a celestial background of small fixed stars and the constellation Sagittarius outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/sagittario.webp"
+    },
+    {
+      "slug": "toro",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a dignified bull in profile standing calmly in a pastoral field against a celestial background of small fixed stars and the constellation Taurus outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/toro.webp"
+    },
+    {
+      "slug": "vergine",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a graceful classical figure in long flowing robes holding an ear of wheat in one hand, in serene composed posture, against a celestial background of small fixed stars and the constellation Virgo outlined with thin connecting lines, classical engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/vergine.webp"
+    },
+    {
+      "slug": "capricorno",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a mythological sea-goat creature with the body of a goat and the tail of a fish, standing on a rocky promontory above water against a celestial background of small fixed stars and the constellation Capricornus outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/capricorno.webp"
+    },
+    {
+      "slug": "gemelli",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "two twin classical figures standing side by side in mirrored poses, intertwined symbolically, against a celestial background of small fixed stars and the constellation Gemini outlined with thin connecting lines, classical engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/gemelli.webp"
+    },
+    {
+      "slug": "bilancia",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "an elegant pair of balance scales suspended in perfect equilibrium against a celestial background of small fixed stars and the constellation Libra outlined with thin connecting lines, classical engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/bilancia.webp"
+    },
+    {
+      "slug": "acquario",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a classical water bearer figure pouring a stream of water from an ornate jar, in dignified standing pose, against a celestial background of small fixed stars and the constellation Aquarius outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/acquario.webp"
+    },
+    {
+      "slug": "cancro",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a detailed crab in profile on rocky shoreline with gentle waves nearby, against a celestial background of small fixed stars and the constellation Cancer outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/cancro.webp"
+    },
+    {
+      "slug": "scorpione",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "a detailed scorpion in profile with raised tail and pincers, on stony ground against a celestial background of small fixed stars and the constellation Scorpius outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/scorpione.webp"
+    },
+    {
+      "slug": "pesci",
+      "kind": "glossario",
+      "tipo": "segni",
+      "enabled": true,
+      "subject": "two fish swimming in opposite directions tied together by a delicate cord, gracefully arranged, against a celestial background of small fixed stars and the constellation Pisces outlined with thin connecting lines, classical naturalistic engraving style of a zodiacal plate from an old astronomy book",
+      "outputPath": "public/illustrations/glossario/segni/pesci.webp"
+    },
+    {
+      "slug": "prima-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number I framed by an arched portal motif on a parchment background, with thin rays emanating from the horizon line below to represent the rising sun, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/prima-casa.webp"
+    },
+    {
+      "slug": "seconda-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number II framed by an arched portal motif on a parchment background, with engraved symbols of coins and a vine of grapes representing personal value and resources, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/seconda-casa.webp"
+    },
+    {
+      "slug": "terza-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number III framed by an arched portal motif on a parchment background, with engraved symbols of an open book and crossing roads representing communication and short journeys, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/terza-casa.webp"
+    },
+    {
+      "slug": "quarta-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number IV framed by an arched portal motif on a parchment background, with engraved symbols of a hearth and roots descending below the threshold representing home and ancestry, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/quarta-casa.webp"
+    },
+    {
+      "slug": "quinta-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number V framed by an arched portal motif on a parchment background, with engraved symbols of a lyre and a theatrical mask representing creativity and play, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/quinta-casa.webp"
+    },
+    {
+      "slug": "sesta-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number VI framed by an arched portal motif on a parchment background, with engraved symbols of healing herbs and a measuring scale representing work and health, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/sesta-casa.webp"
+    },
+    {
+      "slug": "settima-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number VII framed by an arched portal motif on a parchment background, with engraved symbols of two intertwined rings representing partnership and balance, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/settima-casa.webp"
+    },
+    {
+      "slug": "ottava-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number VIII framed by an arched portal motif on a parchment background, with engraved symbols of a phoenix and a key representing transformation and shared resources, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/ottava-casa.webp"
+    },
+    {
+      "slug": "nona-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number IX framed by an arched portal motif on a parchment background, with engraved symbols of a globe and a sailing ship representing distant horizons and philosophy, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/nona-casa.webp"
+    },
+    {
+      "slug": "decima-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number X framed by an arched portal motif on a parchment background, with engraved symbols of a column and laurel wreath representing public role and recognition, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/decima-casa.webp"
+    },
+    {
+      "slug": "undicesima-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number XI framed by an arched portal motif on a parchment background, with engraved symbols of overlapping circles and constellation outlines representing collective bonds and ideals, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/undicesima-casa.webp"
+    },
+    {
+      "slug": "dodicesima-casa",
+      "kind": "glossario",
+      "tipo": "case",
+      "enabled": true,
+      "subject": "a stylized house number XII framed by an arched portal motif on a parchment background, with engraved symbols of a veil and a sleeping figure obscured in shadow representing the unseen and contemplative life, scientific architectural plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/case/dodicesima-casa.webp"
+    },
+    {
+      "slug": "congiunzione",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing two planetary disks overlapping in conjunction at the same point of an orbital circle, with thin geometric lines connecting them, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/congiunzione.webp"
+    },
+    {
+      "slug": "opposizione",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing two planetary disks at opposite ends of a circle separated by a straight line of 180 degrees, with thin geometric markings, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/opposizione.webp"
+    },
+    {
+      "slug": "trigono",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing an equilateral triangle inscribed within an orbital circle with three planetary points at the vertices, thin geometric lines connecting them, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/trigono.webp"
+    },
+    {
+      "slug": "quadratura",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a square inscribed within an orbital circle with two planetary points at perpendicular vertices forming a 90 degree angle, with thin geometric markings, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/quadratura.webp"
+    },
+    {
+      "slug": "sestile",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a hexagonal pattern inscribed within an orbital circle with two planetary points at 60 degrees from each other, thin geometric markings, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/sestile.webp"
+    },
+    {
+      "slug": "semisestile",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a small angular separation of 30 degrees between two planetary points on an orbital circle, thin delicate geometric markings, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/semisestile.webp"
+    },
+    {
+      "slug": "quinconce",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing two planetary points at 150 degrees of separation on an orbital circle with subtle geometric lines indicating the asymmetric angle, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/quinconce.webp"
+    },
+    {
+      "slug": "semiquadratura",
+      "kind": "glossario",
+      "tipo": "aspetti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a 45 degree angle between two planetary points on an orbital circle with delicate geometric construction lines, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/aspetti/semiquadratura.webp"
+    },
+    {
+      "slug": "ascendente",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a horizon line with the sun rising at the eastern edge, marked by a small ornamental glyph and thin angular construction lines indicating the ascendant point of a natal chart, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/ascendente.webp"
+    },
+    {
+      "slug": "discendente",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a horizon line with the sun setting at the western edge, marked by a small ornamental glyph and thin angular construction lines indicating the descendant point of a natal chart, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/discendente.webp"
+    },
+    {
+      "slug": "medio-cielo",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing the highest point of an orbital circle marked by a small ornamental glyph and a rising column motif representing the midheaven of a natal chart, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/medio-cielo.webp"
+    },
+    {
+      "slug": "fondo-cielo",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing the lowest point of an orbital circle marked by a small ornamental glyph and a root motif descending below the horizon line representing the imum coeli of a natal chart, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/fondo-cielo.webp"
+    },
+    {
+      "slug": "nodi-lunari",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing two crescent moon glyphs at opposite ends of an orbital line crossing the ecliptic, with a north node ornamental symbol and a south node ornamental symbol facing one another, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/nodi-lunari.webp"
+    },
+    {
+      "slug": "lilith",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a dark crescent moon glyph at the apogee point of a lunar orbital ellipse, with a serpent motif coiled subtly around the orbital line, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/lilith.webp"
+    },
+    {
+      "slug": "chirone",
+      "kind": "glossario",
+      "tipo": "punti",
+      "enabled": true,
+      "subject": "an astronomical diagram showing a small centaur figure positioned on an irregular elliptical orbit between two larger orbital rings labeled Saturn and Uranus, with an emblematic key ornament beside it, against a parchment background with faint star markings, scientific plate from an old astrology treatise",
+      "outputPath": "public/illustrations/glossario/punti/chirone.webp"
+    },
+    {
+      "slug": "tema-natale-vs-oroscopo",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "a split composition: on the left side a single simple zodiac wheel divided into 12 sectors with only basic glyphs, on the right side a complex complete natal chart wheel with planets aspect lines and house divisions, both rendered as classical engravings against a parchment background",
+      "outputPath": "public/illustrations/guide/tema-natale-vs-oroscopo.webp"
+    },
+    {
+      "slug": "come-leggere-tema-natale",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "a natal chart wheel with subtle highlighting on three key points (sun moon ascendant) showing concentric layers of interpretation revealed, surrounded by open compass and astrolabe instruments on a paper desk, classical engraving style from an old astrology manual",
+      "outputPath": "public/illustrations/guide/come-leggere-tema-natale.webp"
+    },
+    {
+      "slug": "tema-natale-psicologico",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "a natal chart wheel rendered as a diagram of inner psychological functions, with subtle archetypal motifs in each sector representing functions of psyche, classical engraving style with handwritten notes in the margins, parchment background",
+      "outputPath": "public/illustrations/guide/tema-natale-psicologico.webp"
+    },
+    {
+      "slug": "tema-natale-relazioni",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "two interlocking natal chart wheels overlapping at one edge with thin lines connecting key planetary points (Venus Mars Moon Descendant) between them, showing a synastry relational diagram, classical engraving style on parchment background with faint stars",
+      "outputPath": "public/illustrations/guide/tema-natale-relazioni.webp"
+    },
+    {
+      "slug": "tema-natale-blocco-emotivo",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "a natal chart wheel with tense angular aspect lines (squares oppositions) emphasized between planets, a small key motif and a closed ornate door in the lower foreground representing a blocked passage, classical engraving style on parchment background",
+      "outputPath": "public/illustrations/guide/tema-natale-blocco-emotivo.webp"
+    },
+    {
+      "slug": "come-calcolare-tema-natale",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "an open ephemeris book on a wooden desk with a sextant and a quadrant instrument beside it, a partial natal chart drawn on the page with annotation marks, classical engraving style with calligraphic numbers and a quill",
+      "outputPath": "public/illustrations/guide/come-calcolare-tema-natale.webp"
+    },
+    {
+      "slug": "tema-natale-gratis-online",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "an open old astrology book showing a natal chart wheel on the left page and a column of interpretive text on the right page, with a hand holding a small printed token nearby, classical engraving style on parchment background with faint stars",
+      "outputPath": "public/illustrations/guide/tema-natale-gratis-online.webp"
+    },
+    {
+      "slug": "cos-e-il-tema-natale",
+      "kind": "guide",
+      "enabled": true,
+      "subject": "a fully drawn natal chart wheel showing 12 houses, planetary glyphs and aspect lines forming a complex geometric pattern, in the style of an old astrological treatise plate, sextant and ephemeris details around the edges",
+      "outputPath": "public/illustrations/guide/cos-e-il-tema-natale.webp"
+    }
+  ]
+}

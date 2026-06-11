@@ -1,0 +1,1 @@
+UPDATE public.profiles SET quiz_session_id = '85f4a65c-e968-4840-be56-4a3acd398115' WHERE user_id = 'a040b458-0843-4058-841f-2b1a35d1b726';

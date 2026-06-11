@@ -1,0 +1,83 @@
+Sitemap: https://www.codiceinteriore.it/sitemap.xml
+
+User-agent: *
+Allow: /
+Disallow: /quiz
+Disallow: /regalo
+Disallow: /processing
+Disallow: /teaser
+Disallow: /offer
+Disallow: /checkout
+Disallow: /success
+Disallow: /activate
+Disallow: /report-processing
+Disallow: /report
+Disallow: /unsubscribe
+Disallow: /admin/
+Disallow: /dev/
+
+# AI crawler — esplicitamente permessi per visibilità su ChatGPT, Claude,
+# Perplexity, Gemini. Il prodotto è informazionale (lettura del tema natale):
+# essere citati dagli LLM è un canale di acquisizione.
+User-agent: GPTBot
+Allow: /
+Disallow: /quiz
+Disallow: /processing
+Disallow: /teaser
+Disallow: /offer
+Disallow: /checkout
+Disallow: /success
+Disallow: /activate
+Disallow: /report-processing
+Disallow: /report
+Disallow: /admin/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /quiz
+Disallow: /processing
+Disallow: /teaser
+Disallow: /offer
+Disallow: /checkout
+Disallow: /success
+Disallow: /activate
+Disallow: /report-processing
+Disallow: /report
+Disallow: /admin/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /quiz
+Disallow: /processing
+Disallow: /teaser
+Disallow: /offer
+Disallow: /checkout
+Disallow: /success
+Disallow: /activate
+Disallow: /report-processing
+Disallow: /report
+Disallow: /admin/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- title fallback per pre-hydration; per ogni route, react-helmet-async
+         inietta il title corretto (via <SEO /> in src/components/SEO.tsx) ed è
+         quel valore che finisce nell'HTML prerenderato. -->
+    <title>Codice Interiore — Lettura del Tema Natale</title>
+    <meta name="author" content="Codice Interiore" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Font principali: Source Sans 3 (body), Playfair Display (heading),
+         Cormorant Garamond (editoriale sinastria), EB Garamond (legacy). -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T3B5BDSD3Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-T3B5BDSD3Y', { send_page_view: false });
+    </script>
+    <!-- End Google tag -->
+
+    <!-- Meta Pixel + Microsoft Clarity caricati dopo `load` per non rubare
+         tempo al primo render. Gli stub di fbq/clarity sono installati subito
+         (pattern ufficiale Meta), così eventuali chiamate fatte prima del
+         caricamento finiscono in coda e vengono replay-ate da fbevents.js. -->
+    <script>
+      // fbq stub — pattern identico a quello dell'installer Meta, ma senza
+      // iniettare ancora fbevents.js.
+      (function (f) {
+        if (f.fbq) return;
+        var n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+      })(window);
+
+      // clarity stub — stesso pattern.
+      window.clarity = window.clarity || function () {
+        (window.clarity.q = window.clarity.q || []).push(arguments);
+      };
+
+      function loadDeferredAnalytics() {
+        // Carica fbevents.js (lo stub processerà la coda).
+        var fb = document.createElement("script");
+        fb.async = true;
+        fb.src = "https://connect.facebook.net/en_US/fbevents.js";
+        document.head.appendChild(fb);
+        window.fbq("init", "1338462968330754");
+        window.fbq("track", "PageView");
+
+        // Carica clarity.
+        var cl = document.createElement("script");
+        cl.async = true;
+        cl.src = "https://www.clarity.ms/tag/wd7go39aq1";
+        document.head.appendChild(cl);
+      }
+
+      if (document.readyState === "complete") {
+        loadDeferredAnalytics();
+      } else {
+        window.addEventListener("load", loadDeferredAnalytics, { once: true });
+      }
+    </script>
+
+    <!-- Organization + WebSite JSON-LD: globali per tutto il sito, statici per
+         essere letti anche da crawler che non eseguono JavaScript (bot AI).
+         I tag SEO per-route (title, description, canonical, og:*, twitter:*,
+         Product/FAQ JSON-LD) sono iniettati da react-helmet-async via il
+         componente <SEO /> in src/components/SEO.tsx. Sono volutamente assenti
+         da qui per non duplicarsi col rendering Helmet. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Codice Interiore",
+      "url": "https://www.codiceinteriore.it",
+      "logo": "https://www.codiceinteriore.it/favicon.ico",
+      "description": "Lettura del Tema Natale spiegata in modo psicologicamente preciso, scritta in italiano e personalizzata sui dati di nascita.",
+      "sameAs": [
+        "https://www.facebook.com/CodiceInteriore",
+        "https://www.instagram.com/ilcodiceinteriore/"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@codiceinteriore.it",
+        "contactType": "customer support",
+        "availableLanguage": "Italian"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Codice Interiore",
+      "alternateName": "codiceinteriore.it",
+      "url": "https://www.codiceinteriore.it",
+      "inLanguage": "it-IT"
+    }
+    </script>
+  </head>
+  <body>
+    <!-- Meta Pixel noscript fallback -->
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display:none"
+        src="https://www.facebook.com/tr?id=1338462968330754&ev=PageView&noscript=1"
+    /></noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

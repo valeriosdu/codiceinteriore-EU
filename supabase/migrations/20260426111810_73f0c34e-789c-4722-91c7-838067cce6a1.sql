@@ -1,0 +1,2 @@
+ALTER TABLE public.checkout_sessions ADD COLUMN IF NOT EXISTS payment_provider text NOT NULL DEFAULT 'stripe';
+CREATE INDEX IF NOT EXISTS idx_checkout_sessions_provider ON public.checkout_sessions(payment_provider);

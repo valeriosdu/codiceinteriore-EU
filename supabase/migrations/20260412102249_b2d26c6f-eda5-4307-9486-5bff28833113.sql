@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN quiz_session_id uuid REFERENCES public.quiz_sessions(id);

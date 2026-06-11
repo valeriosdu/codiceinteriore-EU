@@ -1,0 +1,3 @@
+UPDATE public.transit_subscriptions SET current_period_start=to_timestamp(1779136288), current_period_end=to_timestamp(1781814688) WHERE stripe_subscription_id='sub_1TYXp2GZqTxkp1nxNam2BcJy';
+UPDATE public.transit_subscriptions SET current_period_start=to_timestamp(1779012251), current_period_end=to_timestamp(1781690651) WHERE stripe_subscription_id='sub_1TY1YRGZqTxkp1nxVlBIQExw';
+UPDATE public.transit_subscriptions SET current_period_start=to_timestamp(1778946363), current_period_end=to_timestamp(1781624763) WHERE stripe_subscription_id='sub_1TXkPjGZqTxkp1nxuMv1oqzW';
