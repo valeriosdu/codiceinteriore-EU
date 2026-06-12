@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { capturePaypalOrder, getPaypalOrder, opaqueIdToPaypal, PAYPAL_ENV } from "../_shared/paypal.ts";
+import { capturePaypalOrder, getPaypalOrder, opaqueIdToPaypal, resolvePaypalCreds } from "../_shared/paypal.ts";
 import { reconcilePaidStripeSession } from "../_shared/stripe-reconcile.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -23,10 +24,12 @@ const hasCheckoutSessionId = (value: unknown): value is string =>
 const isPaypalOpaque = (value: unknown): value is string =>
   typeof value === "string" && value.startsWith("pp_");
 
-const getStripeSecret = (sessionId?: string) =>
-  sessionId?.startsWith("cs_test_")
-    ? Deno.env.get("STRIPE_SECRET_KEY_TEST") || Deno.env.get("STRIPE_SECRET_KEY") || ""
-    : Deno.env.get("STRIPE_SECRET_KEY") || "";
+const getStripeSecret = (sessionId?: string, marketId?: string | null) => {
+  const m = getMarket(marketId);
+  return sessionId?.startsWith("cs_test_")
+    ? Deno.env.get(m.stripe.secretKeyTestEnv) || Deno.env.get(m.stripe.secretKeyEnv) || ""
+    : Deno.env.get(m.stripe.secretKeyEnv) || "";
+};
 
 const addMonths = (date: Date, months: number) => {
   const next = new Date(date);
@@ -170,7 +173,7 @@ serve(async (req) => {
       try {
         const { data: orphans } = await supabaseAdmin
           .from("checkout_sessions")
-          .select("stripe_session_id, purchase_type, payment_provider")
+          .select("stripe_session_id, purchase_type, payment_provider, market")
           .ilike("customer_email", profile.email!)
           .eq("payment_status", "paid")
           .is("claimed_profile_id", null)
@@ -181,9 +184,10 @@ serve(async (req) => {
           const sessionId = orphan.stripe_session_id;
           if (!sessionId || !/^cs_(test|live)_/.test(sessionId)) continue;
           try {
-            const stripeForOrphan = new Stripe(getStripeSecret(sessionId), {
-              apiVersion: "2025-08-27.basil",
-            });
+            const stripeForOrphan = new Stripe(
+              getStripeSecret(sessionId, (orphan as { market?: string | null }).market),
+              { apiVersion: "2025-08-27.basil" },
+            );
             const session = await stripeForOrphan.checkout.sessions.retrieve(sessionId);
             const result = await reconcilePaidStripeSession(stripeForOrphan, session);
             console.log(
@@ -238,13 +242,13 @@ serve(async (req) => {
       const { data: row } = await supabaseAdmin
         .from("checkout_sessions")
         .select(
-          "stripe_session_id, quiz_session_id, purchase_type, product_code, includes_transits, transit_months, customer_email, payment_status, payment_completed_at, payment_provider, provider_payment_id, amount_total, currency, provider_metadata",
+          "stripe_session_id, quiz_session_id, purchase_type, product_code, includes_transits, transit_months, customer_email, payment_status, payment_completed_at, payment_provider, provider_payment_id, amount_total, currency, provider_metadata, market",
         )
         .eq("stripe_session_id", paypalIdHint)
         .maybeSingle();
 
       const checkoutSelectCols =
-        "stripe_session_id, quiz_session_id, purchase_type, product_code, includes_transits, transit_months, customer_email, payment_status, payment_completed_at, payment_provider, provider_payment_id, amount_total, currency, provider_metadata";
+        "stripe_session_id, quiz_session_id, purchase_type, product_code, includes_transits, transit_months, customer_email, payment_status, payment_completed_at, payment_provider, provider_payment_id, amount_total, currency, provider_metadata, market";
 
       // Helper: search for any paid PayPal checkout sharing the same
       // quiz_session_id. Covers the "double PayPal order" scenario where
@@ -291,12 +295,13 @@ serve(async (req) => {
       if (effectiveRow.payment_status !== "paid") {
         try {
           const paypalOrderId = opaqueIdToPaypal(effectiveRow.stripe_session_id);
+          const paypalCreds = resolvePaypalCreds(effectiveRow.market);
           let order;
           try {
-            order = await capturePaypalOrder(paypalOrderId);
+            order = await capturePaypalOrder(paypalOrderId, paypalCreds);
           } catch (e) {
             console.warn("[sync-checkout-session] capture failed, falling back to GET:", e instanceof Error ? e.message : String(e));
-            order = await getPaypalOrder(paypalOrderId);
+            order = await getPaypalOrder(paypalOrderId, paypalCreds);
           }
           const purchaseUnit = order.purchase_units?.[0];
           const capture = purchaseUnit?.payments?.captures?.[0];
@@ -324,7 +329,7 @@ serve(async (req) => {
 
             const reconciledMetadata = {
               ...(effectiveRow.provider_metadata || {}),
-              environment: PAYPAL_ENV,
+              environment: paypalCreds.env,
               paypal_order_id: order.id,
               capture_id: capture?.id || null,
               capture_status: capture?.status || order.status,
@@ -414,7 +419,21 @@ serve(async (req) => {
       };
     } else {
       // ---- STRIPE BRANCH ----
-      const stripe = new Stripe(getStripeSecret(providedSessionId), { apiVersion: "2025-08-27.basil" });
+      // Il market della riga checkout (se esiste già) sceglie l'account Stripe.
+      // Senza hint o riga si resta sull'account "it" (back-compat).
+      const stripeSessionHint =
+        providedSessionId ||
+        (hasCheckoutSessionId(profile.stripe_session_id) ? profile.stripe_session_id : undefined);
+      let stripeRowMarket: string | null = null;
+      if (stripeSessionHint) {
+        const { data: marketRow } = await supabaseAdmin
+          .from("checkout_sessions")
+          .select("market")
+          .eq("stripe_session_id", stripeSessionHint)
+          .maybeSingle();
+        stripeRowMarket = (marketRow as { market?: string | null } | null)?.market ?? null;
+      }
+      const stripe = new Stripe(getStripeSecret(stripeSessionHint, stripeRowMarket), { apiVersion: "2025-08-27.basil" });
       let session: Stripe.Checkout.Session | null = null;
 
       if (providedSessionId) {

@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import {
+  getMarket,
+  getStripeKey,
+  getStripePrice,
+  type StripeProduct,
+} from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +15,7 @@ const corsHeaders = {
 };
 
 type ProductDef = {
-  priceId: string;
+  stripeProduct: StripeProduct;
   productCode: string;
   includesTransits: boolean;
   transitMonths: number;
@@ -20,12 +26,9 @@ type ProductDef = {
   cancelPath?: string;
 };
 
-const STRIPE_PRICE_SYNASTRY = Deno.env.get("STRIPE_PRICE_SYNASTRY") || "";
-const STRIPE_PRICE_SYNASTRY_LAUNCH = Deno.env.get("STRIPE_PRICE_SYNASTRY_LAUNCH") || "";
-
 const PRODUCTS: Record<string, ProductDef> = {
   base: {
-    priceId: "price_1TKeKbGZqTxkp1nxN7yQQxhv",
+    stripeProduct: "base",
     productCode: "natal_report_base",
     includesTransits: false,
     transitMonths: 0,
@@ -33,7 +36,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     sessionKind: "natal",
   },
   premium: {
-    priceId: "price_1TKeKzGZqTxkp1nxqaWiqNWh",
+    stripeProduct: "premium",
     productCode: "natal_report_plus_transits",
     includesTransits: true,
     transitMonths: 1,
@@ -41,7 +44,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     sessionKind: "natal",
   },
   synastry: {
-    priceId: STRIPE_PRICE_SYNASTRY,
+    stripeProduct: "synastry",
     productCode: "synastry_couple_report",
     includesTransits: false,
     transitMonths: 0,
@@ -51,7 +54,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     cancelPath: "/coppia/offer",
   },
   synastry_launch: {
-    priceId: STRIPE_PRICE_SYNASTRY_LAUNCH,
+    stripeProduct: "synastryLaunch",
     productCode: "synastry_couple_report_launch",
     includesTransits: false,
     transitMonths: 0,
@@ -72,7 +75,7 @@ serve(async (req) => {
     const purchaseType: string = body?.purchaseType;
     const product = PRODUCTS[purchaseType];
 
-    if (!product || !product.priceId) {
+    if (!product) {
       return new Response(JSON.stringify({ error: "Invalid purchase type" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -101,11 +104,36 @@ serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+    );
+
+    // Il market si legge SEMPRE dalla riga di sessione, mai dal body: il
+    // body è controllato dal client e sceglierebbe account Stripe e prezzi.
+    const sessionTable =
+      product.sessionKind === "synastry" ? "synastry_sessions" : "quiz_sessions";
+    const { data: sessionRow, error: sessionErr } = await supabaseAdmin
+      .from(sessionTable)
+      .select("market")
+      .eq("id", sessionId)
+      .maybeSingle();
+
+    if (sessionErr || !sessionRow) {
+      return new Response(JSON.stringify({ error: "Session not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
+    }
+
+    const market = getMarket((sessionRow as { market?: string | null }).market);
+
+    const stripe = new Stripe(getStripeKey(market), {
       apiVersion: "2025-08-27.basil",
     });
+    const priceId = getStripePrice(market, product.stripeProduct);
 
-    const origin = req.headers.get("origin") || Deno.env.get("PUBLIC_SITE_URL") || "https://www.codiceinteriore.it";
+    const origin = req.headers.get("origin") || market.siteUrl;
     const successUrl = `${origin}${product.successPath ?? "/success?session_id={CHECKOUT_SESSION_ID}"}`;
     const cancelUrl = `${origin}${product.cancelPath ?? "/offer"}`;
 
@@ -114,6 +142,7 @@ serve(async (req) => {
       product_code: product.productCode,
       includes_transits: String(product.includesTransits),
       transit_months: String(product.transitMonths),
+      market: market.id,
     };
     if (product.sessionKind === "synastry") {
       metadata.synastry_session_id = sessionId;
@@ -122,18 +151,13 @@ serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create({
-      line_items: [{ price: product.priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata,
       phone_number_collection: { enabled: true },
     });
-
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
-    );
 
     const checkoutRow: Record<string, unknown> = {
       stripe_session_id: session.id,
@@ -145,6 +169,7 @@ serve(async (req) => {
       payment_provider: "stripe",
       amount_total: product.amountCents,
       currency: "EUR",
+      market: market.id,
       provider_metadata: { stripe_mode: "payment", stage: "created" },
     };
     if (product.sessionKind === "synastry") {

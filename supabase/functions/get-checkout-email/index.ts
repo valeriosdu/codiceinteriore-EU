@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { getPaypalOrder, isPaypalOpaqueId, opaqueIdToPaypal } from "../_shared/paypal.ts";
+import { getPaypalOrder, isPaypalOpaqueId, opaqueIdToPaypal, resolvePaypalCreds } from "../_shared/paypal.ts";
+import { getMarket, getStripeKey } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,7 +33,7 @@ serve(async (req) => {
       );
       const { data: row } = await supabaseAdmin
         .from("checkout_sessions")
-        .select("quiz_session_id, purchase_type, customer_email, payment_status, amount_total, currency")
+        .select("quiz_session_id, purchase_type, customer_email, payment_status, amount_total, currency, market")
         .eq("stripe_session_id", sessionId)
         .maybeSingle();
 
@@ -47,7 +48,10 @@ serve(async (req) => {
       let email = row.customer_email || "";
       if (!email) {
         try {
-          const order = await getPaypalOrder(opaqueIdToPaypal(sessionId));
+          const order = await getPaypalOrder(
+            opaqueIdToPaypal(sessionId),
+            resolvePaypalCreds((row as { market?: string | null }).market),
+          );
           email = order.payer?.email_address || "";
         } catch (e) {
           console.warn("get-checkout-email: paypal lookup failed:", e);
@@ -74,7 +78,19 @@ serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    // Stripe branch: il market della riga checkout sceglie l'account.
+    const supabaseAdminStripe = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+    );
+    const { data: stripeRow } = await supabaseAdminStripe
+      .from("checkout_sessions")
+      .select("market")
+      .eq("stripe_session_id", sessionId)
+      .maybeSingle();
+    const market = getMarket((stripeRow as { market?: string | null } | null)?.market);
+
+    const stripe = new Stripe(getStripeKey(market), {
       apiVersion: "2025-08-27.basil",
     });
 

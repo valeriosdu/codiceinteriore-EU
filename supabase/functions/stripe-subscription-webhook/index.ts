@@ -19,6 +19,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -34,11 +35,7 @@ const SUPABASE_ANON_KEY =
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
-const STRIPE_SECRET_KEY_TEST = Deno.env.get("STRIPE_SECRET_KEY_TEST") || STRIPE_SECRET_KEY;
-const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
-const STRIPE_SUB_WEBHOOK_SECRET =
-  Deno.env.get("STRIPE_SUBSCRIPTION_WEBHOOK_SECRET") || STRIPE_WEBHOOK_SECRET;
+// I secret Stripe si risolvono per-mercato dentro il handler (?market=…).
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -116,7 +113,7 @@ async function provisionTransitCycle(
 ) {
   const { data: quizSession, error: quizErr } = await supabaseAdmin
     .from("quiz_sessions")
-    .select("id, user_name, birth_timezone")
+    .select("id, user_name, birth_timezone, language, market")
     .eq("id", params.quizSessionId)
     .maybeSingle();
   if (quizErr || !quizSession?.id) {
@@ -200,6 +197,8 @@ async function provisionTransitCycle(
       templateData: {
         name: quizSession.user_name || "",
         isRenewal: params.isRenewal,
+        lang: (quizSession as { language?: string | null }).language === "es" ? "es" : "it",
+        market: (quizSession as { market?: string | null }).market === "es" ? "es" : "it",
       },
     });
     syncBrevoContactBackground({
@@ -312,6 +311,14 @@ async function handleCheckoutCompleted(
   const periodEnd = new Date(((subscription.current_period_end ?? Math.floor(Date.now() / 1000) + 30 * 86400) as number) * 1000);
   const priceId = subscription.items.data[0]?.price?.id || null;
 
+  // language/market viaggiano sulla riga: il ciclo transiti gira su cron
+  // senza contesto frontend e li legge da qui.
+  const { data: qsLocale } = await supabaseAdmin
+    .from("quiz_sessions")
+    .select("language, market")
+    .eq("id", effectiveQuizSessionId)
+    .maybeSingle();
+
   await supabaseAdmin.from("transit_subscriptions").upsert(
     {
       profile_id: ownership.profile_id,
@@ -324,6 +331,8 @@ async function handleCheckoutCompleted(
       current_period_end: periodEnd.toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end || false,
       canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+      language: (qsLocale as { language?: string | null } | null)?.language === "es" ? "es" : "it",
+      market: (qsLocale as { market?: string | null } | null)?.market === "es" ? "es" : "it",
     },
     { onConflict: "stripe_subscription_id" },
   );
@@ -504,11 +513,21 @@ serve(async (req) => {
   }
 
   const rawBody = await req.text();
+
+  // Per-market endpoint (?market=es); URL nudo = mercato "it" (back-compat).
+  const market = getMarket(new URL(req.url).searchParams.get("market"));
+  const STRIPE_SECRET_KEY = Deno.env.get(market.stripe.secretKeyEnv) || "";
+  const STRIPE_SECRET_KEY_TEST =
+    Deno.env.get(market.stripe.secretKeyTestEnv) || STRIPE_SECRET_KEY;
+  const STRIPE_WEBHOOK_SECRET = Deno.env.get(market.stripe.webhookSecretEnv) || "";
+  const STRIPE_SUB_WEBHOOK_SECRET =
+    Deno.env.get(market.stripe.subscriptionWebhookSecretEnv) || STRIPE_WEBHOOK_SECRET;
+
   const candidateSecrets = [STRIPE_SUB_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET].filter(
     (s, i, arr) => s && arr.indexOf(s) === i,
   );
   if (candidateSecrets.length === 0) {
-    console.error("[stripe-sub-webhook] no signing secret configured");
+    console.error(`[stripe-sub-webhook] no signing secret configured for market "${market.id}"`);
     return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

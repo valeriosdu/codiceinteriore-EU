@@ -12,19 +12,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { reconcilePaidStripeSession } from "../_shared/stripe-reconcile.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
-
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
-const STRIPE_SECRET_KEY_TEST =
-  Deno.env.get("STRIPE_SECRET_KEY_TEST") || STRIPE_SECRET_KEY;
-const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
-const STRIPE_WEBHOOK_SECRET_TEST =
-  Deno.env.get("STRIPE_WEBHOOK_SECRET_TEST") || STRIPE_WEBHOOK_SECRET;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -46,12 +40,24 @@ serve(async (req) => {
 
   const rawBody = await req.text();
 
+  // Per-market endpoint: nell'account Stripe di ogni mercato si registra
+  // https://<project>.supabase.co/functions/v1/stripe-webhook?market=es —
+  // l'URL nudo resta il mercato "it" (back-compat). Il param seleziona solo
+  // QUALI secret usare per verificare la firma; la firma resta l'autenticazione.
+  const market = getMarket(new URL(req.url).searchParams.get("market"));
+  const STRIPE_SECRET_KEY = Deno.env.get(market.stripe.secretKeyEnv) || "";
+  const STRIPE_SECRET_KEY_TEST =
+    Deno.env.get(market.stripe.secretKeyTestEnv) || STRIPE_SECRET_KEY;
+  const STRIPE_WEBHOOK_SECRET = Deno.env.get(market.stripe.webhookSecretEnv) || "";
+  const STRIPE_WEBHOOK_SECRET_TEST =
+    Deno.env.get(market.stripe.webhookSecretTestEnv) || STRIPE_WEBHOOK_SECRET;
+
   // Try live secret first, then test secret. In practice you should configure
   // two separate Stripe webhooks (one per mode), each with its own signing
   // secret — but we accept either to be forgiving.
   const candidateSecrets = [STRIPE_WEBHOOK_SECRET, STRIPE_WEBHOOK_SECRET_TEST].filter(Boolean);
   if (candidateSecrets.length === 0) {
-    console.error("[stripe-webhook] no STRIPE_WEBHOOK_SECRET configured");
+    console.error(`[stripe-webhook] no webhook secret configured for market "${market.id}" (${market.stripe.webhookSecretEnv})`);
     return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -101,6 +107,12 @@ serve(async (req) => {
       event.type === "checkout.session.async_payment_succeeded"
     ) {
       const session = event.data.object as Stripe.Checkout.Session;
+      // Sanity check, non bloccante: la firma ha già autenticato l'evento.
+      if (session.metadata?.market && session.metadata.market !== market.id) {
+        console.warn(
+          `[stripe-webhook] market mismatch: endpoint=${market.id} metadata=${session.metadata.market} session=${session.id}`,
+        );
+      }
       // Subscription sessions are owned exclusively by stripe-subscription-webhook.
       // Even if both webhooks happen to be subscribed to this event, we
       // short-circuit here to avoid double processing (which previously caused

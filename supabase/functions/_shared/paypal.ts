@@ -1,5 +1,23 @@
 // Shared PayPal helpers for Orders v2 API.
 // Honors PAYPAL_ENV ("sandbox" or "live"); defaults to sandbox for safety.
+//
+// Multi-mercato: ogni helper accetta `creds` opzionali (da resolvePaypalCreds
+// con il market letto dalla riga DB). Senza `creds` il comportamento è quello
+// storico del mercato "it" (env non suffissate).
+
+import { getMarket, getPayPalCreds } from "./markets.ts";
+
+export interface PaypalCreds {
+  env: "sandbox" | "live";
+  baseUrl: string;
+  clientId: string;
+  clientSecret: string;
+  webhookId: string | null;
+}
+
+export function resolvePaypalCreds(marketId?: string | null): PaypalCreds {
+  return getPayPalCreds(getMarket(marketId));
+}
 
 export const PAYPAL_ENV: "sandbox" | "live" = (() => {
   const env = (Deno.env.get("PAYPAL_ENV") || "sandbox").toLowerCase();
@@ -11,15 +29,10 @@ export const PAYPAL_BASE_URL =
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 
-export async function getPaypalAccessToken(): Promise<string> {
-  const clientId = Deno.env.get("PAYPAL_CLIENT_ID") || "";
-  const clientSecret = Deno.env.get("PAYPAL_CLIENT_SECRET") || "";
-  if (!clientId || !clientSecret) {
-    throw new Error("PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET is not configured");
-  }
-
-  const credentials = btoa(`${clientId}:${clientSecret}`);
-  const res = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+export async function getPaypalAccessToken(creds?: PaypalCreds): Promise<string> {
+  const c = creds ?? resolvePaypalCreds();
+  const credentials = btoa(`${c.clientId}:${c.clientSecret}`);
+  const res = await fetch(`${c.baseUrl}/v1/oauth2/token`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${credentials}`,
@@ -60,10 +73,13 @@ export async function createPaypalOrder(args: {
   description: string;
   returnUrl: string;
   cancelUrl: string;
+  brandName?: string;
+  creds?: PaypalCreds;
 }): Promise<{ id: string; approvalUrl: string }> {
-  const token = await getPaypalAccessToken();
+  const c = args.creds ?? resolvePaypalCreds();
+  const token = await getPaypalAccessToken(c);
 
-  const res = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+  const res = await fetch(`${c.baseUrl}/v2/checkout/orders`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -82,7 +98,7 @@ export async function createPaypalOrder(args: {
         },
       ],
       application_context: {
-        brand_name: "Codice Interiore",
+        brand_name: args.brandName || "Codice Interiore",
         landing_page: "NO_PREFERENCE",
         user_action: "PAY_NOW",
         shipping_preference: "NO_SHIPPING",
@@ -105,9 +121,10 @@ export async function createPaypalOrder(args: {
   return { id: order.id, approvalUrl: approvalLink };
 }
 
-export async function capturePaypalOrder(orderId: string): Promise<PaypalOrder> {
-  const token = await getPaypalAccessToken();
-  const res = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderId}/capture`, {
+export async function capturePaypalOrder(orderId: string, creds?: PaypalCreds): Promise<PaypalOrder> {
+  const c = creds ?? resolvePaypalCreds();
+  const token = await getPaypalAccessToken(c);
+  const res = await fetch(`${c.baseUrl}/v2/checkout/orders/${orderId}/capture`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -119,7 +136,7 @@ export async function capturePaypalOrder(orderId: string): Promise<PaypalOrder> 
   if (res.status === 422) {
     const text = await res.text().catch(() => "");
     if (text.includes("ORDER_ALREADY_CAPTURED")) {
-      return await getPaypalOrder(orderId);
+      return await getPaypalOrder(orderId, c);
     }
     throw new Error(`PayPal capture failed [${res.status}]: ${text}`);
   }
@@ -132,9 +149,10 @@ export async function capturePaypalOrder(orderId: string): Promise<PaypalOrder> 
   return (await res.json()) as PaypalOrder;
 }
 
-export async function getPaypalOrder(orderId: string): Promise<PaypalOrder> {
-  const token = await getPaypalAccessToken();
-  const res = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderId}`, {
+export async function getPaypalOrder(orderId: string, creds?: PaypalCreds): Promise<PaypalOrder> {
+  const c = creds ?? resolvePaypalCreds();
+  const token = await getPaypalAccessToken(c);
+  const res = await fetch(`${c.baseUrl}/v2/checkout/orders/${orderId}`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -167,8 +185,10 @@ export interface PaypalWebhookVerifyResult {
 export async function verifyPaypalWebhookSignature(
   req: Request,
   rawBody: string,
+  creds?: PaypalCreds,
 ): Promise<PaypalWebhookVerifyResult> {
-  const webhookId = Deno.env.get("PAYPAL_WEBHOOK_ID") || "";
+  const c = creds ?? resolvePaypalCreds();
+  const webhookId = c.webhookId || "";
   if (!webhookId) return { ok: false, reason: "PAYPAL_WEBHOOK_ID not configured" };
 
   const transmissionId = req.headers.get("paypal-transmission-id");
@@ -188,9 +208,9 @@ export async function verifyPaypalWebhookSignature(
     return { ok: false, reason: "request body is not valid JSON" };
   }
 
-  const token = await getPaypalAccessToken();
+  const token = await getPaypalAccessToken(c);
   const res = await fetch(
-    `${PAYPAL_BASE_URL}/v1/notifications/verify-webhook-signature`,
+    `${c.baseUrl}/v1/notifications/verify-webhook-signature`,
     {
       method: "POST",
       headers: {

@@ -9,6 +9,7 @@ import {
   planetName,
   aspectName,
 } from "../_shared/prompts/lang.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -30,10 +31,12 @@ const isStripeCheckout = (value: unknown): value is string =>
 
 const hasPaidCheckoutSession = (value: unknown): value is string => isStripeCheckout(value) || isPaypalOpaque(value);
 
-const getStripeSecret = (sessionId: string) =>
-  sessionId.startsWith("cs_test_")
-    ? Deno.env.get("STRIPE_SECRET_KEY_TEST") || Deno.env.get("STRIPE_SECRET_KEY") || ""
-    : Deno.env.get("STRIPE_SECRET_KEY") || "";
+const getStripeSecret = (sessionId: string, marketId?: string | null) => {
+  const m = getMarket(marketId);
+  return sessionId.startsWith("cs_test_")
+    ? Deno.env.get(m.stripe.secretKeyTestEnv) || Deno.env.get(m.stripe.secretKeyEnv) || ""
+    : Deno.env.get(m.stripe.secretKeyEnv) || "";
+};
 
 const getName = (value: any) => value?.en || value?.name?.en || value?.name || value || "Unknown";
 
@@ -679,9 +682,17 @@ Deno.serve(async (req) => {
           });
         }
       } else {
-        const stripe = new Stripe(getStripeSecret(paidCheckoutSessionId), {
-          apiVersion: "2025-08-27.basil",
-        });
+        // La riga checkout (creata da create-checkout) porta il market: serve
+        // a scegliere l'account Stripe giusto per verificare il pagamento.
+        const { data: marketRow } = await supabaseAdmin
+          .from("checkout_sessions")
+          .select("market")
+          .eq("stripe_session_id", paidCheckoutSessionId)
+          .maybeSingle();
+        const stripe = new Stripe(
+          getStripeSecret(paidCheckoutSessionId, (marketRow as { market?: string | null } | null)?.market),
+          { apiVersion: "2025-08-27.basil" },
+        );
         const checkoutSession = await stripe.checkout.sessions.retrieve(paidCheckoutSessionId);
         const paidQuizSessionId = checkoutSession.metadata?.quiz_session_id || "";
         if (checkoutSession.payment_status !== "paid" || paidQuizSessionId !== quizSessionId) {

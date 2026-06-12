@@ -4,6 +4,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { getMarket, getStripeKey } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +16,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -57,13 +57,14 @@ serve(async (req) => {
     // Try to find an active subscription row for this profile.
     const { data: subscription } = await supabaseAdmin
       .from("transit_subscriptions")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, market")
       .eq("profile_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
+    const market = getMarket((subscription as { market?: string | null } | null)?.market);
+    const stripe = new Stripe(getStripeKey(market), { apiVersion: "2025-08-27.basil" });
 
     let customerId: string | undefined = subscription?.stripe_customer_id || undefined;
     if (!customerId) {
@@ -78,7 +79,7 @@ serve(async (req) => {
       });
     }
 
-    const origin = req.headers.get("origin") || "https://codiceinteriore.it";
+    const origin = req.headers.get("origin") || market.siteUrl;
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/report`,

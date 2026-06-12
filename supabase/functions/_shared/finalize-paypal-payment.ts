@@ -14,7 +14,8 @@ import { sendTransactionalEmailBackground } from "./send-email.ts";
 import { syncBrevoContactBackground } from "./sync-brevo.ts";
 import { firePurchaseEventBackground } from "./fire-meta-purchase.ts";
 import type { PaypalOrder } from "./paypal.ts";
-import { PAYPAL_ENV, paypalToOpaqueId } from "./paypal.ts";
+import { paypalToOpaqueId } from "./paypal.ts";
+import { getMarket } from "./markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -94,13 +95,20 @@ export async function finalizePaypalPayment(
   // Check existing state so we can skip side-effects on idempotent re-runs.
   const { data: existing } = await supabase
     .from("checkout_sessions")
-    .select("payment_status, claimed_profile_id, synastry_session_id")
+    .select("payment_status, claimed_profile_id, synastry_session_id, market")
     .eq("stripe_session_id", opaqueId)
     .maybeSingle();
   const alreadyPaid = existing?.payment_status === "paid";
 
+  // Il market è stato persistito sulla riga alla creazione dell'ordine.
+  const market = getMarket((existing as { market?: string | null } | null)?.market);
+  const paypalEnv = (() => {
+    const raw = (Deno.env.get(market.paypal.envEnv) || "sandbox").toLowerCase();
+    return raw === "live" || raw === "production" ? "live" : "sandbox";
+  })();
+
   const providerMetadata = {
-    environment: PAYPAL_ENV,
+    environment: paypalEnv,
     paypal_order_id: captured.id,
     capture_id: capture?.id || null,
     capture_status: capture?.status || captured.status,
@@ -167,6 +175,8 @@ export async function finalizePaypalPayment(
         templateData: {
           name: payerName || "",
           sessionId: opaqueId,
+          lang: market.language,
+          market: market.id,
         },
       });
     }

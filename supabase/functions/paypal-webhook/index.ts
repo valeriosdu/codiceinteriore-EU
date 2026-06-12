@@ -16,8 +16,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   getPaypalOrder,
-  PAYPAL_ENV,
   paypalToOpaqueId,
+  resolvePaypalCreds,
   verifyPaypalWebhookSignature,
 } from "../_shared/paypal.ts";
 import { finalizePaypalPayment } from "../_shared/finalize-paypal-payment.ts";
@@ -72,7 +72,23 @@ serve(async (req) => {
   // Read raw body once — verifyPaypalWebhookSignature needs it byte-for-byte.
   const rawBody = await req.text();
 
-  const verification = await verifyPaypalWebhookSignature(req, rawBody);
+  // Per-market endpoint: nel dashboard PayPal di ogni mercato si registra
+  // .../paypal-webhook?market=es — il param seleziona credenziali e webhook id
+  // per la verifica firma; l'URL nudo resta il mercato "it" (back-compat).
+  // Secret mancanti = 401 pulito (PayPal ritenta), non un 500 opaco.
+  let creds;
+  try {
+    creds = resolvePaypalCreds(new URL(req.url).searchParams.get("market"));
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    console.error(`[paypal-webhook] credentials not configured: ${reason}`);
+    return new Response(
+      JSON.stringify({ error: "PayPal credentials not configured", reason }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 },
+    );
+  }
+
+  const verification = await verifyPaypalWebhookSignature(req, rawBody, creds);
   if (!verification.ok) {
     console.error(`[paypal-webhook] signature verification failed: ${verification.reason}`);
     return new Response(
@@ -93,7 +109,7 @@ serve(async (req) => {
 
   const eventType = event.event_type || "";
   const eventId = event.id || "(no id)";
-  console.log(`[paypal-webhook] env=${PAYPAL_ENV} event=${eventType} id=${eventId}`);
+  console.log(`[paypal-webhook] env=${creds.env} event=${eventType} id=${eventId}`);
 
   try {
     switch (eventType) {
@@ -112,7 +128,7 @@ serve(async (req) => {
           );
         }
 
-        const order = await getPaypalOrder(orderId);
+        const order = await getPaypalOrder(orderId, creds);
         const result = await finalizePaypalPayment(order, "webhook");
         console.log(
           `[paypal-webhook] finalized order=${orderId} email=${result.customerEmail} alreadyPaid=${result.alreadyPaid}`,

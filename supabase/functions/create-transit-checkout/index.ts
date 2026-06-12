@@ -7,14 +7,13 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import {
-  TRANSIT_ONE_TIME_PRICE_ID,
-  TRANSIT_SUBSCRIPTION_PRICE_ID,
   TRANSIT_PURCHASE_TYPES,
   TRANSIT_PRODUCT_CODES,
   TRANSIT_ONE_TIME_AMOUNT_CENTS,
   TRANSIT_SUBSCRIPTION_AMOUNT_CENTS,
   type TransitCheckoutMode,
 } from "../_shared/transit-products.ts";
+import { getMarket, getStripeKey, getStripePrice } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +25,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -91,7 +89,15 @@ serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
+    // Il market si legge dalla sessione quiz della riga, mai dal body.
+    const { data: qsMarket } = await supabaseAdmin
+      .from("quiz_sessions")
+      .select("market")
+      .eq("id", quizSessionId)
+      .maybeSingle();
+    const market = getMarket((qsMarket as { market?: string | null } | null)?.market);
+
+    const stripe = new Stripe(getStripeKey(market), { apiVersion: "2025-08-27.basil" });
 
     // Reuse existing Stripe customer for this email if any (to avoid duplicates
     // and keep the same payment methods / portal access).
@@ -99,7 +105,7 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     if (customers.data.length > 0) customerId = customers.data[0].id;
 
-    const origin = req.headers.get("origin") || "https://codiceinteriore.it";
+    const origin = req.headers.get("origin") || market.siteUrl;
     const isSubscription = mode === "subscription";
 
     // Phase 2 (estendi invece di sovrapporre): if the customer still has an
@@ -134,7 +140,10 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
       line_items: [
-        { price: isSubscription ? TRANSIT_SUBSCRIPTION_PRICE_ID : TRANSIT_ONE_TIME_PRICE_ID, quantity: 1 },
+        {
+          price: getStripePrice(market, isSubscription ? "transitSubscription" : "transitOneTime"),
+          quantity: 1,
+        },
       ],
       mode: isSubscription ? "subscription" : "payment",
       success_url: `${origin}/report?transits=activated&session_id={CHECKOUT_SESSION_ID}`,
@@ -147,6 +156,7 @@ serve(async (req) => {
         product_code: TRANSIT_PRODUCT_CODES[mode],
         includes_transits: "true",
         transit_months: "1",
+        market: market.id,
       },
       ...(isSubscription
         ? {
@@ -177,6 +187,7 @@ serve(async (req) => {
         payment_provider: "stripe",
         amount_total: isSubscription ? TRANSIT_SUBSCRIPTION_AMOUNT_CENTS : TRANSIT_ONE_TIME_AMOUNT_CENTS,
         currency: "EUR",
+        market: market.id,
         provider_metadata: {
           stripe_mode: isSubscription ? "subscription" : "payment",
           stage: "created",

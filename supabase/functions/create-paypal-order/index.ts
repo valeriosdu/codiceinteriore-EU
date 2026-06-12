@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { createPaypalOrder, getPaypalOrder, opaqueIdToPaypal, paypalToOpaqueId, PAYPAL_ENV } from "../_shared/paypal.ts";
+import { createPaypalOrder, getPaypalOrder, paypalToOpaqueId, resolvePaypalCreds } from "../_shared/paypal.ts";
+import { getMarket, type Language } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,7 @@ const corsHeaders = {
 interface ProductDef {
   amount: string;
   amountCents: number;
-  description: string;
+  description: Record<Language, string>;
   productCode: string;
   includesTransits: boolean;
   transitMonths: number;
@@ -24,7 +25,10 @@ const PRODUCTS: Record<string, ProductDef> = {
   base: {
     amount: "19.00",
     amountCents: 1900,
-    description: "Lettura Completa del Tema Natale",
+    description: {
+      it: "Lettura Completa del Tema Natale",
+      es: "Lectura Completa de la Carta Natal",
+    },
     productCode: "natal_report_base",
     includesTransits: false,
     transitMonths: 0,
@@ -33,7 +37,10 @@ const PRODUCTS: Record<string, ProductDef> = {
   premium: {
     amount: "29.00",
     amountCents: 2900,
-    description: "Lettura Completa + 1 Mese di Transiti",
+    description: {
+      it: "Lettura Completa + 1 Mese di Transiti",
+      es: "Lectura Completa + 1 Mes de Tránsitos",
+    },
     productCode: "natal_report_plus_transits",
     includesTransits: true,
     transitMonths: 1,
@@ -42,7 +49,10 @@ const PRODUCTS: Record<string, ProductDef> = {
   synastry: {
     amount: "19.00",
     amountCents: 1900,
-    description: "Sinastria di Coppia",
+    description: {
+      it: "Sinastria di Coppia",
+      es: "Sinastría de Pareja",
+    },
     productCode: "synastry_couple_report",
     includesTransits: false,
     transitMonths: 0,
@@ -53,7 +63,10 @@ const PRODUCTS: Record<string, ProductDef> = {
   synastry_launch: {
     amount: "14.90",
     amountCents: 1490,
-    description: "Sinastria di Coppia (Lancio)",
+    description: {
+      it: "Sinastria di Coppia (Lancio)",
+      es: "Sinastría de Pareja (Lanzamiento)",
+    },
     productCode: "synastry_couple_report_launch",
     includesTransits: false,
     transitMonths: 0,
@@ -86,12 +99,29 @@ serve(async (req) => {
     }
 
     const isSynastry = product.sessionKind === "synastry";
-    console.log(`[create-paypal-order] env=${PAYPAL_ENV} purchaseType=${purchaseType} sessionKind=${product.sessionKind} sessionId=${sessionId}`);
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") || "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
     );
+
+    // Il market si legge dalla riga di sessione, mai dal body: seleziona
+    // credenziali PayPal (azienda) e descrizione prodotto.
+    const { data: sessionRow, error: sessionErr } = await supabaseAdmin
+      .from(isSynastry ? "synastry_sessions" : "quiz_sessions")
+      .select("market")
+      .eq("id", sessionId)
+      .maybeSingle();
+    if (sessionErr || !sessionRow) {
+      return new Response(JSON.stringify({ error: "Session not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
+    }
+    const market = getMarket((sessionRow as { market?: string | null }).market);
+    const creds = resolvePaypalCreds(market.id);
+
+    console.log(`[create-paypal-order] env=${creds.env} market=${market.id} purchaseType=${purchaseType} sessionKind=${product.sessionKind} sessionId=${sessionId}`);
 
     // Prevent duplicate open orders for the same quiz session.
     // If one already exists and is still valid on PayPal, reuse it.
@@ -111,7 +141,7 @@ serve(async (req) => {
       const existingOrderId = (existingOpen.provider_metadata as any)?.paypal_order_id;
       if (existingOrderId) {
         try {
-          const existingOrder = await getPaypalOrder(existingOrderId) as any;
+          const existingOrder = await getPaypalOrder(existingOrderId, creds) as any;
           if (existingOrder.status === "CREATED") {
             const approvalLink = existingOrder.links?.find((l: any) => l.rel === "approve")?.href;
             if (approvalLink) {
@@ -128,7 +158,7 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || Deno.env.get("PUBLIC_SITE_URL") || "https://www.codiceinteriore.it";
+    const origin = req.headers.get("origin") || market.siteUrl;
     const customId = `${sessionId}|${purchaseType}`;
     const successPath = product.successPath || "/success";
     const cancelPath = product.cancelPath || "/offer";
@@ -137,9 +167,11 @@ serve(async (req) => {
       amount: product.amount,
       currency: "EUR",
       customId,
-      description: product.description,
+      description: product.description[market.language],
       returnUrl: `${origin}${successPath}`,
       cancelUrl: `${origin}${cancelPath}`,
+      brandName: market.siteName,
+      creds,
     });
 
     const opaqueId = paypalToOpaqueId(order.id);
@@ -158,8 +190,9 @@ serve(async (req) => {
         payment_provider: "paypal",
         amount_total: product.amountCents,
         currency: "EUR",
+        market: market.id,
         provider_metadata: {
-          environment: PAYPAL_ENV,
+          environment: creds.env,
           paypal_order_id: order.id,
           stage: "created",
         },

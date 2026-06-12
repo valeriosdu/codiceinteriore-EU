@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { capturePaypalOrder, PAYPAL_ENV } from "../_shared/paypal.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { capturePaypalOrder, paypalToOpaqueId, resolvePaypalCreds } from "../_shared/paypal.ts";
 import { finalizePaypalPayment } from "../_shared/finalize-paypal-payment.ts";
 
 const corsHeaders = {
@@ -22,9 +23,22 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[capture-paypal-order] env=${PAYPAL_ENV} orderId=${orderId}`);
+    // Il market arriva dalla riga checkout persistita alla creazione ordine:
+    // seleziona le credenziali PayPal (azienda) giuste per la capture.
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+    );
+    const { data: checkoutRow } = await supabaseAdmin
+      .from("checkout_sessions")
+      .select("market")
+      .eq("stripe_session_id", paypalToOpaqueId(orderId))
+      .maybeSingle();
+    const creds = resolvePaypalCreds((checkoutRow as { market?: string | null } | null)?.market);
 
-    const captured = await capturePaypalOrder(orderId);
+    console.log(`[capture-paypal-order] env=${creds.env} orderId=${orderId}`);
+
+    const captured = await capturePaypalOrder(orderId, creds);
     const status =
       captured.purchase_units?.[0]?.payments?.captures?.[0]?.status || captured.status || "";
 
