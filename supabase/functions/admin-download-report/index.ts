@@ -174,16 +174,18 @@ Deno.serve(async (req) => {
 
       const { data: session } = await supabase
         .from("quiz_sessions")
-        .select("user_name, birth_place, birth_date, birth_time")
+        .select("user_name, birth_place, birth_date, birth_time, language, market")
         .eq("id", sessionId)
         .single();
 
       const userName = session?.user_name || null;
+      const tLang = (session as { language?: string })?.language === "es" ? "es" : "it";
+      const tMarket = (session as { market?: string })?.market === "es" ? "es" : "it";
       const safeName = safeSlug(userName, "transiti");
-      const filename = `codice-interiore-transiti-${safeName}.pdf`;
+      const filename = `${tMarket === "es" ? "carta-interior" : "codice-interiore"}-${tLang === "es" ? "transitos" : "transiti"}-${safeName}.pdf`;
 
       // Admin-scoped storage path so we don't collide with user-scoped path.
-      const storagePath = `admin/transit-${sessionId}-${cycle.id}-${TRANSIT_PDF_VERSION}.pdf`;
+      const storagePath = `admin/transit-${sessionId}-${cycle.id}-${TRANSIT_PDF_VERSION}-${tLang}.pdf`;
 
       if (!force) {
         const { data: existingPdf } = await supabase.storage
@@ -214,6 +216,8 @@ Deno.serve(async (req) => {
         birthTime: (session as any)?.birth_time || null,
         periodStart: cycle.period_start || null,
         periodEnd: cycle.period_end || null,
+        lang: tLang,
+        market: tMarket,
       });
 
       const { error: uploadErr } = await supabase.storage
@@ -255,7 +259,7 @@ Deno.serve(async (req) => {
 
     const { data: session, error: sessErr } = await supabase
       .from("quiz_sessions")
-      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_png, funnel_slug")
+      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_png, funnel_slug, language, market")
       .eq("id", sessionId)
       .single();
 
@@ -266,11 +270,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const storagePath = `admin/${sessionId}-${PDF_VERSION}.pdf`;
+    const pdfLang = (session as { language?: string }).language === "es" ? "es" : "it";
+    const pdfMarket = (session as { market?: string }).market === "es" ? "es" : "it";
+    const storagePath = `admin/${sessionId}-${PDF_VERSION}-${pdfLang}.pdf`;
     const legacyPath = `admin/${sessionId}.pdf`;
 
     const safeName = safeSlug(session.user_name, "report");
-    const filename = `codice-interiore-${safeName}.pdf`;
+    const filename = `${pdfMarket === "es" ? "carta-interior" : "codice-interiore"}-${safeName}.pdf`;
 
     if (!force) {
       const { data: existingPdf } = await supabase.storage
@@ -323,6 +329,8 @@ Deno.serve(async (req) => {
       // section map, so an "attivazione" report loses every section whose key
       // differs and the PDF collapses to just identity + advice + poem.
       funnelSlug: (session as { funnel_slug?: string | null }).funnel_slug || "classica",
+      lang: pdfLang,
+      market: pdfMarket,
     });
 
     const { error: uploadErr } = await supabase.storage

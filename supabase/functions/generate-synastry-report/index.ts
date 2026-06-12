@@ -20,6 +20,7 @@ import {
   SYNASTRY_REPORT_TOOL,
 } from "../_shared/synastry-system-prompt.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
+import { resolvePromptLang, outputLanguageDirective } from "../_shared/prompts/lang.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -58,6 +59,8 @@ interface SynastryRow {
   full_report: any;
   processing_status: string | null;
   relationship_duration: string | null;
+  language: string | null;
+  market: string | null;
 }
 
 async function verifyAuthOrPayment(
@@ -130,7 +133,7 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
   const { data: session, error } = await supabase
     .from("synastry_sessions")
     .select(
-      "id, person_a_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_b_name, person_b_birth_date, person_b_birth_time, person_b_time_known, chart_a, chart_b, synastry_data, full_report, processing_status, relationship_duration",
+      "id, person_a_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_b_name, person_b_birth_date, person_b_birth_time, person_b_time_known, chart_a, chart_b, synastry_data, full_report, processing_status, relationship_duration, language, market",
     )
     .eq("id", synastrySessionId)
     .maybeSingle<SynastryRow>();
@@ -163,7 +166,8 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     relationshipDuration: session.relationship_duration,
   });
 
-  const systemPrompt = buildSynastrySystemPrompt(brief);
+  const lang = resolvePromptLang(session.language);
+  const systemPrompt = outputLanguageDirective(lang) + buildSynastrySystemPrompt(brief);
   const userPrompt = buildSynastryUserPrompt(brief);
 
   const aiRequestBody = {
@@ -304,6 +308,8 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
       templateData: {
         name: session.person_a_name || "",
         sessionId: checkout.stripe_session_id || undefined,
+        lang,
+        market: session.market === "es" ? "es" : "it",
       },
     });
     sendTransactionalEmailBackground({
@@ -313,6 +319,8 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
       templateData: {
         name: session.person_a_name || "",
         sessionId: checkout.stripe_session_id || undefined,
+        lang,
+        market: session.market === "es" ? "es" : "it",
       },
     });
   }

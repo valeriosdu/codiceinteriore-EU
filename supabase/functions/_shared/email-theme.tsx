@@ -1,10 +1,28 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
 import { Img, Section, Text, Hr } from 'npm:@react-email/components@0.0.22'
+import { getMarket, type MarketId } from './markets.ts'
 
+// Default (mercato it) mantenuti per i template admin e per back-compat. I
+// template cliente usano getEmailTheme(data.market) per brand/URL per-mercato.
 export const SITE_NAME = 'Codice Interiore'
 export const BASE_URL = Deno.env.get('PUBLIC_SITE_URL') || 'https://codiceinteriore.it'
 export const LOGO_URL = `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/logo.png`
+
+export interface EmailTheme {
+  siteName: string
+  baseUrl: string
+  logoUrl: string
+}
+
+export function getEmailTheme(marketId?: string | null): EmailTheme {
+  const market = getMarket(marketId as MarketId | null | undefined)
+  return {
+    siteName: market.siteName,
+    baseUrl: market.siteUrl,
+    logoUrl: `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/logo.png`,
+  }
+}
 
 export const colors = {
   heading: '#3D2B1F',
@@ -108,18 +126,18 @@ export const styles = {
 const brandSection = { textAlign: 'center' as const, padding: '0 0 24px' }
 const brandLogo = { margin: '0 auto', display: 'block' as const, maxWidth: '100%' }
 
-export const BrandHeader = () => (
+export const BrandHeader = ({ siteName = SITE_NAME, logoUrl = LOGO_URL }: { siteName?: string; logoUrl?: string } = {}) => (
   <>
     <Section style={brandSection}>
-      <Img src={LOGO_URL} alt={SITE_NAME} width="200" height="64" style={brandLogo} />
+      <Img src={logoUrl} alt={siteName} width="200" height="64" style={brandLogo} />
     </Section>
     <Hr style={styles.divider} />
   </>
 )
 
-export const BrandFooter = () => (
+export const BrandFooter = ({ siteName = SITE_NAME }: { siteName?: string } = {}) => (
   <>
     <Hr style={styles.divider} />
-    <Text style={styles.footer}>{SITE_NAME}</Text>
+    <Text style={styles.footer}>{siteName}</Text>
   </>
 )

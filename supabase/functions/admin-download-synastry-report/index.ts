@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: session, error } = await supabase
       .from("synastry_sessions")
-      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype_label, score_overall, scores, full_report")
+      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype_label, score_overall, scores, full_report, language, market")
       .eq("id", synastrySessionId)
       .maybeSingle();
 
@@ -98,8 +98,10 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Report not ready yet" }, 404);
     }
 
-    const filename = `codice-interiore-coppia-${safeSlug(session.person_a_name)}-${safeSlug(session.person_b_name)}.pdf`;
-    const storagePath = `admin/synastry-${session.id}-${SYNASTRY_PDF_VERSION}.pdf`;
+    const synLang = (session as { language?: string }).language === "es" ? "es" : "it";
+    const synMarket = (session as { market?: string }).market === "es" ? "es" : "it";
+    const filename = `${synMarket === "es" ? "carta-interior" : "codice-interiore"}-${synLang === "es" ? "pareja" : "coppia"}-${safeSlug(session.person_a_name)}-${safeSlug(session.person_b_name)}.pdf`;
+    const storagePath = `admin/synastry-${session.id}-${SYNASTRY_PDF_VERSION}-${synLang}.pdf`;
 
     // Cache hit
     if (!force) {
@@ -129,6 +131,8 @@ Deno.serve(async (req: Request) => {
       archetypeLabel: session.archetype_label,
       scoreOverall: session.score_overall,
       scores: session.scores,
+      lang: synLang,
+      market: synMarket,
     });
 
     const { error: uploadErr } = await supabase.storage

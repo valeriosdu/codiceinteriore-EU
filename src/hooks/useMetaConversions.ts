@@ -1,5 +1,6 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { MARKET } from "@/markets";
 
 function getCookie(name: string): string | undefined {
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
@@ -96,6 +97,7 @@ async function trackEvent(eventName: string, options: TrackOptions = {}) {
         event_id: eventId,
         user_data: userData,
         custom_data: options.customData,
+        market: MARKET.id,
       },
     });
   } catch (err) {

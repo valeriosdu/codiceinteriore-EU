@@ -131,14 +131,16 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "No report found" }, 404);
     }
 
-    const storagePath = `${userId}/${quizSessionId}/report-${PDF_VERSION}.pdf`;
-    const legacyPath = `${userId}/${quizSessionId}/report.pdf`;
-
     const { data: session, error: sessionError } = await supabaseAdmin
       .from("quiz_sessions")
-      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_png, funnel_slug")
+      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_png, funnel_slug, language, market")
       .eq("id", quizSessionId)
       .single();
+
+    // La lingua entra nel path di cache così IT ed ES non si sovrascrivono.
+    const pdfLang = (session as any)?.language === "es" ? "es" : "it";
+    const storagePath = `${userId}/${quizSessionId}/report-${PDF_VERSION}-${pdfLang}.pdf`;
+    const legacyPath = `${userId}/${quizSessionId}/report.pdf`;
 
     if (sessionError) console.warn("[generate-report-pdf] session lookup failed", sessionError.message);
     if (!session?.full_report) {
@@ -206,6 +208,8 @@ Deno.serve(async (req) => {
       birthDate: session.birth_date,
       chartPng,
       funnelSlug: ((session as any).funnel_slug as string) || "classica",
+      lang: pdfLang,
+      market: (session as any).market === "es" ? "es" : "it",
     });
 
     const { error: uploadError } = await supabaseAdmin.storage

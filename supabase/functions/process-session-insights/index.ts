@@ -5,6 +5,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +38,7 @@ type QuizSession = {
   processing_status: string;
   funnel_slug: string | null;
   quiz_answers: Record<string, string> | null;
+  language: string | null;
 };
 
 // Chart styling matches the warm editorial palette of the brand.
@@ -414,8 +416,9 @@ const SYSTEM_PROMPT_BY_FUNNEL: Record<string, string> = {
   attivazione: ATTIVAZIONE_SYSTEM_PROMPT,
 };
 
-function systemPromptFor(slug: string | null | undefined): string {
-  return SYSTEM_PROMPT_BY_FUNNEL[slug || "classica"] ?? SYSTEM_PROMPT_BY_FUNNEL.classica;
+function systemPromptFor(slug: string | null | undefined, lang: PromptLang = "it"): string {
+  const base = SYSTEM_PROMPT_BY_FUNNEL[slug || "classica"] ?? SYSTEM_PROMPT_BY_FUNNEL.classica;
+  return outputLanguageDirective(lang) + base;
 }
 
 function buildUserPrompt(
@@ -628,8 +631,9 @@ async function generateInsights(
   userName: string | null,
   supabase: any,
   sessionId: string,
+  lang: PromptLang = "it",
 ) {
-  const systemPrompt = systemPromptFor(funnelSlug);
+  const systemPrompt = systemPromptFor(funnelSlug, lang);
   const userPrompt = buildUserPrompt(natalChart, funnelSlug, intake, userName);
   const model = "gemini-3-flash-preview";
   const t0 = Date.now();
@@ -739,7 +743,7 @@ async function processSession(sessionId: string) {
   const { data: session, error: loadError } = await supabase
     .from("quiz_sessions")
     .select(
-      "id, natal_chart, natal_chart_svg, natal_chart_png, birth_date, birth_time, birth_place, birth_lat, birth_lng, birth_timezone, birth_timezone_iana, attachment_response, focus_area, user_name, teaser_insights, processing_status, funnel_slug, quiz_answers",
+      "id, natal_chart, natal_chart_svg, natal_chart_png, birth_date, birth_time, birth_place, birth_lat, birth_lng, birth_timezone, birth_timezone_iana, attachment_response, focus_area, user_name, teaser_insights, processing_status, funnel_slug, quiz_answers, language",
     )
     .eq("id", sessionId)
     .maybeSingle<QuizSession>();
@@ -863,6 +867,7 @@ async function processSession(sessionId: string) {
       session.user_name,
       supabase,
       sessionId,
+      resolvePromptLang(session.language),
     );
 
     await supabase

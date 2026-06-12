@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createHash } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,14 +24,16 @@ serve(async (req) => {
   }
 
   try {
-    const PIXEL_ID = Deno.env.get("META_PIXEL_ID");
-    const ACCESS_TOKEN = Deno.env.get("META_CONVERSIONS_API_TOKEN");
+    const { event_name, event_source_url, user_data, custom_data, event_id, skip_request_ip, market } =
+      await req.json();
+
+    const marketConfig = getMarket(market);
+    const PIXEL_ID = Deno.env.get(marketConfig.metaPixelIdEnv);
+    const ACCESS_TOKEN = Deno.env.get(marketConfig.metaAccessTokenEnv);
 
     if (!PIXEL_ID || !ACCESS_TOKEN) {
-      throw new Error("Meta Conversions API credentials not configured");
+      throw new Error(`Meta Conversions API credentials not configured for market ${marketConfig.id}`);
     }
-
-    const { event_name, event_source_url, user_data, custom_data, event_id, skip_request_ip } = await req.json();
 
     if (!event_name) {
       return new Response(JSON.stringify({ error: "event_name is required" }), {
@@ -91,7 +94,7 @@ serve(async (req) => {
     if (user_data?.country) {
       hashedUserData.country = [await hashSHA256(user_data.country)];
     } else {
-      hashedUserData.country = [await hashSHA256("it")];
+      hashedUserData.country = [await hashSHA256(marketConfig.countryCode)];
     }
 
     const eventData: Record<string, unknown> = {

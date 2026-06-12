@@ -2,6 +2,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
+import {
+  resolvePromptLang,
+  outputLanguageDirective,
+  OUTPUT_LANGUAGE_NAME,
+  planetName,
+  aspectName,
+} from "../_shared/prompts/lang.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -144,20 +151,9 @@ const scoreAspect = (a: any): number => {
   return score;
 };
 
-const PLANET_IT: Record<string, string> = {
-  sun: "Sole", moon: "Luna", mercury: "Mercurio", venus: "Venere",
-  mars: "Marte", jupiter: "Giove", saturn: "Saturno", uranus: "Urano",
-  neptune: "Nettuno", pluto: "Plutone", chiron: "Chirone", lilith: "Lilith",
-};
-const ASPECT_IT: Record<string, string> = {
-  conjunction: "congiunto",
-  opposition: "opposto",
-  square: "quadrato",
-  trine: "trigono",
-  sextile: "sestile",
-};
-const toItPlanet = (en: string): string => PLANET_IT[en] || (en ? en[0].toUpperCase() + en.slice(1) : en);
-const toItAspect = (en: string): string => ASPECT_IT[en] || en;
+// Nomi pianeti/aspetti localizzati: vedi _shared/prompts/lang.ts. Il `lang`
+// arriva da quiz_sessions.language (default 'it'); le funzioni toLangPlanet/
+// toLangAspect chiudono sopra `lang` una volta risolto nel handler.
 
 interface SalienceMap {
   angularPlanets: Array<{ name: string; house: number }>;
@@ -235,25 +231,25 @@ const buildSalienceMap = (natalChart: any): SalienceMap => {
   return result;
 };
 
-const formatSalienceMap = (m: SalienceMap): string => {
+const formatSalienceMap = (m: SalienceMap, lang: "it" | "es"): string => {
   const lines: string[] = [];
   if (m.angularPlanets.length > 0) {
-    const parts = m.angularPlanets.map((p) => `${toItPlanet(p.name)} (${p.house}H)`);
+    const parts = m.angularPlanets.map((p) => `${planetName(lang, p.name)} (${p.house}H)`);
     lines.push(`Pianeti angolari: ${parts.join(", ")}`);
   }
   if (m.planetsOnAxes.length > 0) {
-    const parts = m.planetsOnAxes.map((p) => `${toItPlanet(p.planet)}-${p.axis} (orb ${p.orb}°)`);
+    const parts = m.planetsOnAxes.map((p) => `${planetName(lang, p.planet)}-${p.axis} (orb ${p.orb}°)`);
     lines.push(`Pianeti su assi (orb<=8°): ${parts.join(", ")}`);
   }
   if (m.keyAspects.length > 0) {
     const parts = m.keyAspects.map((a) => {
       const orbStr = a.orb !== null ? ` (orb ${a.orb}°)` : "";
-      return `${toItPlanet(a.p1)} ${toItAspect(a.type)} ${toItPlanet(a.p2)}${orbStr}`;
+      return `${planetName(lang, a.p1)} ${aspectName(lang, a.type)} ${planetName(lang, a.p2)}${orbStr}`;
     });
     lines.push(`Aspetti chiave: ${parts.join(", ")}`);
   }
   if (m.retrogradePersonal.length > 0) {
-    const parts = m.retrogradePersonal.map((n) => `${toItPlanet(n)} R`);
+    const parts = m.retrogradePersonal.map((n) => `${planetName(lang, n)} R`);
     lines.push(`Retrogradazioni personali: ${parts.join(", ")}`);
   }
   if (lines.length === 0) return "";
@@ -700,7 +696,7 @@ Deno.serve(async (req) => {
     const { data: quizSession, error: quizError } = await supabaseAdmin
       .from("quiz_sessions")
       .select(
-        "id, natal_chart, attachment_response, focus_area, user_name, birth_date, teaser_insights, full_report, processing_status, funnel_slug, quiz_answers",
+        "id, natal_chart, attachment_response, focus_area, user_name, birth_date, teaser_insights, full_report, processing_status, funnel_slug, quiz_answers, language, market",
       )
       .eq("id", quizSessionId)
       .maybeSingle();
@@ -754,6 +750,8 @@ Deno.serve(async (req) => {
             templateData: {
               name: quizSession.user_name || "",
               sessionId: userReport.stripe_session_id || undefined,
+              lang: resolvePromptLang((quizSession as any).language),
+              market: (quizSession as any).market === "es" ? "es" : "it",
             },
           });
         }
@@ -776,6 +774,8 @@ Deno.serve(async (req) => {
     const funnelSlug = ((quizSession as any).funnel_slug as string) || "classica";
     const quizAnswers = (((quizSession as any).quiz_answers as Record<string, string>) || {});
     const isAttivazione = funnelSlug === "attivazione";
+    // Lingua di output del report (da quiz_sessions.language, default 'it').
+    const lang = resolvePromptLang((quizSession as any).language);
 
     if (!natalChart || !natalChart.planets) {
       return new Response(JSON.stringify({ error: "Missing natal chart data" }), {
@@ -868,14 +868,16 @@ Deno.serve(async (req) => {
           : "";
 
         const salienceBlock = !isAttivazione
-          ? formatSalienceMap(buildSalienceMap(natalChart))
+          ? formatSalienceMap(buildSalienceMap(natalChart), lang)
           : "";
 
+        const langName = OUTPUT_LANGUAGE_NAME[lang];
         const systemPrompt = isAttivazione
-          ? ATTIVAZIONE_SYSTEM_PROMPT
-          : `You are an expert astrologer with strong psychological depth and high interpretive discipline.
+          ? outputLanguageDirective(lang) + ATTIVAZIONE_SYSTEM_PROMPT
+          : outputLanguageDirective(lang) +
+            `You are an expert astrologer with strong psychological depth and high interpretive discipline.
 
-Write in natural Italian only. The tone must be human, lucid, emotionally precise, sober, grounded, and credible. Do not sound mystical, inflated, generic, new-age, or like horoscope content. Do not flatter. Do not make deterministic predictions. Do not use astrology as decoration. Use astrology as a tool for synthesis, meaning, and psychological clarity.
+Write in natural ${langName} only. The tone must be human, lucid, emotionally precise, sober, grounded, and credible. Do not sound mystical, inflated, generic, new-age, or like horoscope content. Do not flatter. Do not make deterministic predictions. Do not use astrology as decoration. Use astrology as a tool for synthesis, meaning, and psychological clarity.
 
 PRIMARY GOAL
 Generate a long-form premium natal reading that feels deeply personal, coherent from beginning to end, psychologically sharp, emotionally accurate, non-generic, rich enough to feel like a real paid reading, and approximately 10–15 pages in normal web/PDF formatting.
@@ -920,7 +922,7 @@ USE OF "AREA DI FOCUS" AS EMPHASIS DIAL
 If the answer is missing or unclear, fall back to balanced weighting. If context conflicts with the chart, follow the chart. If teaser insights are provided, do not repeat them verbatim — build beyond them.
 
 LIFE STAGE AND GENDER MODULATION
-Age must shape the interpretation: the same configuration is not expressed the same way at 20 and at 50. Infer life stage from age and adapt emphasis, examples, tone, likely manifestations, and practical guidance. If gender can be inferred from the name with confidence, adapt Italian grammatical agreement accordingly. Chart remains primary; age and gender are secondary modifiers.
+Age must shape the interpretation: the same configuration is not expressed the same way at 20 and at 50. Infer life stage from age and adapt emphasis, examples, tone, likely manifestations, and practical guidance. If gender can be inferred from the name with confidence, adapt ${langName} grammatical agreement accordingly. Chart remains primary; age and gender are secondary modifiers.
 
 ASTROLOGICAL FOCUS & ORBS
 Anchors (always present): Sun, Moon, Ascendant. Topical: Venus/Mars for relationships, MC/Saturn for work, Saturn/Pluto/Neptune/Lilith for deep structures and blocks. Houses and angles (MC/IC/DSC) matter when populated.
@@ -937,7 +939,7 @@ Sections are distinct, never paraphrases. If a theme reappears, later sections d
 
 STYLE RULES
 - Address the person using "tu" and his/her name.
-- Natural Italian only. Strong but sober phrasing. Concrete psychological truth over pretty writing.
+- Natural ${langName} only. Strong but sober phrasing. Concrete psychological truth over pretty writing.
 - No zodiac clichés, no fatalism, no therapy clichés, no generic self-help, no empty reassurance, no decorative verbosity.
 - Metaphor only when it sharpens understanding. Intimate and intelligent, not theatrical.
 
@@ -950,18 +952,18 @@ Length targets and paragraph structure live in the OUTPUT schema. What matters f
 - "work": how the structure expresses in direction and meaningful effort. Relationship with purpose, style of effort, inner conflict around achievement, what kind of direction fits, what tends to block outer expression. Not a generic career horoscope.
 - "patterns_blocks": recurring schemas AND the blocks that keep them in place — read together. Name the larger patterns that replay across areas of life (emotional loops, self-sabotage cycles, pursuit/withdrawal, over-control vs surrender, idealization vs disappointment, hunger for intensity vs safety). For each major block: where the person gets stuck, what protection it once was, and WHAT THE BLOCK IS CURRENTLY SACRIFICING OF THE SELF (present cost, not childhood origin — avoid "ferita interiore", "bambino interiore", "trauma originario"). Compassionate but not soft. Tells the truth clearly.
 - "advice": translates the reading into practical guidance, specific and chart-derived. What to notice, what to stop reinforcing, what to tolerate better, what to practice, what choices strengthen the healthier expression of the chart. Usable in real life. Not a summary.
-- "poem": transformative personal poem in Italian, 14–18 short lines. Clear, simple language. Intimate and direct. Not decorative, not mystical wallpaper, not literary performance. No zodiac signs; no technical astrological language; planets only if Sun, Moon, or Venus fit naturally. Something the reader can keep, reread, return to.
+- "poem": transformative personal poem in ${langName}, 14–18 short lines. Clear, simple language. Intimate and direct. Not decorative, not mystical wallpaper, not literary performance. No zodiac signs; no technical astrological language; planets only if Sun, Moon, or Venus fit naturally. Something the reader can keep, reread, return to.
 
 QUALITY CHECK BEFORE FINALIZING
 Silently verify:
 1. Every section has 1–3 concrete astrological references, integrated in prose (not listed).
 2. All PRIORITY MARKERS are touched at least once across the report.
 3. Sun, Moon, Ascendant are recognizable (sign for Asc; sign + house for Sun and Moon); Venus and Mars appear in "relationships".
-4. Italian is fluent and sentences are tight. The tone offers recognition — not admiration, motivation, or deterministic claims.
+4. ${langName} is fluent and sentences are tight. The tone offers recognition — not admiration, motivation, or deterministic claims.
 5. No paragraph is generic enough to be reused for another chart.
 
 OUTPUT FORMAT
-Respond ONLY with the required tool call. The tool arguments must contain exactly these fields: identity, emotions, relationships, work, patterns_blocks, advice, poem. Each field is a plain Italian string with paragraphs separated by \\n\\n. No markdown, no bullet points inside the section text unless necessary, no extra fields.`;
+Respond ONLY with the required tool call. The tool arguments must contain exactly these fields: identity, emotions, relationships, work, patterns_blocks, advice, poem. Each field is a plain ${langName} string with paragraphs separated by \\n\\n. No markdown, no bullet points inside the section text unless necessary, no extra fields.`;
 
         const userPrompt = `Carta natale:
 
@@ -1263,6 +1265,8 @@ Genera il report completo personalizzato.`;
                 templateData: {
                   name: userName || "",
                   sessionId: userReport.stripe_session_id || undefined,
+                  lang,
+                  market: (quizSession as any).market === "es" ? "es" : "it",
                 },
               });
             }

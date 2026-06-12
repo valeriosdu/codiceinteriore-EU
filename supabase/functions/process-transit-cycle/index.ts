@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
+import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -95,6 +96,7 @@ type TransitCycle = {
     birth_timezone: number | null;
     user_name: string | null;
     focus_area: string | null;
+    language: string | null;
   } | null;
 };
 
@@ -1341,6 +1343,7 @@ async function interpretTransits(
   llmInput: ReturnType<typeof buildTransitLlmInput>,
   supabaseAdmin: any,
   transitCycleId: string,
+  lang: PromptLang = "it",
 ) {
   if (!GEMINI_API_KEY) throw new Error("AI not configured");
 
@@ -1348,7 +1351,7 @@ async function interpretTransits(
     model: "gemini-3.5-flash",
     max_tokens: 32768,
     messages: [
-      { role: "system", content: TRANSIT_INTERPRETATION_PROMPT },
+      { role: "system", content: outputLanguageDirective(lang) + TRANSIT_INTERPRETATION_PROMPT },
       {
         role: "user",
         content: `NATAL INPUT:\n${JSON.stringify(llmInput.natal_input)}\n\nTRANSIT INPUT:\n${JSON.stringify(llmInput.transit_input)}`,
@@ -1589,7 +1592,7 @@ serve(async (req) => {
     const { data: cycle, error: cycleError } = await supabaseAdmin
       .from("transit_cycles")
       .select(
-        "*, user_entitlements(id, status, entitlement_type, starts_at, ends_at), quiz_sessions(id, natal_chart, attachment_response, birth_date, birth_time, birth_place, birth_lat, birth_lng, birth_timezone, user_name, focus_area)",
+        "*, user_entitlements(id, status, entitlement_type, starts_at, ends_at), quiz_sessions(id, natal_chart, attachment_response, birth_date, birth_time, birth_place, birth_lat, birth_lng, birth_timezone, user_name, focus_area, language)",
       )
       .eq("id", transitCycleId)
       .maybeSingle();
@@ -1701,7 +1704,8 @@ serve(async (req) => {
       );
       const llmInput = buildTransitLlmInput(typedCycle, rawTransits, previousMonth);
       await supabaseAdmin.from("transit_cycles").update({ llm_input: llmInput }).eq("id", transitCycleId);
-      interpretedTransits = await interpretTransits(llmInput, supabaseAdmin, transitCycleId);
+      const transitLang = resolvePromptLang(typedCycle.quiz_sessions?.language);
+      interpretedTransits = await interpretTransits(llmInput, supabaseAdmin, transitCycleId, transitLang);
       await supabaseAdmin
         .from("transit_cycles")
         .update({

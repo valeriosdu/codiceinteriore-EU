@@ -11,10 +11,13 @@ import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import { sanitizePdfText } from "./report-pdf.ts";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
+import { getMarket, type MarketId } from "./markets.ts";
+import { type PromptLang } from "./prompts/lang.ts";
+import { TRANSIT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump whenever the transit PDF layout/fonts change so cached files
 // from older versions are invalidated automatically.
-export const TRANSIT_PDF_VERSION = "v7-brand-fonts";
+export const TRANSIT_PDF_VERSION = "v8-i18n";
 export const TRANSIT_PDF_VERSION_TAG = `CI-TRANSIT-PDF/${TRANSIT_PDF_VERSION}`;
 
 const PAGE_WIDTH = 595.28; // A4
@@ -46,8 +49,8 @@ const BOX_FOCUS_SIZE = 11.5;
 const BOX_FOCUS_LINE_HEIGHT = 17;
 const BOX_BETWEEN_GAP = 14;
 
-const GUIDE_OPEN_URL = "https://www.codiceinteriore.it/report?openGuide=1&source=transit-pdf";
-const FEEDBACK_URL = "https://www.codiceinteriore.it/report?source=transit-pdf-feedback#feedback";
+// Gli URL puntano al dominio del mercato (vedi guideOpenUrl/feedbackUrl nel
+// builder); in passato erano hardcoded su codiceinteriore.it.
 
 export interface TransitPeriod {
   label?: string;
@@ -88,6 +91,8 @@ export interface GenerateTransitPdfInput {
   birthTime?: any | null;
   periodStart: string | null; // ISO date (YYYY-MM-DD)
   periodEnd: string | null;
+  lang?: PromptLang;
+  market?: MarketId;
 }
 
 function wrapText(text: string, font: any, fontSize: number, maxWidth: number): string[] {
@@ -139,10 +144,17 @@ function formatBirthTime(value: any): string {
 
 export async function generateTransitPdf(input: GenerateTransitPdfInput): Promise<Uint8Array> {
   const { interpreted, userName, birthPlace, birthDate, birthTime, periodStart, periodEnd } = input;
+  const lang: PromptLang = input.lang ?? "it";
+  const market = getMarket(input.market);
+  const S = TRANSIT_PDF_STRINGS[lang];
+  const brandUpper = market.siteName.toUpperCase();
+  const domain = new URL(market.siteUrl).hostname.replace(/^www\./, "");
+  const GUIDE_OPEN_URL = `${market.siteUrl}/report?openGuide=1&source=transit-pdf`;
+  const FEEDBACK_URL = `${market.siteUrl}/report?source=transit-pdf-feedback#feedback`;
 
   const doc = await PDFDocument.create();
-  doc.setTitle(sanitizePdfText(`Codice Interiore - Transiti ${userName || ""}`.trim()));
-  doc.setSubject("Lettura dei transiti del mese - Codice Interiore");
+  doc.setTitle(sanitizePdfText(S.metaTitle(userName || "")));
+  doc.setSubject(S.metaSubject);
   doc.setProducer(TRANSIT_PDF_VERSION_TAG);
   doc.setCreator(TRANSIT_PDF_VERSION_TAG);
   doc.setKeywords([TRANSIT_PDF_VERSION_TAG]);
@@ -186,7 +198,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
       height: 0.3,
       color: paleLine,
     });
-    const footerText = sanitizePdfText(`CODICE INTERIORE  -  p. ${pageNumber}  -  codiceinteriore.it`);
+    const footerText = sanitizePdfText(`${brandUpper}  -  p. ${pageNumber}  -  ${domain}`);
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }
 
@@ -395,11 +407,11 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     });
   } catch (e) {
     console.warn("[transit-pdf] logo embed failed:", e);
-    drawCenteredText(coverPage, "CODICE INTERIORE", PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
+    drawCenteredText(coverPage, brandUpper, PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
   }
 
-  drawCenteredText(coverPage, "I tuoi transiti del mese", PAGE_HEIGHT - 200, 28, timesRomanBoldItalic, darkText);
-  drawCenteredText(coverPage, "una mappa del periodo che stai vivendo", PAGE_HEIGHT - 226, 13, timesRomanItalic, mutedText);
+  drawCenteredText(coverPage, S.coverTitle, PAGE_HEIGHT - 200, 28, timesRomanBoldItalic, darkText);
+  drawCenteredText(coverPage, S.coverSubtitle, PAGE_HEIGHT - 226, 13, timesRomanItalic, mutedText);
   coverPage.drawRectangle({
     x: PAGE_WIDTH / 2 - 30, y: PAGE_HEIGHT - 244, width: 60, height: 0.5, color: terracotta,
   });
@@ -418,7 +430,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   }
 
   const rangeText = periodStart && periodEnd
-    ? `Periodo: ${formatItDate(periodStart)} - ${formatItDate(periodEnd)}`
+    ? `${S.periodLabel} ${formatItDate(periodStart)} - ${formatItDate(periodEnd)}`
     : "";
   if (rangeText) {
     drawCenteredText(coverPage, rangeText, PAGE_HEIGHT / 2 - 92, 12, timesRomanItalic, mutedText);
@@ -427,18 +439,18 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   coverPage.drawRectangle({
     x: PAGE_WIDTH / 2 - 24, y: FOOTER_RULE_Y, width: 48, height: 0.3, color: paleLine,
   });
-  drawCenteredText(coverPage, "codiceinteriore.it", FOOTER_BASELINE, 8, timesRoman, mutedText);
+  drawCenteredText(coverPage, domain, FOOTER_BASELINE, 8, timesRoman, mutedText);
 
   // ============ INTRO + INDEX PAGE ============
   const introPage = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   drawBackground(introPage);
 
   introPage.drawRectangle({ x: MARGIN_LEFT, y: PAGE_HEIGHT - 110, width: 48, height: 0.6, color: terracotta });
-  introPage.drawText(sanitizePdfText("Come leggere i tuoi transiti"), {
+  introPage.drawText(sanitizePdfText(S.introTitle), {
     x: MARGIN_LEFT, y: PAGE_HEIGHT - 142, size: 20, font: timesRomanBold, color: darkText,
   });
 
-  const introText = "Questa lettura è una fotografia del cielo di questo mese in relazione al tuo tema natale. Non descrive cosa succederà in modo rigido, ma indica quali aree della tua carta sono più attive ora: relazioni, emozioni, decisioni, blocchi, transizioni interiori. Leggila come uno strumento di osservazione del presente, non come un'agenda.";
+  const introText = S.introText;
   let introY = PAGE_HEIGHT - 180;
   for (const line of wrapText(introText, timesRoman, 12, TEXT_WIDTH)) {
     introPage.drawText(line, { x: MARGIN_LEFT, y: introY, size: 12, font: timesRoman, color: darkText });
@@ -451,16 +463,16 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   });
   introY -= 38;
 
-  introPage.drawText(sanitizePdfText("Indice"), {
+  introPage.drawText(sanitizePdfText(S.indexTitle), {
     x: MARGIN_LEFT, y: introY, size: 20, font: timesRomanBold, color: darkText,
   });
   introY -= 30;
 
   const indexEntries = [
-    { num: "01", title: "Temi principali" },
-    { num: "02", title: "Lettura del mese" },
-    { num: "03", title: "Periodi del mese" },
-    { num: "04", title: "Continua il dialogo" },
+    { num: "01", title: S.index.summary },
+    { num: "02", title: S.index.reading },
+    { num: "03", title: S.index.periods },
+    { num: "04", title: S.index.dialogue },
   ];
   for (const entry of indexEntries) {
     introPage.drawText(entry.num, {
@@ -494,14 +506,14 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
 
   if (hasSummary) {
     if (interpreted.summary?.main_themes?.length) {
-      drawSectionHeader("01", "Temi principali");
+      drawSectionHeader("01", S.headers.mainThemes);
       for (const theme of interpreted.summary.main_themes) {
         drawBullet(theme);
       }
     }
 
     if (interpreted.summary?.overall_reading) {
-      drawSectionHeader("02", "Lettura del mese");
+      drawSectionHeader("02", S.headers.monthReading);
       const paragraphs = interpreted.summary.overall_reading.split("\n\n").filter((p: string) => p.trim());
       for (const para of paragraphs) {
         drawParagraph(para, timesRoman, BODY_SIZE, BODY_LINE_HEIGHT, BODY_PARA_GAP);
@@ -509,25 +521,25 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     }
 
     if (interpreted.periods?.length) {
-      drawSectionHeader("03", "Periodi del mese");
+      drawSectionHeader("03", S.headers.monthPeriods);
       interpreted.periods.forEach((period, idx) => drawPeriodBox(period, idx));
     }
 
     drawClosingPage();
   } else if (hasLegacy) {
     if (interpreted.intro) {
-      drawSectionHeader("01", "Introduzione");
+      drawSectionHeader("01", S.headers.intro);
       const paragraphs = interpreted.intro.split("\n\n").filter((p: string) => p.trim());
       for (const para of paragraphs) {
         drawParagraph(para, timesRoman, BODY_SIZE, BODY_LINE_HEIGHT, BODY_PARA_GAP);
       }
     }
     if (interpreted.mainThemes?.length) {
-      drawSectionHeader("02", "Temi principali");
+      drawSectionHeader("02", S.headers.mainThemes);
       for (const t of interpreted.mainThemes) drawBullet(t);
     }
     if (interpreted.weeklyWindows?.length) {
-      drawSectionHeader("03", "Finestre del mese");
+      drawSectionHeader("03", S.headers.monthWindows);
       for (const w of interpreted.weeklyWindows) {
         if (w.title) {
           if (linesThatFit(BODY_LINE_HEIGHT) < 2) pageBreak();
@@ -540,7 +552,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
       }
     }
     if (interpreted.keyAspects?.length) {
-      drawSectionHeader("04", "Aspetti rilevanti");
+      drawSectionHeader("04", S.headers.keyAspects);
       for (const a of interpreted.keyAspects) {
         if (a.title) {
           if (linesThatFit(BODY_LINE_HEIGHT) < 2) pageBreak();
@@ -553,14 +565,14 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
       }
     }
     if (interpreted.practicalNotes?.length) {
-      drawSectionHeader("05", "Indicazioni pratiche");
+      drawSectionHeader("05", S.headers.practicalNotes);
       for (const n of interpreted.practicalNotes) drawBullet(n);
     }
     drawClosingPage();
   } else {
-    drawSectionHeader("01", "Lettura del mese");
+    drawSectionHeader("01", S.headers.monthReading);
     drawParagraph(
-      "I transiti del mese non sono ancora disponibili. Riprova tra poco oppure scrivici.",
+      S.emptyMonth,
       timesRomanItalic, 12, 18, BODY_PARA_GAP, mutedText,
     );
     if (currentPage) drawFooter(currentPage);
@@ -575,7 +587,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     currentPage = page;
 
     page.drawRectangle({ x: MARGIN_LEFT, y: PAGE_HEIGHT - 118, width: 60, height: 0.6, color: terracotta });
-    page.drawText(sanitizePdfText("Continua il dialogo"), {
+    page.drawText(sanitizePdfText(S.dialogueTitle), {
       x: MARGIN_LEFT, y: PAGE_HEIGHT - 158, size: 24, font: timesRomanBold, color: darkText,
     });
 
@@ -584,15 +596,9 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     if (interpreted.closing?.text) {
       paragraphs.push({ text: interpreted.closing.text, italic: true, muted: true });
     }
-    paragraphs.push({
-      text: "I transiti del mese ti danno una direzione, ma le domande personali nascono mentre li vivi giorno per giorno.",
-    });
-    paragraphs.push({
-      text: "Se vuoi approfondire un passaggio specifico (perché senti una certa tensione, come affrontare un periodo, cosa significa per te un transito che ti riguarda), la Guida astrologica è lì per rispondere.",
-    });
-    paragraphs.push({
-      text: "Apri la guida sul sito e fai una domanda: ti risponderemo nel giro di qualche ora.",
-    });
+    for (const text of S.dialogueParagraphs) {
+      paragraphs.push({ text });
+    }
 
     let bodyY = PAGE_HEIGHT - 200;
     for (const para of paragraphs) {
@@ -621,7 +627,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
       x: btnX, y: btnY + btnH, color: terracotta, borderColor: terracotta, borderWidth: 0,
     });
 
-    const labelText = sanitizePdfText("Apri la Guida astrologica");
+    const labelText = sanitizePdfText(S.guideCta);
     const labelSize = 12.5;
     const labelWidth = bodyFontBold.widthOfTextAtSize(labelText, labelSize);
     page.drawText(labelText, {
@@ -635,7 +641,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     addLinkAnnotation(page, btnX, btnY, btnW, btnH, GUIDE_OPEN_URL);
 
     // Feedback link
-    const feedbackText = sanitizePdfText("Facci sapere cosa ne pensi della lettura ->");
+    const feedbackText = sanitizePdfText(S.feedbackCta);
     const feedbackSize = 10;
     const feedbackY = btnY - 56;
     const feedbackWidth = timesRomanItalic.widthOfTextAtSize(feedbackText, feedbackSize);

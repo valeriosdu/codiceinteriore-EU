@@ -2,14 +2,10 @@ import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
+import { getMarket } from '../_shared/markets.ts'
 
-const SITE_NAME = "Codice Interiore"
-// SENDER_DOMAIN is the sender subdomain FQDN authenticated in Brevo (DKIM/SPF).
-const SENDER_DOMAIN = "notifiche.codiceinteriore.it"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// When display_from_root is enabled, this can be the root domain for cleaner branding,
-// even though actual sending uses the subdomain above.
-const FROM_DOMAIN = "codiceinteriore.it"
+// Default mercato it; sender/from/siteName effettivi sono per-mercato e
+// risolti da templateData.market più sotto (getMarket).
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -405,11 +401,15 @@ Deno.serve(async (req) => {
       ? template.subject(templateData)
       : template.subject
 
+  // Mittente per-mercato: brand, sender domain (Brevo DKIM/SPF) e from header
+  // arrivano dalla config del mercato indicato in templateData.market.
+  const emailMarket = getMarket((templateData as any).market)
+
   // Resolve reply-to — template can override (static or dynamic). Falls back
   // to the site-wide info@ address. Used so that, e.g., contact-notification
   // emails reply directly to the customer who submitted the form rather than
   // back to info@.
-  const defaultReplyTo = `info@${FROM_DOMAIN}`
+  const defaultReplyTo = `info@${emailMarket.fromDomain}`
   const templateReplyTo =
     typeof template.replyTo === 'function'
       ? template.replyTo(templateData)
@@ -435,9 +435,9 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <info@${FROM_DOMAIN}>`,
+      from: `${emailMarket.siteName} <info@${emailMarket.fromDomain}>`,
       reply_to: resolvedReplyTo,
-      sender_domain: SENDER_DOMAIN,
+      sender_domain: emailMarket.senderDomain,
       subject: resolvedSubject,
       html,
       text: plainText,

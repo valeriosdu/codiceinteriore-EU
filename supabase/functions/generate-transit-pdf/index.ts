@@ -142,12 +142,14 @@ Deno.serve(async (req) => {
 
     const { data: session } = await supabaseAdmin
       .from("quiz_sessions")
-      .select("user_name, birth_place, birth_date, birth_time")
+      .select("user_name, birth_place, birth_date, birth_time, language, market")
       .eq("id", quizSessionId)
       .single();
 
+    const pdfLang = (session as any)?.language === "es" ? "es" : "it";
+    const pdfMarket = (session as any)?.market === "es" ? "es" : "it";
     const filename = safeFilename(session?.user_name || null);
-    const storagePath = `${userId}/${quizSessionId}/transit-${cycle.id}-${TRANSIT_PDF_VERSION}.pdf`;
+    const storagePath = `${userId}/${quizSessionId}/transit-${cycle.id}-${TRANSIT_PDF_VERSION}-${pdfLang}.pdf`;
 
     if (!force) {
       const { data: existingPdf } = await supabaseAdmin.storage
@@ -185,6 +187,8 @@ Deno.serve(async (req) => {
       birthTime: (session as any)?.birth_time || null,
       periodStart: cycle.period_start || null,
       periodEnd: cycle.period_end || null,
+      lang: pdfLang,
+      market: pdfMarket,
     });
 
     const { error: uploadError } = await supabaseAdmin.storage

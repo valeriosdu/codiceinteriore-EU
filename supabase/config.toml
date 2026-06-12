@@ -59,3 +59,7 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.admin-merge-customers]
     verify_jwt = false
+  [functions.admin-download-report]
+    verify_jwt = false
+  [functions.admin-download-synastry-report]
+    verify_jwt = false

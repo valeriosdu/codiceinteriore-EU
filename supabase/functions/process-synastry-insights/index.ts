@@ -17,6 +17,7 @@ import { topAspects } from "../_shared/synastry-derive.ts";
 import { formatAspectForBrief } from "../_shared/synastry-aspect-labels.ts";
 import { calcolaEta, fasciaEtaCoppia, gapSignificativo } from "../_shared/synastry-age-bands.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { resolvePromptLang, outputLanguageDirective } from "../_shared/prompts/lang.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -147,6 +148,7 @@ interface SynastrySession {
   archetype_label: string | null;
   teaser_highlight: any;
   processing_status: string | null;
+  language: string | null;
 }
 
 async function invokeSynastryChart(
@@ -281,7 +283,7 @@ async function generateTeaserHighlight(
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: outputLanguageDirective(resolvePromptLang(session.language)) + SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
         tools: [
@@ -375,7 +377,7 @@ async function processSynastryInsightsJob(synastrySessionId: string): Promise<vo
   const { data: session, error } = await supabase
     .from("synastry_sessions")
     .select(
-      "id, person_a_name, person_b_name, person_a_birth_date, person_b_birth_date, relationship_duration, synastry_data, archetype, archetype_label, teaser_highlight, processing_status",
+      "id, person_a_name, person_b_name, person_a_birth_date, person_b_birth_date, relationship_duration, synastry_data, archetype, archetype_label, teaser_highlight, processing_status, language",
     )
     .eq("id", synastrySessionId)
     .maybeSingle<SynastrySession>();

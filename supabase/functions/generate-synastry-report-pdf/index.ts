@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
     const { data: session, error } = await supabaseAdmin
       .from("synastry_sessions")
       .select(
-        "id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_a_birth_place, person_a_birth_lat, person_a_birth_lng, person_a_birth_timezone_iana, person_b_birth_date, person_b_birth_time, person_b_time_known, person_b_birth_place, person_b_birth_lat, person_b_birth_lng, person_b_birth_timezone_iana, archetype_label, score_overall, scores, full_report",
+        "id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_a_birth_place, person_a_birth_lat, person_a_birth_lng, person_a_birth_timezone_iana, person_b_birth_date, person_b_birth_time, person_b_time_known, person_b_birth_place, person_b_birth_lat, person_b_birth_lng, person_b_birth_timezone_iana, archetype_label, score_overall, scores, full_report, language, market",
       )
       .eq("id", synastrySessionId)
       .maybeSingle();
@@ -226,6 +226,8 @@ Deno.serve(async (req: Request) => {
       scoreOverall: session.score_overall,
       scores: session.scores,
       biWheelPng,
+      lang: (session as any).language === "es" ? "es" : "it",
+      market: (session as any).market === "es" ? "es" : "it",
     });
 
     return pdfResponse(bytes, session.person_a_name ?? "", session.person_b_name ?? "");

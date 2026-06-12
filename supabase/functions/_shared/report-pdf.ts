@@ -8,12 +8,16 @@ import { PDFDocument, PDFArray, PDFName, PDFString, rgb, StandardFonts } from "h
 import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
+import { getMarket, type MarketId } from "./markets.ts";
+import { type PromptLang } from "./prompts/lang.ts";
+import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump this version whenever the PDF layout, fonts, or chart rendering
 // changes. Cached PDFs from older versions are invalidated automatically
 // so old/broken files (e.g. missing chart, missing characters) do not
-// keep getting served.
-export const PDF_VERSION = "v12-brand-fonts";
+// keep getting served. v13: layout multi-mercato (lingua nei contenuti, brand
+// e dominio dal market). La lingua è anche nel path di cache.
+export const PDF_VERSION = "v13-i18n";
 export const PDF_VERSION_TAG = `CI-PDF/${PDF_VERSION}`;
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
@@ -290,6 +294,13 @@ const SECTIONS_BY_FUNNEL: Record<string, PdfSection[]> = {
   attivazione: SECTIONS_ATTIVAZIONE,
 };
 
+// Ordine/chiavi sezioni per funnel (i titoli vengono dalla lingua, vedi
+// REPORT_SECTION_TITLES). Le costanti italiane sopra restano come default it.
+const SECTION_KEYS_BY_FUNNEL: Record<string, string[]> = {
+  classica: SECTIONS_CLASSICA.map((s) => s.key),
+  attivazione: SECTIONS_ATTIVAZIONE.map((s) => s.key),
+};
+
 // Cross-funnel section aliases — mirror of SECTION_FALLBACKS in src/pages/Report.tsx
 // (Deno can't import from the frontend bundle). classica and attivazione name
 // some equivalent sections differently; resolve so a report saved under one
@@ -324,8 +335,11 @@ function resolveSectionContent(content: Record<string, unknown>, sectionKey: str
   return "";
 }
 
-function sectionsForFunnel(slug: string | null | undefined): PdfSection[] {
-  return SECTIONS_BY_FUNNEL[slug || "classica"] ?? SECTIONS_CLASSICA;
+function sectionsForFunnel(slug: string | null | undefined, lang: PromptLang = "it"): PdfSection[] {
+  const funnel = slug === "attivazione" ? "attivazione" : "classica";
+  const keys = SECTION_KEYS_BY_FUNNEL[funnel];
+  const titles = REPORT_SECTION_TITLES[lang][funnel];
+  return keys.map((key) => ({ key, title: titles[key] ?? key }));
 }
 
 function wrapText(text: string, font: any, fontSize: number, maxWidth: number): string[] {
@@ -355,18 +369,27 @@ export interface GeneratePdfInput {
   // Marketing-angle slug. Drives section ordering and titles in the PDF
   // (TOC + section bodies). Defaults to classica for back-compat.
   funnelSlug?: string | null;
+  // Lingua dei contenuti/etichette del PDF (default it).
+  lang?: PromptLang;
+  // Mercato: determina brand e dominio mostrati nel PDF (default it).
+  market?: MarketId;
 }
 
 export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8Array> {
   const { reportContent, userName, birthPlace, birthDate, chartPng, funnelSlug } = input;
-  const SECTIONS = sectionsForFunnel(funnelSlug);
+  const lang: PromptLang = input.lang ?? "it";
+  const market = getMarket(input.market);
+  const S = REPORT_PDF_STRINGS[lang];
+  const brandUpper = market.siteName.toUpperCase();
+  const domain = new URL(market.siteUrl).hostname.replace(/^www\./, "");
+  const SECTIONS = sectionsForFunnel(funnelSlug, lang);
 
   const doc = await PDFDocument.create();
   // Tag the PDF so we can detect its version when deciding whether a
   // cached copy is still valid. Title shows in PDF readers, but keywords
   // are what we use programmatically.
-  doc.setTitle(sanitizePdfText(`Codice Interiore - ${userName || "Lettura personale"}`));
-  doc.setSubject("Lettura personale Codice Interiore");
+  doc.setTitle(sanitizePdfText(S.metaTitle(userName || (lang === "es" ? "Lectura personal" : "Lettura personale"))));
+  doc.setSubject(S.metaSubject);
   doc.setProducer(PDF_VERSION_TAG);
   doc.setCreator(PDF_VERSION_TAG);
   doc.setKeywords([PDF_VERSION_TAG]);
@@ -408,7 +431,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
       height: 0.3,
       color: paleLine,
     });
-    const footerText = sanitizePdfText(`CODICE INTERIORE  ·  p. ${pageNumber}  ·  codiceinteriore.it`);
+    const footerText = sanitizePdfText(`${brandUpper}${S.footerSep}p. ${pageNumber}${S.footerSep}${domain}`);
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }
 
@@ -533,7 +556,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
       feedbackY - 4,
       feedbackWidth,
       feedbackSize + 6,
-      "https://www.codiceinteriore.it/report?source=pdf#feedback",
+      `${market.siteUrl}/report?source=pdf#feedback`,
     );
 
     drawFooter(page);
@@ -628,11 +651,11 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
     });
   } catch (e) {
     console.warn("[pdf] logo embed failed:", e);
-    drawCenteredText(coverPage, "CODICE INTERIORE", PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
+    drawCenteredText(coverPage, brandUpper, PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
   }
 
-  drawCenteredText(coverPage, "La tua lettura completa", PAGE_HEIGHT - 152, 30, timesRomanBoldItalic, darkText);
-  drawCenteredText(coverPage, "del tema natale", PAGE_HEIGHT - 178, 14, timesRomanItalic, mutedText);
+  drawCenteredText(coverPage, S.coverTitle, PAGE_HEIGHT - 152, 30, timesRomanBoldItalic, darkText);
+  drawCenteredText(coverPage, S.coverSubtitle, PAGE_HEIGHT - 178, 14, timesRomanItalic, mutedText);
   coverPage.drawRectangle({ x: PAGE_WIDTH / 2 - 30, y: PAGE_HEIGHT - 196, width: 60, height: 0.5, color: terracotta });
 
   const chartBoxTop = PAGE_HEIGHT - 218;
@@ -683,11 +706,9 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
     height: 0.3,
     color: paleLine,
   });
-  drawCenteredText(coverPage, "codiceinteriore.it", FOOTER_BASELINE, 8, timesRoman, mutedText);
+  drawCenteredText(coverPage, domain, FOOTER_BASELINE, 8, timesRoman, mutedText);
 
-  addIntroIndexPage(
-    "Questa lettura non è un oroscopo predittivo, ma una mappa interpretativa costruita a partire dal tuo tema natale. Leggila come uno strumento di osservazione: alcune parti potranno risultare immediate, altre emergeranno con più chiarezza nel tempo.",
-  );
+  addIntroIndexPage(S.coverDisclaimer);
 
   // ============ CONTENT PAGES ============
   let currentPage: any = null;
@@ -833,17 +854,12 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
   if (currentPage) drawFooter(currentPage);
 
   addClosingPage(
-    "Come continuare",
-    [
-      "Questa lettura può essere riletta in momenti diversi. Alcune parti parlano della tua struttura di base: non cambiano da un giorno all'altro, ma possono diventare più chiare quando nella vita reale si ripresentano certe dinamiche, scelte o tensioni interiori.",
-      "Per capire meglio il periodo che stai vivendo ora, puoi approfondire i tuoi transiti personali.",
-      'I transiti sono il movimento attuale dei pianeti in relazione al tuo tema natale. Non descrivono "cosa succederà" in modo rigido, ma indicano quali aree della tua carta possono essere più attive in questo momento: relazioni, emozioni, decisioni, lavoro, blocchi o cambiamenti interiori.',
-      "In questo modo la lettura non resta solo una fotografia della tua struttura, ma diventa anche uno strumento per osservare il presente con più chiarezza.",
-    ],
+    S.closingTitle,
+    S.closingParagraphs,
     {
-      label: "Scopri i tuoi transiti personali",
-      url: "https://www.codiceinteriore.it/report#transits-upsell",
-      caption: "codiceinteriore.it/report",
+      label: S.closingCtaLabel,
+      url: `${market.siteUrl}/report#transits-upsell`,
+      caption: `${domain}${S.closingCaptionPath}`,
     },
   );
 

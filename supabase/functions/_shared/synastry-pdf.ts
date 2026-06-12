@@ -15,8 +15,11 @@ import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import { sanitizePdfText } from "./report-pdf.ts";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
+import { getMarket, type MarketId } from "./markets.ts";
+import { type PromptLang } from "./prompts/lang.ts";
+import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
 
-export const SYNASTRY_PDF_VERSION = "synastry-v8-poem";
+export const SYNASTRY_PDF_VERSION = "synastry-v9-i18n";
 export const SYNASTRY_PDF_VERSION_TAG = `CI-SYNASTRY-PDF/${SYNASTRY_PDF_VERSION}`;
 
 export interface SynastryApertura {
@@ -39,15 +42,11 @@ export interface SynastryReportContent {
   poesia_chiusura?: string;
 }
 
-const SECTIONS: { key: keyof SynastryReportContent; title: string }[] = [
-  { key: "ritratto_coppia", title: "Il ritratto della coppia" },
-  { key: "attrazione_chimica", title: "Attrazione e chimica" },
-  { key: "comunicazione", title: "Comunicazione" },
-  { key: "mondo_emotivo", title: "Mondo emotivo" },
-  { key: "sfide", title: "Sfide come crescita" },
-  { key: "pattern_karmico", title: "Pattern karmico" },
-  { key: "direzione", title: "Direzione" },
-  { key: "poesia_chiusura", title: "Chiusura poetica" },
+// Ordine sezioni (le chiavi sono il contratto col backend); i titoli arrivano
+// dalla lingua, vedi SYNASTRY_PDF_STRINGS.sectionTitles.
+const SECTION_KEYS: (keyof SynastryReportContent)[] = [
+  "ritratto_coppia", "attrazione_chimica", "comunicazione", "mondo_emotivo",
+  "sfide", "pattern_karmico", "direzione", "poesia_chiusura",
 ];
 
 export interface SynastryPdfInput {
@@ -64,6 +63,8 @@ export interface SynastryPdfInput {
   scoreOverall: number | null;
   scores: Record<string, number> | null;
   biWheelPng?: Uint8Array | null;
+  lang?: PromptLang;
+  market?: MarketId;
 }
 
 const PAGE_WIDTH = 595.28;
@@ -127,13 +128,18 @@ function formatBirthDetail(
 }
 
 export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint8Array> {
+  const lang: PromptLang = input.lang ?? "it";
+  const market = getMarket(input.market);
+  const S = SYNASTRY_PDF_STRINGS[lang];
+  const brandUpper = market.siteName.toUpperCase();
+  const domain = new URL(market.siteUrl).hostname.replace(/^www\./, "");
+  const SECTIONS = SECTION_KEYS.map((key) => ({ key, title: S.sectionTitles[key] ?? key }));
+
   const doc = await PDFDocument.create();
   doc.setTitle(
-    sanitizePdfText(
-      `Codice Interiore - Sinastria - ${input.personAName ?? ""} & ${input.personBName ?? ""}`,
-    ),
+    sanitizePdfText(`${S.metaTitle} - ${input.personAName ?? ""} & ${input.personBName ?? ""}`),
   );
-  doc.setSubject("Sinastria di coppia Codice Interiore");
+  doc.setSubject(S.metaSubject);
   doc.setProducer(SYNASTRY_PDF_VERSION_TAG);
   doc.setCreator(SYNASTRY_PDF_VERSION_TAG);
   doc.setKeywords([SYNASTRY_PDF_VERSION_TAG]);
@@ -182,7 +188,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
       color: paleLine,
     });
     const footerText = sanitizePdfText(
-      `CODICE INTERIORE  ·  p. ${pageNumber}  ·  codiceinteriore.it`,
+      `${brandUpper}  ·  p. ${pageNumber}  ·  ${domain}`,
     );
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }
@@ -228,12 +234,12 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     });
   } catch (e) {
     console.warn("[synastry-pdf] logo embed failed:", e);
-    drawCenteredText(coverPage, "CODICE INTERIORE", PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
+    drawCenteredText(coverPage, brandUpper, PAGE_HEIGHT - 82, 10, timesRoman, terracotta);
   }
 
   drawCenteredText(
     coverPage,
-    "Sinastria di coppia",
+    S.coverTitle,
     PAGE_HEIGHT - 160,
     30,
     timesRomanBoldItalic,
@@ -249,7 +255,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
 
   // Names compact line
   const namesLine = sanitizePdfText(
-    `${input.personAName || "Persona A"}  &  ${input.personBName || "Persona B"}`,
+    `${input.personAName || S.personA}  &  ${input.personBName || S.personB}`,
   );
   drawCenteredText(coverPage, namesLine, PAGE_HEIGHT - 206, 15, timesRomanItalic, darkText);
 
@@ -320,7 +326,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     height: 0.3,
     color: paleLine,
   });
-  drawCenteredText(coverPage, "codiceinteriore.it", FOOTER_BASELINE, 8, timesRoman, mutedText);
+  drawCenteredText(coverPage, domain, FOOTER_BASELINE, 8, timesRoman, mutedText);
 
   // Indice riflette solo le sezioni effettivamente presenti nel report.
   const renderSections = SECTIONS.filter((s) => {
@@ -335,7 +341,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
   ) {
     const insertIdx = renderSections.findIndex((s) => s.key === "pattern_karmico");
     if (insertIdx >= 0) {
-      renderSections.splice(insertIdx, 0, { key: "stabilita_longevita" as any, title: "Stabilita e longevita" });
+      renderSections.splice(insertIdx, 0, { key: "stabilita_longevita" as any, title: S.stabilitaTitle });
     }
   }
 
@@ -350,7 +356,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     height: 0.6,
     color: terracotta,
   });
-  introPage.drawText(sanitizePdfText("Come leggere questa sinastria"), {
+  introPage.drawText(sanitizePdfText(S.introTitle), {
     x: MARGIN_LEFT,
     y: PAGE_HEIGHT - 142,
     size: 20,
@@ -358,16 +364,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     color: darkText,
   });
 
-  const introText =
-    "Questa sinastria descrive il potenziale della relazione tra due temi natali. " +
-    "Si tratta di una configurazione stabile nel tempo: rappresenta le dinamiche di " +
-    "fondo della coppia, le affinita strutturali e le tensioni ricorrenti che non " +
-    "dipendono dal momento presente. " +
-    "Questo significa che la situazione attuale potrebbe essere molto diversa da " +
-    "quanto descritto qui, per via di forze temporanee (i transiti planetari) che " +
-    "attivano, amplificano o attenuano specifiche aree della carta. " +
-    "Leggila come una mappa del terreno relazionale: il territorio di base su cui " +
-    "si muove la coppia, indipendentemente dalla stagione che state attraversando ora.";
+  const introText = S.introText;
 
   let introY = PAGE_HEIGHT - 180;
   const introLines = wrapText(introText, timesRoman, 12, TEXT_WIDTH);
@@ -392,7 +389,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
   });
   introY -= 38;
 
-  introPage.drawText(sanitizePdfText("Indice"), {
+  introPage.drawText(sanitizePdfText(S.indexTitle), {
     x: MARGIN_LEFT,
     y: introY,
     size: 20,
@@ -432,12 +429,12 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
   // ============ SCORES PAGE ============
   if (input.scores || input.scoreOverall != null) {
     const SCORE_BARS: { rawKey: string; label: string }[] = [
-      { rawKey: "intimacy", label: "Sintonia emotiva" },
-      { rawKey: "romance", label: "Attrazione" },
-      { rawKey: "communication", label: "Comunicazione" },
-      { rawKey: "stability", label: "Stabilita" },
-      { rawKey: "growth", label: "Crescita" },
-      { rawKey: "tension", label: "Tensione" },
+      { rawKey: "intimacy", label: S.scoreLabels.intimacy },
+      { rawKey: "romance", label: S.scoreLabels.romance },
+      { rawKey: "communication", label: S.scoreLabels.communication },
+      { rawKey: "stability", label: S.scoreLabels.stability },
+      { rawKey: "growth", label: S.scoreLabels.growth },
+      { rawKey: "tension", label: S.scoreLabels.tension },
     ];
 
     const scoresPage = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
@@ -450,7 +447,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
       height: 0.6,
       color: terracotta,
     });
-    scoresPage.drawText(sanitizePdfText("La compatibilita"), {
+    scoresPage.drawText(sanitizePdfText(S.scoresTitle), {
       x: MARGIN_LEFT,
       y: PAGE_HEIGHT - 142,
       size: 20,
@@ -502,7 +499,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
 
       drawCenteredText(
         scoresPage,
-        sanitizePdfText("Compatibilita complessiva"),
+        sanitizePdfText(S.overallLabel),
         circleY - circleR - 22,
         11,
         timesRomanItalic,
@@ -599,7 +596,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
         barY -= ROW_GAP;
       }
 
-      scoresPage.drawText(sanitizePdfText("Punteggi su scala 0-100"), {
+      scoresPage.drawText(sanitizePdfText(S.scaleLabel), {
         x: MARGIN_LEFT,
         y: barY - 8,
         size: 9,
@@ -704,7 +701,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
       height: 0.6,
       color: terracotta,
     });
-    aperturaPage.drawText(sanitizePdfText("Sguardo d'insieme"), {
+    aperturaPage.drawText(sanitizePdfText(S.aperturaTitle), {
       x: MARGIN_LEFT,
       y: PAGE_HEIGHT - 142,
       size: 20,
@@ -713,10 +710,10 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     });
 
     const aperturaItems: { label: string; value: string }[] = [
-      { label: "Cosa siete", value: apertura.cosa_siete ?? "" },
-      { label: "Dove brillate", value: apertura.dove_brillate ?? "" },
-      { label: "Dove inciampate", value: apertura.dove_inciampate ?? "" },
-      { label: "Dove andate", value: apertura.dove_andate ?? "" },
+      { label: S.aperturaLabels.cosa_siete, value: apertura.cosa_siete ?? "" },
+      { label: S.aperturaLabels.dove_brillate, value: apertura.dove_brillate ?? "" },
+      { label: S.aperturaLabels.dove_inciampate, value: apertura.dove_inciampate ?? "" },
+      { label: S.aperturaLabels.dove_andate, value: apertura.dove_andate ?? "" },
     ].filter((item) => item.value.trim().length > 0);
 
     let aperturaY = PAGE_HEIGHT - 200;
@@ -756,7 +753,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     addContentPage();
 
     const sectionNumber = String(sectionIndex + 1).padStart(2, "0");
-    currentPage.drawText(`SEZIONE ${sectionNumber}`, {
+    currentPage.drawText(`${S.sectionPrefix} ${sectionNumber}`, {
       x: MARGIN_LEFT,
       y,
       size: 8.5,

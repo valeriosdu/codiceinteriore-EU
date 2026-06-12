@@ -442,7 +442,7 @@ export async function reconcilePaidStripeSession(
 
     const { data: quizSession } = await supabaseAdmin
       .from("quiz_sessions")
-      .select("id, user_name, birth_timezone")
+      .select("id, user_name, birth_timezone, language, market")
       .eq("id", quizSessionId)
       .maybeSingle();
     if (!quizSession?.id) {
@@ -512,7 +512,12 @@ export async function reconcilePaidStripeSession(
         templateName: "transits-activated",
         recipientEmail: effectiveCustomerEmail,
         idempotencyKey: `transits-activated-${session.id}`,
-        templateData: { name: quizSession.user_name || "", isRenewal: false },
+        templateData: {
+          name: quizSession.user_name || "",
+          isRenewal: false,
+          lang: (quizSession as any).language === "es" ? "es" : "it",
+          market: (quizSession as any).market === "es" ? "es" : "it",
+        },
       });
       syncBrevoContactBackground({
         email: effectiveCustomerEmail,
@@ -662,6 +667,8 @@ export async function reconcilePaidStripeSession(
       templateData: {
         name: session.customer_details?.name || "",
         sessionId: session.id,
+        lang: (quizSession as any).language === "es" ? "es" : "it",
+        market: (quizSession as any).market === "es" ? "es" : "it",
       },
     });
     // HAS_TRANSITS must reflect cumulative state, not just this checkout —
@@ -746,7 +753,7 @@ export async function reconcilePaidStripeSession(
   // 3) Profile exists — complete the claim + trigger generation.
   const { data: quizSession, error: quizError } = await supabaseAdmin
     .from("quiz_sessions")
-    .select("id, user_name, birth_place, birth_timezone, full_report")
+    .select("id, user_name, birth_place, birth_timezone, full_report, language, market")
     .eq("id", quizSessionId)
     .maybeSingle();
 

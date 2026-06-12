@@ -27,6 +27,22 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncAstrologyGuideStatusBackground } from "../_shared/astrology-guide-brevo.ts";
+import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
+
+// Il SYSTEM_PROMPT è scritto in italiano; per lo spagnolo anteponiamo la
+// direttiva di output (priorità massima) e sostituiamo le due istruzioni di
+// lingua esplicite.
+function astrologyQaSystemPrompt(lang: PromptLang): string {
+  const directive = outputLanguageDirective(lang);
+  if (lang === "it") return directive + SYSTEM_PROMPT;
+  return (
+    directive +
+    SYSTEM_PROMPT.replace(
+      "Scrivi sempre in italiano naturale",
+      "Escribe siempre en español natural",
+    ).replace("(testo in italiano,", "(texto en español,")
+  );
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -375,6 +391,7 @@ const buildPrompt = (params: {
   pastTransits: PastTransit[];
   synastryContexts: unknown[];
   otherReports: OtherReport[];
+  lang: PromptLang;
 }) => {
   const {
     userName,
@@ -420,7 +437,7 @@ const buildPrompt = (params: {
   };
 
   const messages: { role: string; content: string }[] = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: astrologyQaSystemPrompt(params.lang) },
     {
       role: "system",
       content: `CONTESTO UTENTE (primaryReport, otherReports, currentTransits, pastTransits, synastryContexts):\n${JSON.stringify(userContext)}`,
@@ -609,7 +626,7 @@ serve(async (req) => {
       .from("astrology_guide_questions")
       .select(
         "id, profile_id, quiz_session_id, section_id, question, answer, scheduled_for, retry_count, " +
-          "quiz_sessions(natal_chart, full_report, user_name, focus_area, attachment_response, birth_date), " +
+          "quiz_sessions(natal_chart, full_report, user_name, focus_area, attachment_response, birth_date, language, market), " +
           "profiles(email)",
       )
       .eq("id", questionId)
@@ -633,6 +650,8 @@ serve(async (req) => {
         focus_area: string | null;
         attachment_response: string | null;
         birth_date: { year?: number; month?: number; day?: number } | null;
+        language: string | null;
+        market: string | null;
       } | null;
       profiles: { email: string | null } | null;
     };
@@ -644,6 +663,8 @@ serve(async (req) => {
       focus_area: null,
       attachment_response: null,
       birth_date: null,
+      language: null,
+      market: null,
     };
     const profile = typedRow.profiles || { email: null };
 
@@ -805,6 +826,7 @@ serve(async (req) => {
         pastTransits,
         synastryContexts,
         otherReports,
+        lang: resolvePromptLang(quizSession.language),
       });
 
       answer = await callGemini(messages, supabaseAdmin, questionId, claim.nextRetry);
@@ -877,6 +899,8 @@ serve(async (req) => {
           sectionLabel: row.section_id || "",
           creditsRemaining: creditsRow?.balance ?? 0,
           questionId,
+          lang: resolvePromptLang(quizSession.language),
+          market: quizSession.market === "es" ? "es" : "it",
         },
       });
       await supabaseAdmin
