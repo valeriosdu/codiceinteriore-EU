@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-seo-files.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "seo": "node scripts/generate-seo-files.mjs",
     "generate:illustrations": "node --use-system-ca scripts/generate-illustrations.mjs"
   },
   "dependencies": {

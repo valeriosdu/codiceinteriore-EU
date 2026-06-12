@@ -16,6 +16,21 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://www.codiceinteriore.it/contatti</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/termini</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
     <loc>https://www.codiceinteriore.it/guide</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -26,9 +41,44 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.codiceinteriore.it/guide/tema-natale-vs-oroscopo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/come-leggere-tema-natale</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/tema-natale-psicologico</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/tema-natale-relazioni</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/tema-natale-blocco-emotivo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/come-calcolare-tema-natale</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/guide/tema-natale-gratis-online</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.codiceinteriore.it/glossario</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.codiceinteriore.it/glossario/pianeti/luna</loc>
@@ -86,27 +136,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/leone</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/sagittario</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.codiceinteriore.it/glossario/segni/toro</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/vergine</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/capricorno</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -116,22 +146,42 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/bilancia</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/glossario/segni/acquario</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.codiceinteriore.it/glossario/segni/cancro</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/leone</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/vergine</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/bilancia</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.codiceinteriore.it/glossario/segni/scorpione</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/sagittario</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/capricorno</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.codiceinteriore.it/glossario/segni/acquario</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -274,55 +324,5 @@
     <loc>https://www.codiceinteriore.it/glossario/punti/chirone</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/tema-natale-vs-oroscopo</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/come-leggere-tema-natale</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/tema-natale-psicologico</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/tema-natale-relazioni</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/tema-natale-blocco-emotivo</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/come-calcolare-tema-natale</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/guide/tema-natale-gratis-online</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/contatti</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://www.codiceinteriore.it/termini</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
   </url>
 </urlset>

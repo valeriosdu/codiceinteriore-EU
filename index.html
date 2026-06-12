@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="it">
+<html lang="%VITE_LANG%">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- title fallback per pre-hydration; per ogni route, react-helmet-async
          inietta il title corretto (via <SEO /> in src/components/SEO.tsx) ed è
          quel valore che finisce nell'HTML prerenderato. -->
-    <title>Codice Interiore — Lettura del Tema Natale</title>
-    <meta name="author" content="Codice Interiore" />
+    <title>%VITE_DEFAULT_TITLE%</title>
+    <meta name="author" content="%VITE_SITE_NAME%" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Font principali: Source Sans 3 (body), Playfair Display (heading),
@@ -22,20 +22,21 @@
       rel="stylesheet"
     />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T3B5BDSD3Y"></script>
+    <!-- Google tag (gtag.js) — ID per-mercato via VITE_GA4_ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA4_ID%"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-T3B5BDSD3Y', { send_page_view: false });
+      gtag('config', '%VITE_GA4_ID%', { send_page_view: false });
     </script>
     <!-- End Google tag -->
 
     <!-- Meta Pixel + Microsoft Clarity caricati dopo `load` per non rubare
          tempo al primo render. Gli stub di fbq/clarity sono installati subito
          (pattern ufficiale Meta), così eventuali chiamate fatte prima del
-         caricamento finiscono in coda e vengono replay-ate da fbevents.js. -->
+         caricamento finiscono in coda e vengono replay-ate da fbevents.js.
+         Gli ID sono per-mercato: VITE_META_PIXEL_ID, VITE_CLARITY_ID. -->
     <script>
       // fbq stub — pattern identico a quello dell'installer Meta, ma senza
       // iniettare ancora fbevents.js.
@@ -59,19 +60,24 @@
       };
 
       function loadDeferredAnalytics() {
-        // Carica fbevents.js (lo stub processerà la coda).
-        var fb = document.createElement("script");
-        fb.async = true;
-        fb.src = "https://connect.facebook.net/en_US/fbevents.js";
-        document.head.appendChild(fb);
-        window.fbq("init", "1338462968330754");
-        window.fbq("track", "PageView");
+        var pixelId = "%VITE_META_PIXEL_ID%";
+        var clarityId = "%VITE_CLARITY_ID%";
 
-        // Carica clarity.
-        var cl = document.createElement("script");
-        cl.async = true;
-        cl.src = "https://www.clarity.ms/tag/wd7go39aq1";
-        document.head.appendChild(cl);
+        if (pixelId) {
+          var fb = document.createElement("script");
+          fb.async = true;
+          fb.src = "https://connect.facebook.net/en_US/fbevents.js";
+          document.head.appendChild(fb);
+          window.fbq("init", pixelId);
+          window.fbq("track", "PageView");
+        }
+
+        if (clarityId) {
+          var cl = document.createElement("script");
+          cl.async = true;
+          cl.src = "https://www.clarity.ms/tag/" + clarityId;
+          document.head.appendChild(cl);
+        }
       }
 
       if (document.readyState === "complete") {
@@ -83,27 +89,22 @@
 
     <!-- Organization + WebSite JSON-LD: globali per tutto il sito, statici per
          essere letti anche da crawler che non eseguono JavaScript (bot AI).
-         I tag SEO per-route (title, description, canonical, og:*, twitter:*,
-         Product/FAQ JSON-LD) sono iniettati da react-helmet-async via il
-         componente <SEO /> in src/components/SEO.tsx. Sono volutamente assenti
-         da qui per non duplicarsi col rendering Helmet. -->
+         Parametrizzati per-mercato via VITE_*. I tag SEO per-route (title,
+         description, canonical, og:*, twitter:*, Product/FAQ JSON-LD) sono
+         iniettati da react-helmet-async via <SEO /> in src/components/SEO.tsx. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Codice Interiore",
-      "url": "https://www.codiceinteriore.it",
-      "logo": "https://www.codiceinteriore.it/favicon.ico",
-      "description": "Lettura del Tema Natale spiegata in modo psicologicamente preciso, scritta in italiano e personalizzata sui dati di nascita.",
-      "sameAs": [
-        "https://www.facebook.com/CodiceInteriore",
-        "https://www.instagram.com/ilcodiceinteriore/"
-      ],
+      "name": "%VITE_SITE_NAME%",
+      "url": "%VITE_SITE_URL%",
+      "logo": "%VITE_SITE_URL%/favicon.ico",
+      "description": "%VITE_SITE_DESCRIPTION%",
       "contactPoint": {
         "@type": "ContactPoint",
-        "email": "info@codiceinteriore.it",
+        "email": "%VITE_CONTACT_EMAIL%",
         "contactType": "customer support",
-        "availableLanguage": "Italian"
+        "availableLanguage": "%VITE_ORG_LANGUAGE%"
       }
     }
     </script>
@@ -111,21 +112,21 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Codice Interiore",
-      "alternateName": "codiceinteriore.it",
-      "url": "https://www.codiceinteriore.it",
-      "inLanguage": "it-IT"
+      "name": "%VITE_SITE_NAME%",
+      "url": "%VITE_SITE_URL%",
+      "inLanguage": "%VITE_LOCALE%"
     }
     </script>
   </head>
   <body>
-    <!-- Meta Pixel noscript fallback -->
+    <!-- Meta Pixel noscript fallback (l'ID viene sostituito a build time;
+         se vuoto il tag resta inerte). -->
     <noscript
       ><img
         height="1"
         width="1"
         style="display:none"
-        src="https://www.facebook.com/tr?id=1338462968330754&ev=PageView&noscript=1"
+        src="https://www.facebook.com/tr?id=%VITE_META_PIXEL_ID%&ev=PageView&noscript=1"
     /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
