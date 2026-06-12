@@ -8,16 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
-
-const messages = [
-  "Stiamo recuperando la tua lettura",
-  "Stiamo organizzando le aree principali",
-  "Stiamo preparando le parti che non hai ancora visto",
-  "Stiamo completando la tua mappa personale",
-  "Tra poco entrerai nella versione completa",
-  "Stiamo rifinendo i dettagli più delicati",
-  "Quasi pronti — manca davvero poco",
-];
+import { useI18n } from "@/i18n/I18nProvider";
 
 const POLL_INTERVAL_MS = 5000;
 // Show a gentle "taking a bit longer" hint after ~75 s of processing.
@@ -49,6 +40,9 @@ const ReportProcessing = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
   const { isReady: authReady, user } = useAuthReady();
+  const { m } = useI18n();
+  const rp = m.reportProcessing;
+  const messages = rp.messages;
   const [currentIndex, setCurrentIndex] = useState(0);
   const fetchStarted = useRef(false);
   const [ready, setReady] = useState(false);
@@ -73,7 +67,7 @@ const ReportProcessing = () => {
             navigate("/report", { replace: true });
             return;
           }
-          setError("Accedi al tuo account per completare la lettura acquistata.");
+          setError(rp.errors.signIn);
           setReady(true);
           return;
         }
@@ -85,7 +79,7 @@ const ReportProcessing = () => {
           .single();
 
         if (!profile?.id) {
-          setError("Non riusciamo a trovare il tuo profilo. Accedi di nuovo o contattaci.");
+          setError(rp.errors.profileNotFound);
           setReady(true);
           return;
         }
@@ -133,21 +127,21 @@ const ReportProcessing = () => {
             body: { sessionId: fallbackPaidSessionId },
           });
           if (checkoutData?.quizSessionId && checkoutData.quizSessionId !== sessionId) {
-            setError("Il pagamento non corrisponde alla sessione quiz da completare.");
+            setError(rp.errors.paymentMismatch);
             setReady(true);
             return;
           }
         }
 
         if (!sessionId) {
-          setError("Non troviamo una sessione quiz collegata al pagamento.");
+          setError(rp.errors.noSession);
           setReady(true);
           return;
         }
 
         const paidSessionId = payableLink?.stripe_session_id || fallbackPaidSessionId;
         if (!hasPaidCheckoutSession(paidSessionId)) {
-          setError("Per generare una nuova lettura serve un pagamento completato. Se hai già una lettura, aprila dalla tua area personale.");
+          setError(rp.errors.paymentRequired);
           setReady(true);
           return;
         }
@@ -247,7 +241,7 @@ const ReportProcessing = () => {
             .eq("id", processingSessionId.current)
             .neq("processing_status", "report_processing");
         }
-        setError("La tua lettura è in fase di preparazione. Il pagamento è registrato correttamente e riceverai tutto via email entro pochi minuti. Se dopo 10 minuti non ricevi nulla, contattaci e saremo lieti di aiutarti.");
+        setError(rp.errors.generic);
       } finally {
         setReady(true);
       }
@@ -290,10 +284,10 @@ const ReportProcessing = () => {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
         <div className="max-w-sm w-full space-y-5">
           <AlertCircle className="mx-auto h-8 w-8 text-primary" />
-          <h1 className="font-display text-2xl font-semibold text-foreground">Lettura in verifica</h1>
+          <h1 className="font-display text-2xl font-semibold text-foreground">{rp.errorScreen.title}</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">{error}</p>
           <Button variant="premium" size="quiz" onClick={() => navigate("/contatti")}>
-            Contattaci
+            {rp.errorScreen.cta}
           </Button>
         </div>
       </div>
@@ -304,7 +298,7 @@ const ReportProcessing = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <div className="h-6 w-6 rounded-full border-2 border-primary/25 border-t-primary animate-spin" />
-        <p className="text-sm text-muted-foreground leading-relaxed">Verifichiamo il tuo accesso alla lettura…</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{rp.verifying}</p>
       </div>
     );
   }
@@ -314,11 +308,10 @@ const ReportProcessing = () => {
       <div className="max-w-sm w-full space-y-10 text-center">
         <div className="space-y-4">
           <h1 className="font-display text-2xl font-semibold text-foreground tracking-tight">
-            Stiamo completando la tua lettura
+            {rp.processing.title}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Hai già visto l'inizio. Ora stiamo preparando la tua lettura completa, con tanti nuovi elementi e una
-            visione completa del tuo Codice Interiore. Non chiudere o aggiornare la pagina.
+            {rp.processing.body}
           </p>
           <AnimatePresence>
             {showSlowHint && (
@@ -328,7 +321,7 @@ const ReportProcessing = () => {
                 exit={{ opacity: 0 }}
                 className="text-xs text-muted-foreground/80 italic"
               >
-                Per le carte più complesse la preparazione può richiedere fino a 10 minuti. Puoi restare su questa pagina oppure chiuderla: riceverai tutto via email appena pronto.
+                {rp.processing.slowHint}
               </motion.p>
             )}
           </AnimatePresence>

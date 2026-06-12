@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
+import { useI18n } from "@/i18n/I18nProvider";
 import visaLogo from "@/assets/payments/visa.svg";
 import mastercardLogo from "@/assets/payments/mastercard.svg";
 import amexLogo from "@/assets/payments/amex.svg";
@@ -24,46 +25,15 @@ const CARD_LOGOS = [
 
 export type PurchaseType = "base" | "premium" | "synastry" | "synastry_launch";
 
-const PRODUCTS: Record<
+// Struttura (kind + chiave prezzo); nomi e bullet vivono nel catalogo i18n.
+const PRODUCT_KIND: Record<
   PurchaseType,
-  { name: string; price: string; bullets: string[]; sessionKind: "natal" | "synastry" }
+  { sessionKind: "natal" | "synastry"; priceKey: "base" | "premium" | "synastry" | "synastryLaunch" }
 > = {
-  base: {
-    name: "Lettura Completa del Tema Natale",
-    price: "19€",
-    bullets: ["Lettura completa di 10 pagine", "Accesso immediato online e via e-mail"],
-    sessionKind: "natal",
-  },
-  premium: {
-    name: "Lettura Completa + 1 Mese di Transiti",
-    price: "29€",
-    bullets: [
-      "Lettura completa di 10 pagine",
-      "1 mese di letture settimanali sui transiti",
-      "Omaggio: poesia trasformativa personale",
-    ],
-    sessionKind: "natal",
-  },
-  synastry: {
-    name: "Sinastria di Coppia",
-    price: "19€",
-    bullets: [
-      "Otto sezioni sulla vostra relazione",
-      "PDF da scaricare, accesso permanente",
-      "Circa 10 pagine in italiano chiaro",
-    ],
-    sessionKind: "synastry",
-  },
-  synastry_launch: {
-    name: "Sinastria di Coppia",
-    price: "14,90€",
-    bullets: [
-      "Otto sezioni sulla vostra relazione",
-      "PDF da scaricare, accesso permanente",
-      "Circa 10 pagine in italiano chiaro",
-    ],
-    sessionKind: "synastry",
-  },
+  base: { sessionKind: "natal", priceKey: "base" },
+  premium: { sessionKind: "natal", priceKey: "premium" },
+  synastry: { sessionKind: "synastry", priceKey: "synastry" },
+  synastry_launch: { sessionKind: "synastry", priceKey: "synastryLaunch" },
 };
 
 interface CheckoutReviewProps {
@@ -80,11 +50,19 @@ interface CheckoutReviewProps {
 const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firstName, birthDate, onClose, onMethodSelected }: CheckoutReviewProps) => {
   const [loadingMethod, setLoadingMethod] = useState<"stripe" | "paypal" | null>(null);
   const { trackAddPaymentInfo } = useMetaConversions();
-  const product = purchaseType ? PRODUCTS[purchaseType] : null;
+  const { m, market } = useI18n();
+  const cr = m.checkoutReview;
+  const product = purchaseType
+    ? {
+        ...cr.products[purchaseType],
+        price: m.common.priceLabel(market.prices[PRODUCT_KIND[purchaseType].priceKey]),
+        sessionKind: PRODUCT_KIND[purchaseType].sessionKind,
+      }
+    : null;
 
   const handleSelect = async (method: "stripe" | "paypal") => {
     if (!purchaseType || !sessionId) {
-      toast.error("Sessione non disponibile. Ricarica la pagina e riprova.");
+      toast.error(cr.errors.noSession);
       return;
     }
 
@@ -112,7 +90,7 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
       window.location.href = data.url;
     } catch (err) {
       console.error(`${method} checkout error:`, err);
-      toast.error("Errore durante il pagamento. Riprova.");
+      toast.error(cr.errors.payment);
       setLoadingMethod(null);
     }
   };
@@ -123,10 +101,10 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
         <div className="p-6 sm:p-7 space-y-6">
           <DialogHeader className="space-y-1.5 text-left">
             <DialogTitle className="font-display text-2xl font-semibold text-foreground">
-              Riepilogo ordine
+              {cr.title}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Controlla i dettagli del tuo ordine.
+              {cr.subtitle}
             </DialogDescription>
           </DialogHeader>
 
@@ -141,7 +119,7 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
                 <div className="space-y-1.5 flex-1">
                   <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-primary/80 font-medium">
                     <Sparkles className="h-3 w-3" />
-                    Accesso immediato
+                    {cr.instantAccess}
                   </div>
                   <h3 className="font-display text-base font-semibold text-foreground leading-snug">
                     {product.name}
@@ -165,13 +143,13 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
 
           {product && (
             <div className="flex items-baseline justify-between border-t border-border/40 pt-4">
-              <span className="text-sm font-medium text-foreground/70">Totale</span>
+              <span className="text-sm font-medium text-foreground/70">{cr.total}</span>
               <span className="font-display text-2xl font-semibold text-foreground">{product.price}</span>
             </div>
           )}
 
           <div className="space-y-3 pt-1">
-            <p className="text-sm font-medium text-foreground/80">Come preferisci pagare?</p>
+            <p className="text-sm font-medium text-foreground/80">{cr.howToPay}</p>
 
             <button
               type="button"
@@ -180,7 +158,7 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
               className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3.5 text-left transition-all hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md flex items-center gap-3"
             >
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-[15px] leading-tight">Carta di credito o debito</div>
+                <div className="font-semibold text-[15px] leading-tight">{cr.cardLabel}</div>
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   {CARD_LOGOS.map((logo) => (
                     <span
@@ -208,7 +186,7 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
             >
               <div className="flex-1 min-w-0">
                 <img src={paypalLogo} alt="PayPal" className="h-5 w-auto" loading="lazy" />
-                <div className="text-[12px] text-muted-foreground mt-1.5">Veloce e sicuro con il tuo conto</div>
+                <div className="text-[12px] text-muted-foreground mt-1.5">{cr.paypalNote}</div>
               </div>
               {loadingMethod === "paypal" && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />}
             </button>
@@ -216,12 +194,12 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
 
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground pt-1">
             <span className="inline-flex items-center gap-1">
-              <Lock className="h-3 w-3" /> Pagamento sicuro
+              <Lock className="h-3 w-3" /> {cr.securePayment}
             </span>
             <span className="inline-flex items-center gap-1">
-              <RefreshCcw className="h-3 w-3" /> Soddisfatti o rimborsati
+              <RefreshCcw className="h-3 w-3" /> {cr.moneyBack}
             </span>
-            <span>Nessun abbonamento</span>
+            <span>{cr.noSubscription}</span>
           </div>
         </div>
       </DialogContent>

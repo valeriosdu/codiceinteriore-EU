@@ -1,18 +1,20 @@
 import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAstrologyGuide } from "./AstrologyGuideContext";
-import { PACK_CREDITS, PACK_PRICE_LABEL } from "./constants";
+import { PACK_CREDITS } from "./constants";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const BuyMoreCreditsCard = () => {
   const { credits, buyPack, buyingPack } = useAstrologyGuide();
+  const { m, market } = useI18n();
+  const g = m.astrologyGuide;
+  const packPrice = m.common.priceLabel(market.prices.astroPack);
   const balance = credits?.balance ?? 0;
   const isExhausted = balance <= 0;
-  const headline = isExhausted
-    ? "Hai usato tutte le tue domande"
-    : "Stai per finire le domande";
+  const headline = isExhausted ? g.buyMore.exhaustedHeadline : g.buyMore.nearEndHeadline;
   const sub = isExhausted
-    ? `Acquista ${PACK_CREDITS} nuove domande per continuare ad approfondire la tua carta.`
-    : `Aggiungi altre ${PACK_CREDITS} domande così non ti fermi proprio sul più bello.`;
+    ? g.buyMore.exhaustedSub(PACK_CREDITS)
+    : g.buyMore.nearEndSub(PACK_CREDITS);
 
   return (
     <div className="border-t border-border/60 bg-secondary/40 p-4 space-y-3">
@@ -23,7 +25,7 @@ const BuyMoreCreditsCard = () => {
           <p className="text-xs text-muted-foreground leading-relaxed">{sub}</p>
           {!isExhausted && (
             <p className="text-xs text-muted-foreground/80 leading-relaxed">
-              Saldo attuale: {balance} {balance === 1 ? "domanda" : "domande"}.
+              {g.buyMore.balance(balance)}
             </p>
           )}
         </div>
@@ -38,7 +40,7 @@ const BuyMoreCreditsCard = () => {
         {buyingPack ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : null}
-        Acquista {PACK_CREDITS} domande · {PACK_PRICE_LABEL}
+        {g.buyMore.buyCta(PACK_CREDITS, packPrice)}
       </Button>
     </div>
   );

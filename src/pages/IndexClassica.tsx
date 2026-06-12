@@ -12,6 +12,7 @@ import {
   faqJsonLd,
   productJsonLd,
 } from "@/lib/seo-jsonld";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const INK = "#1a2744";
 const RULE = "rgba(26,39,68,0.32)";
@@ -207,6 +208,8 @@ const PlateCaption = ({ label }: { label: string }) => (
 
 const IndexClassica = () => {
   const navigate = useNavigate();
+  const { m, market } = useI18n();
+  const lc = m.landingClassica;
   // ?discover=1 tells the quiz to prepend the angle-intent question. Only the
   // generic discovery landing sets it; angle-targeted Meta landings (e.g. /)
   // navigate to /quiz directly so the user goes straight into the funnel.
@@ -219,15 +222,14 @@ const IndexClassica = () => {
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
       <SEO
-        title="Tema Natale e Relazioni — Capisci come ami | Codice Interiore"
-        description="Capisci come ti leghi, scegli e ti difendi nelle relazioni. Lettura del tema natale in italiano, descrittiva e psicologicamente precisa. Inizia gratis."
+        title={lc.seo.title}
+        description={lc.seo.description}
         path="/lp/classica"
         jsonLd={[
           productJsonLd({
-            name: "Lettura del Tema Natale — Relazioni",
-            description:
-              "Lettura del tema natale orientata ai pattern relazionali: come ti leghi, cosa cerchi, cosa si attiva quando senti distanza o ambiguità. Scritta in italiano.",
-            url: "https://www.codiceinteriore.it/lp/classica",
+            name: lc.seo.productName,
+            description: lc.seo.productDescription,
+            url: `${market.siteUrl}/lp/classica`,
           }),
           faqJsonLd(DEFAULT_FAQS),
         ]}
@@ -293,13 +295,13 @@ const IndexClassica = () => {
                   className="text-[42px] sm:text-[54px] md:text-[64px] lg:text-[70px] font-normal text-foreground leading-[1.05] tracking-[-0.012em]"
                   style={{ fontFamily: FONT_DISPLAY }}
                 >
-                  Il tuo{" "}
+                  {lc.hero.titlePre}{" "}
                   <em className="font-medium" style={{ color: INK }}>
-                    Tema Natale
+                    {lc.hero.titleEm}
                   </em>
                   ,
                   <br className="hidden sm:block" />
-                  <span className="font-normal"> spiegato in modo chiaro</span>
+                  <span className="font-normal">{lc.hero.titlePost}</span>
                 </motion.h1>
 
                 <motion.p
@@ -309,8 +311,7 @@ const IndexClassica = () => {
                   className="ci-dropcap mt-9 text-[19px] md:text-[20px] leading-[1.7] text-foreground/80 max-w-[28rem]"
                   style={{ fontFamily: FONT_BODY }}
                 >
-                  Scopri cosa emerge dalla tua struttura interiore a partire dai tuoi dati di nascita. Gratis e senza
-                  registrazione.
+                  {lc.hero.subtitle}
                 </motion.p>
 
                 <motion.div
@@ -320,20 +321,20 @@ const IndexClassica = () => {
                   className="mt-10 flex flex-col items-start gap-3"
                 >
                   <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
-                    Inizia il quiz
+                    {lc.hero.cta}
                     <ArrowRight className="ml-1.5 h-5 w-5" />
                   </Button>
                   <p
                     className="text-[17px] md:text-[19px] tracking-wide text-muted-foreground"
                     style={{ fontFamily: FONT_BODY }}
                   >
-                    Quiz di 2 minuti · Nessuna conoscenza necessaria
+                    {lc.hero.microcopy}
                   </p>
                   <p
                     className="text-[16px] md:text-[18px] italic opacity-70 mt-1"
                     style={{ fontFamily: FONT_DISPLAY, color: INK }}
                   >
-                    Oltre 10.000 persone hanno già scoperto il loro tema natale
+                    {lc.hero.socialProof}
                   </p>
                 </motion.div>
               </div>
@@ -342,15 +343,10 @@ const IndexClassica = () => {
 
           {/* COSA PUOI SCOPRIRE ─── editorial enumeration */}
           <section className="container max-w-3xl mx-auto px-6 py-20 md:py-28 relative">
-            <ChapterHeading numeral="I." title="Cosa puoi scoprire" />
+            <ChapterHeading numeral="I." title={lc.discover.heading} />
 
             <ol className="space-y-7 max-w-xl mx-auto" style={{ fontFamily: FONT_BODY }}>
-              {[
-                "Come funzioni nelle relazioni e nei legami",
-                "Dove sei chiamato/a a crescere in questa fase",
-                "Quali dinamiche tendono a ripetersi nella tua vita",
-                "Cosa ti muove nel profondo",
-              ].map((text, i) => {
+              {lc.discover.items.map((text, i) => {
                 const numerals = ["i.", "ii.", "iii.", "iv."];
                 return (
                   <motion.li
@@ -384,7 +380,7 @@ const IndexClassica = () => {
               className="text-center max-w-2xl mx-auto"
             >
               <div className="mb-9">
-                <PlateCaption label="Tav. II" />
+                <PlateCaption label={lc.quote.plate} />
               </div>
 
               <blockquote
@@ -394,7 +390,7 @@ const IndexClassica = () => {
                 <span className="opacity-40 mr-0.5" style={{ color: INK }}>
                   &ldquo;
                 </span>
-                Il cielo del giorno in cui sei nata racconta qualcosa che non hai mai smesso di portare con te
+                {lc.quote.text}
                 <span className="opacity-40 ml-0.5" style={{ color: INK }}>
                   &rdquo;
                 </span>
@@ -412,14 +408,12 @@ const IndexClassica = () => {
 
           {/* COME FUNZIONA ─── three-step engraved figure */}
           <section className="container max-w-4xl mx-auto px-6 py-20 md:py-28 relative">
-            <ChapterHeading numeral="II." title="Come funziona" />
+            <ChapterHeading numeral="II." title={lc.howItWorks.heading} />
 
             <div className="grid gap-12 md:gap-10 md:grid-cols-3 max-w-3xl mx-auto">
-              {[
-                { numeral: "I.", title: "Inserisci i tuoi dati di nascita" },
-                { numeral: "II.", title: "Rispondi a poche domande brevi" },
-                { numeral: "III.", title: "Ricevi la tua lettura iniziale gratuitamente" },
-              ].map((item, i) => (
+              {lc.howItWorks.steps
+                .map((title, i) => ({ numeral: ["I.", "II.", "III."][i], title }))
+                .map((item, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 14 }}
@@ -478,7 +472,7 @@ const IndexClassica = () => {
               className="text-[20px] md:text-[22px] italic leading-[1.6] text-foreground/85 max-w-md mx-auto"
               style={{ fontFamily: FONT_DISPLAY }}
             >
-              Inizia dalla tua lettura iniziale. Il resto emergerà con più chiarezza.
+              {lc.finalCta.body}
             </motion.p>
 
             <motion.div
@@ -489,7 +483,7 @@ const IndexClassica = () => {
               className="mt-10"
             >
               <Button variant="premium" size="hero" onClick={startQuiz}>
-                Inizia il quiz
+                {lc.finalCta.cta}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </motion.div>

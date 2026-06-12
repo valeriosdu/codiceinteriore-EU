@@ -4,6 +4,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/i18n/I18nProvider";
 
 type Rating = "positive" | "mixed" | "negative";
 type Source = "web" | "pdf";
@@ -13,21 +14,15 @@ interface ReportFeedbackProps {
   source?: Source;
 }
 
-const RATING_OPTIONS: { value: Rating; emoji: string; label: string }[] = [
-  { value: "positive", emoji: "😍", label: "Mi rispecchia" },
-  { value: "mixed", emoji: "🤔", label: "In parte" },
-  { value: "negative", emoji: "😐", label: "Non mi rispecchia" },
-];
-
-const REASONS_BY_RATING: Record<Rating, string[]> = {
-  positive: ["Preciso", "Utile", "Scritto bene", "Mi ha sorpreso"],
-  mixed: ["Alcune parti sì, altre no", "Troppo generico", "Linguaggio", "Vorrei più profondità"],
-  negative: ["Non mi riconosco", "Troppo generico", "Errori fattuali", "Linguaggio"],
+const RATING_EMOJI: Record<Rating, string> = {
+  positive: "😍",
+  mixed: "🤔",
+  negative: "😐",
 };
 
 type Phase = "rating" | "details" | "done";
 
-const describeError = (err: unknown): string => {
+const describeError = (err: unknown, unknownLabel: string): string => {
   if (err instanceof Error) return err.message;
   if (typeof err === "object" && err !== null) {
     const e = err as { message?: unknown; code?: unknown; details?: unknown; hint?: unknown };
@@ -40,13 +35,21 @@ const describeError = (err: unknown): string => {
     try {
       return JSON.stringify(err);
     } catch {
-      return "errore sconosciuto";
+      return unknownLabel;
     }
   }
-  return "errore sconosciuto";
+  return unknownLabel;
 };
 
 const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) => {
+  const { m } = useI18n();
+  const fb = m.feedback;
+  const RATING_OPTIONS: { value: Rating; emoji: string; label: string }[] = [
+    { value: "positive", emoji: RATING_EMOJI.positive, label: fb.ratings.positive },
+    { value: "mixed", emoji: RATING_EMOJI.mixed, label: fb.ratings.mixed },
+    { value: "negative", emoji: RATING_EMOJI.negative, label: fb.ratings.negative },
+  ];
+  const REASONS_BY_RATING: Record<Rating, string[]> = fb.reasons;
   const [phase, setPhase] = useState<Phase>("rating");
   const [rating, setRating] = useState<Rating | null>(null);
   const [reasons, setReasons] = useState<string[]>([]);
@@ -91,7 +94,7 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
     try {
       const profileId = await ensureProfileId();
       if (!profileId) {
-        toast.error("Devi essere connesso per inviare un feedback.");
+        toast.error(fb.errors.signInRequired);
         setRating(null);
         return;
       }
@@ -129,7 +132,7 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
       setPhase("details");
     } catch (err) {
       console.error("[report-feedback] rating save failed", err);
-      toast.error(`Non siamo riusciti a salvare il feedback (${describeError(err)}).`);
+      toast.error(fb.errors.saveRating(describeError(err, fb.errors.unknown)));
       setRating(null);
     } finally {
       setSubmitting(false);
@@ -160,7 +163,7 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
       setPhase("done");
     } catch (err) {
       console.error("[report-feedback] details save failed", err);
-      toast.error(`Non siamo riusciti a salvare (${describeError(err)}).`);
+      toast.error(fb.errors.saveDetails(describeError(err, fb.errors.unknown)));
     } finally {
       setSubmitting(false);
     }
@@ -172,9 +175,9 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
     <div id="feedback" className="scroll-mt-28">
       <div className="rounded-2xl border border-border/60 bg-surface px-6 py-6 space-y-4">
         <div>
-          <h3 className="font-display text-lg font-semibold text-foreground">Facci sapere cosa ne pensi</h3>
+          <h3 className="font-display text-lg font-semibold text-foreground">{fb.title}</h3>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            Il tuo feedback ci aiuta a rendere ogni lettura più precisa. Bastano pochi secondi.
+            {fb.subtitle}
           </p>
         </div>
 
@@ -212,7 +215,7 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
             >
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
-                Grazie. Vuoi dirci di più?
+                {fb.thanksMore}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -240,17 +243,17 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
                 maxLength={1000}
-                placeholder="Vorresti qualche altra funzione o vuoi aggiungere qualcosa? (facoltativo)"
+                placeholder={fb.commentPlaceholder}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 resize-none"
               />
 
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" size="sm" onClick={handleSkip} disabled={submitting}>
-                  Salta
+                  {fb.skip}
                 </Button>
                 <Button size="sm" onClick={handleSubmitDetails} disabled={submitting}>
                   {submitting && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-                  Invia
+                  {fb.send}
                 </Button>
               </div>
             </motion.div>
@@ -265,7 +268,7 @@ const ReportFeedback = ({ quizSessionId, source = "web" }: ReportFeedbackProps) 
               className="flex items-center gap-2 text-sm text-foreground"
             >
               <CheckCircle2 className="h-5 w-5 text-primary" />
-              Grazie, ci aiuta a migliorare.
+              {fb.done}
             </motion.div>
           )}
         </AnimatePresence>

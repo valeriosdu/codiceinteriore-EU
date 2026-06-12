@@ -2,34 +2,33 @@ import { useRef, useState } from "react";
 import { Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { AstrologyGuideQuestion } from "./AstrologyGuideContext";
 import { useAstrologyGuide } from "./AstrologyGuideContext";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface AstrologyGuideMessageProps {
   question: AstrologyGuideQuestion;
 }
 
-const formatRomeTime = (iso: string) => {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  const sameDay =
-    new Date().toDateString() === date.toDateString();
-  if (sameDay) {
-    return date.toLocaleTimeString("it-IT", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Europe/Rome",
-    });
-  }
-  return date.toLocaleString("it-IT", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Rome",
-  });
-};
-
 const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
   const { submitFeedback } = useAstrologyGuide();
+  const { m, market } = useI18n();
+  const g = m.astrologyGuide;
+  const formatTime = (iso: string) => {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return null;
+    const sameDay = new Date().toDateString() === date.toDateString();
+    if (sameDay) {
+      return date.toLocaleTimeString(market.locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return date.toLocaleString(market.locale, {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState(question.feedback_comment ?? "");
   const [commentSaved, setCommentSaved] = useState(false);
@@ -75,13 +74,13 @@ const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
             <div className="flex items-center gap-1 pt-1.5">
               {question.processed_at && (
                 <span className="text-xs text-muted-foreground/70 mr-auto">
-                  {formatRomeTime(question.processed_at)}
+                  {formatTime(question.processed_at)}
                 </span>
               )}
               <button
                 type="button"
                 onClick={() => submitFeedback(question.id, "up")}
-                aria-label="Risposta utile"
+                aria-label={g.message.answerUseful}
                 className={`p-1.5 rounded transition ${
                   question.feedback === "up"
                     ? "text-primary"
@@ -93,7 +92,7 @@ const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
               <button
                 type="button"
                 onClick={handleThumbDown}
-                aria-label="Risposta non utile"
+                aria-label={g.message.answerNotUseful}
                 className={`p-1.5 rounded transition ${
                   question.feedback === "down"
                     ? "text-destructive"
@@ -115,7 +114,7 @@ const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
                       handleCommentSubmit();
                     }
                   }}
-                  placeholder="Cosa non ti è piaciuto?"
+                  placeholder={g.message.commentPlaceholder}
                   rows={2}
                   maxLength={200}
                   className="flex-1 resize-none rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-primary/30"
@@ -126,13 +125,13 @@ const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
                   disabled={!comment.trim()}
                   className="self-end text-xs text-primary font-medium px-2 py-1.5 rounded hover:bg-primary/5 transition disabled:opacity-40"
                 >
-                  Invia
+                  {g.message.commentSend}
                 </button>
               </div>
             )}
             {commentSaved && !showCommentBox && (
               <p className="text-[11px] text-muted-foreground/60 pt-0.5">
-                Grazie per il feedback.
+                {g.message.thanksFeedback}
               </p>
             )}
           </div>
@@ -143,19 +142,18 @@ const AstrologyGuideMessage = ({ question }: AstrologyGuideMessageProps) => {
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary/70" />
               <span>
-                Risposta in arrivo nelle prossime ore.
+                {g.message.pending}
               </span>
             </div>
             <p className="text-xs text-muted-foreground/70 mt-1">
-              Ti avviseremo anche via email.
+              {g.message.pendingEmail}
             </p>
           </div>
         </div>
       ) : isFailed ? (
         <div className="flex justify-start">
           <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-destructive/5 px-4 py-3 text-base text-destructive border border-destructive/20">
-            Non siamo riusciti a generare la risposta. La tua domanda è stata accreditata di
-            nuovo, puoi riprovare.
+            {g.message.failed}
           </div>
         </div>
       ) : null}

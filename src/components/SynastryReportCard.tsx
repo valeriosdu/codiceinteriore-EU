@@ -15,20 +15,19 @@ function compressScore(raw: number): number {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import type { SynastrySessionSummary } from "@/hooks/useSynastryReport";
+import { useI18n } from "@/i18n/I18nProvider";
 
-const SECTION_META: Array<{
-  key: string;
-  section: number;
-  title: string;
-}> = [
-  { key: "ritratto_coppia", section: 1, title: "Il ritratto della coppia" },
-  { key: "attrazione_chimica", section: 2, title: "Attrazione e chimica" },
-  { key: "comunicazione", section: 3, title: "Comunicazione" },
-  { key: "mondo_emotivo", section: 4, title: "Mondo emotivo" },
-  { key: "sfide", section: 5, title: "Sfide come crescita" },
-  { key: "pattern_karmico", section: 6, title: "Pattern karmico" },
-  { key: "direzione", section: 7, title: "Direzione" },
-];
+// Ordine e chiavi delle sezioni (contratto col backend); i titoli vivono nel
+// catalogo i18n (m.synastryCard.sections).
+const SECTION_KEYS = [
+  "ritratto_coppia",
+  "attrazione_chimica",
+  "comunicazione",
+  "mondo_emotivo",
+  "sfide",
+  "pattern_karmico",
+  "direzione",
+] as const;
 
 function mapScoresIt(raw: Record<string, number> | null) {
   if (!raw) return {};
@@ -45,6 +44,8 @@ function mapScoresIt(raw: Record<string, number> | null) {
 function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
   const [isOpen, setIsOpen] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const { m } = useI18n();
+  const sc = m.synastryCard;
 
   const isComplete = session.full_report && Object.keys(session.full_report).length > 0;
   const scoresIt = mapScoresIt(session.scores);
@@ -66,7 +67,7 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
           },
         },
       );
-      if (!resp.ok) throw new Error("PDF non disponibile");
+      if (!resp.ok) throw new Error(sc.pdf.unavailable);
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -78,7 +79,7 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
       URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Synastry PDF error:", e);
-      toast.error("Non siamo riusciti a generare il PDF. Riprova.");
+      toast.error(sc.pdf.error);
     } finally {
       setPdfLoading(false);
     }
@@ -95,10 +96,10 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <Heart className="h-4 w-4 text-primary shrink-0" />
-                <p className="text-sm font-medium text-foreground">Sinastria di coppia</p>
+                <p className="text-sm font-medium text-foreground">{sc.card.title}</p>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {session.person_a_name || "Persona A"} & {session.person_b_name || "Persona B"}
+                {session.person_a_name || sc.card.personA} & {session.person_b_name || sc.card.personB}
               </p>
               {session.archetype && (
                 <div className="mt-2">
@@ -121,7 +122,7 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
           <div className="px-6 pb-6 pt-2 border-t border-border/40">
             {!isComplete ? (
               <p className="text-sm text-muted-foreground py-4">
-                La tua sinastria e in preparazione. Riceverai una notifica quando sara pronta.
+                {sc.card.inPreparation}
               </p>
             ) : (
               <div className="space-y-8 mt-4">
@@ -134,7 +135,7 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
                 {session.bi_wheel_svg && (
                   <div className="rounded-xl border border-border bg-card p-4">
                     <h3 className="font-display text-lg font-semibold text-foreground mb-3 text-center">
-                      La carta della coppia
+                      {sc.card.coupleChart}
                     </h3>
                     <div
                       className="flex justify-center [&>svg]:max-w-full [&>svg]:h-auto"
@@ -145,13 +146,13 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
 
                 {(session.full_report as any)?.apertura && (
                   <div className="rounded-xl border border-border bg-card p-4">
-                    <h3 className="font-display text-lg font-semibold text-foreground mb-3">La vostra mappa</h3>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-3">{sc.card.yourMap}</h3>
                     <dl className="space-y-3">
                       {([
-                        ["Cosa siete", (session.full_report as any).apertura.cosa_siete],
-                        ["Dove brillate", (session.full_report as any).apertura.dove_brillate],
-                        ["Dove inciampate", (session.full_report as any).apertura.dove_inciampate],
-                        ["Dove andate", (session.full_report as any).apertura.dove_andate],
+                        [sc.card.mapLabels.cosa_siete, (session.full_report as any).apertura.cosa_siete],
+                        [sc.card.mapLabels.dove_brillate, (session.full_report as any).apertura.dove_brillate],
+                        [sc.card.mapLabels.dove_inciampate, (session.full_report as any).apertura.dove_inciampate],
+                        [sc.card.mapLabels.dove_andate, (session.full_report as any).apertura.dove_andate],
                       ] as const).map(([label, value]) => value && (
                         <div key={label}>
                           <dt className="text-xs font-medium text-primary tracking-wide uppercase">{label}</dt>
@@ -162,10 +163,10 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
                   </div>
                 )}
 
-                {SECTION_META.map(({ key, section, title }) => {
+                {SECTION_KEYS.map((key, i) => {
                   const body = session.full_report?.[key];
                   if (!body) return null;
-                  return <SynastryReportSection key={key} section={section} title={title} body={body} />;
+                  return <SynastryReportSection key={key} section={i + 1} title={sc.sections[key]} body={body} />;
                 })}
 
                 <div className="flex justify-center pt-4">
@@ -177,7 +178,7 @@ function SynastrySessionCard({ session }: { session: SynastrySessionSummary }) {
                     className="gap-2"
                   >
                     {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                    {pdfLoading ? "Preparazione..." : "Scarica PDF"}
+                    {pdfLoading ? sc.pdf.preparing : sc.pdf.download}
                   </Button>
                 </div>
               </div>
@@ -195,6 +196,8 @@ interface SynastryReportCardProps {
 
 export default function SynastryReportCard({ sessions }: SynastryReportCardProps) {
   const navigate = useNavigate();
+  const { m, market } = useI18n();
+  const sc = m.synastryCard;
 
   if (sessions.length === 0) {
     return (
@@ -202,57 +205,50 @@ export default function SynastryReportCard({ sessions }: SynastryReportCardProps
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        aria-label="Sinastria di coppia"
+        aria-label={sc.upsell.aria}
         className="rounded-2xl border border-border/70 bg-surface px-6 py-8 sm:px-8 sm:py-10 shadow-sm"
       >
         <div className="flex items-center gap-2 text-primary text-xs lg:text-sm uppercase tracking-[0.18em] font-medium">
           <Sparkles className="h-3.5 w-3.5" />
-          Sinastria di coppia
+          {sc.upsell.kicker}
         </div>
 
         <h3 className="mt-3 font-display text-2xl sm:text-[26px] font-semibold text-foreground leading-snug">
-          Scopri cosa succede quando il tuo Cielo si incontra con un altro.
+          {sc.upsell.title}
         </h3>
 
         <p className="mt-3 text-[15px] lg:text-base text-muted-foreground leading-relaxed max-w-prose">
-          La sinastria di coppia sovrappone la tua carta natale a quella di un'altra persona e analizza come i vostri
-          pianeti dialogano: dove c'e sintonia naturale, dove attrito, e cosa potete costruire insieme.
+          {sc.upsell.body}
         </p>
 
         <div className="mt-5 rounded-xl border border-border/70 bg-background/45 px-4 py-4">
-          <p className="text-xs lg:text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground">La lettura comprende:</p>
+          <p className="text-xs lg:text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground">{sc.upsell.includesTitle}</p>
           <ul className="mt-3 space-y-2 text-[15px] lg:text-base text-foreground/85 leading-relaxed">
-            <li className="flex gap-2">
-              <span className="text-primary mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" aria-hidden />
-              <span>Il ritratto della coppia: chi siete insieme e l'archetipo della vostra relazione</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-primary mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" aria-hidden />
-              <span>Attrazione, comunicazione, mondo emotivo: dove funzionate e dove fate fatica</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-primary mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" aria-hidden />
-              <span>Le sfide come crescita, i pattern karmici, e la direzione della relazione</span>
-            </li>
+            {sc.upsell.includes.map((item, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="text-primary mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" aria-hidden />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
         <div className="mt-7">
           <div className="flex items-baseline justify-center gap-2 mb-3">
-            <span className="text-muted-foreground line-through text-sm lg:text-base">19,00 €</span>
-            <span className="text-primary font-semibold text-xl lg:text-2xl">14,90 €</span>
+            <span className="text-muted-foreground line-through text-sm lg:text-base">{m.common.priceLabel(market.prices.synastry)}</span>
+            <span className="text-primary font-semibold text-xl lg:text-2xl">{m.common.priceLabel(market.prices.synastryLaunch)}</span>
           </div>
           <Button variant="premium" size="lg" onClick={() => navigate("/coppia")} className="w-full lg:text-base lg:h-12">
-            Scopri la Sinastria di Coppia
+            {sc.upsell.cta}
           </Button>
           <p className="mt-2 text-xs lg:text-sm text-muted-foreground text-center">
-            Pagamento unico. Servono i dati di nascita di entrambi.
+            {sc.upsell.note}
           </p>
         </div>
 
         <p className="mt-6 flex items-center justify-center gap-2 text-xs lg:text-sm text-muted-foreground">
           <Lock className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-          Pagamento sicuro - Accesso immediato
+          {sc.upsell.secureNote}
         </p>
       </motion.section>
     );
@@ -272,14 +268,13 @@ export default function SynastryReportCard({ sessions }: SynastryReportCardProps
       >
         <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-[0.18em] font-medium">
           <Heart className="h-3.5 w-3.5" />
-          Un'altra relazione
+          {sc.another.kicker}
         </div>
         <h3 className="mt-3 font-display text-xl sm:text-2xl font-semibold text-foreground leading-snug">
-          Vuoi esplorare un'altra relazione?
+          {sc.another.title}
         </h3>
         <p className="mt-2 text-[15px] lg:text-base text-muted-foreground leading-relaxed max-w-prose">
-          Acquista una nuova sinastria di coppia con dati di nascita diversi, per scoprire come il tuo cielo dialoga
-          con un'altra persona.
+          {sc.another.body}
         </p>
         <Button
           variant="premium"
@@ -288,7 +283,7 @@ export default function SynastryReportCard({ sessions }: SynastryReportCardProps
           className="mt-5 gap-2 w-full sm:w-auto"
         >
           <Heart className="h-4 w-4" />
-          Nuova sinastria
+          {sc.another.cta}
         </Button>
       </motion.div>
     </div>

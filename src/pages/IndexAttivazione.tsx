@@ -8,6 +8,7 @@ import SEO from "@/components/SEO";
 import { ArrowRight } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { DEFAULT_FAQS, faqJsonLd, productJsonLd } from "@/lib/seo-jsonld";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const INK = "#1a2744";
 const RULE = "rgba(26,39,68,0.32)";
@@ -240,6 +241,8 @@ const PlateCaption = ({ label }: { label: string }) => (
 
 const IndexAttivazione = () => {
   const navigate = useNavigate();
+  const { m, market } = useI18n();
+  const la = m.landingAttivazione;
   // Angle-targeted Meta landing. ?funnel=attivazione fa sì che Quiz.tsx mostri
   // le 2 domande angle-specific (sintomo + narrazione) invece delle classica
   // (attachment + focus). Skeleton (date/time/place/name) resta invariato.
@@ -254,15 +257,14 @@ const IndexAttivazione = () => {
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
       <SEO
-        title="Tema Natale per chi si sente fermo — Codice Interiore"
-        description="Sai cosa vuoi ma non parti? Una lettura del tema natale per capire cosa ti accende e cosa ti blocca. In italiano, circa 10 pagine. Inizia gratis."
+        title={la.seo.title}
+        description={la.seo.description}
         path="/lp/attivazione"
         jsonLd={[
           productJsonLd({
-            name: "Lettura del Tema Natale — Attivazione",
-            description:
-              "Lettura del tema natale orientata al blocco e al movimento: cosa ti accende, cosa ti blocca, condizioni di attivazione. Scritta in italiano.",
-            url: "https://www.codiceinteriore.it/lp/attivazione",
+            name: la.seo.productName,
+            description: la.seo.productDescription,
+            url: `${market.siteUrl}/lp/attivazione`,
           }),
           faqJsonLd(DEFAULT_FAQS),
         ]}
@@ -348,7 +350,7 @@ const IndexAttivazione = () => {
                     opacity: 0.6,
                   }}
                 >
-                  Tav. I · Carta del cielo
+                  {la.plateHero}
                 </span>
                 <span
                   className="block h-px w-10"
@@ -366,11 +368,11 @@ const IndexAttivazione = () => {
                   className="text-[38px] sm:text-[48px] md:text-[56px] lg:text-[62px] font-normal text-foreground leading-[1.05] tracking-[-0.012em]"
                   style={{ fontFamily: FONT_DISPLAY }}
                 >
-                  Il tuo{" "}
+                  {la.hero.titlePre}{" "}
                   <em className="font-medium" style={{ color: INK }}>
-                    Tema Natale
-                  </em>{" "}
-                  spiegato in modo chiaro
+                    {la.hero.titleEm}
+                  </em>
+                  {la.hero.titlePost}
                   <br className="hidden sm:block" />
                 </motion.h1>
 
@@ -381,7 +383,7 @@ const IndexAttivazione = () => {
                   className="ci-dropcap mt-9 text-[19px] md:text-[20px] leading-[1.7] text-foreground/80 max-w-[30rem]"
                   style={{ fontFamily: FONT_BODY }}
                 >
-                  Scopri cosa ti accende, cosa ti blocca, perché certe cose non partono nonostante tu sappia cosa fare.
+                  {la.hero.subtitle}
                 </motion.p>
 
                 <motion.div
@@ -391,14 +393,14 @@ const IndexAttivazione = () => {
                   className="mt-10 flex flex-col items-start gap-3"
                 >
                   <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
-                    Inizia il quiz
+                    {la.hero.cta}
                     <ArrowRight className="ml-1.5 h-5 w-5" />
                   </Button>
                   <p
                     className="text-[17px] md:text-[19px] tracking-wide text-muted-foreground"
                     style={{ fontFamily: FONT_BODY }}
                   >
-                    Quiz di 2 minuti · Nessuna conoscenza necessaria
+                    {la.hero.microcopy}
                   </p>
 
                   <div className="mt-7 w-full max-w-[26rem]">
@@ -417,9 +419,9 @@ const IndexAttivazione = () => {
                       className="text-center text-[12px] md:text-[13px] tracking-[0.32em] uppercase font-medium opacity-75 leading-[1.7]"
                       style={{ fontFamily: FONT_BODY, color: INK }}
                     >
-                      Oltre 10.000 persone
+                      {la.hero.socialProofLine1}
                       <br />
-                      hanno ricevuto la loro lettura
+                      {la.hero.socialProofLine2}
                     </p>
                     <div className="flex items-center justify-center gap-3 mt-2.5">
                       <span className="h-px flex-1" style={{ background: RULE_SOFT }} />
@@ -440,15 +442,10 @@ const IndexAttivazione = () => {
 
           {/* COSA PUOI SCOPRIRE */}
           <section className="container max-w-3xl mx-auto px-6 py-20 md:py-28 relative">
-            <ChapterHeading numeral="I." title="Cosa puoi scoprire" />
+            <ChapterHeading numeral="I." title={la.discover.heading} />
 
             <ol className="space-y-7 max-w-xl mx-auto" style={{ fontFamily: FONT_BODY }}>
-              {[
-                "Perché certe cose non si attivano, anche quando sai cosa fare",
-                "Cosa ti accende davvero, oltre quello che credi",
-                "Lo schema che si ripete senza che tu lo veda",
-                "Il tuo ritmo profondo, diverso da quello che ti chiedono",
-              ].map((text, i) => {
+              {la.discover.items.map((text, i) => {
                 const numerals = ["i.", "ii.", "iii.", "iv."];
                 return (
                   <motion.li
@@ -482,7 +479,7 @@ const IndexAttivazione = () => {
               className="text-center max-w-2xl mx-auto"
             >
               <div className="mb-9">
-                <PlateCaption label="Tav. II" />
+                <PlateCaption label={la.quote.plate} />
               </div>
 
               <blockquote
@@ -492,7 +489,7 @@ const IndexAttivazione = () => {
                 <span className="opacity-40 mr-0.5" style={{ color: INK }}>
                   &ldquo;
                 </span>
-                Quello che ti accende e quello che ti blocca era già lì il giorno in cui sei nato
+                {la.quote.text}
                 <span className="opacity-40 ml-0.5" style={{ color: INK }}>
                   &rdquo;
                 </span>
@@ -510,14 +507,12 @@ const IndexAttivazione = () => {
 
           {/* COME FUNZIONA */}
           <section className="container max-w-4xl mx-auto px-6 py-20 md:py-28 relative">
-            <ChapterHeading numeral="II." title="Come funziona" />
+            <ChapterHeading numeral="II." title={la.howItWorks.heading} />
 
             <div className="grid gap-12 md:gap-10 md:grid-cols-3 max-w-3xl mx-auto">
-              {[
-                { numeral: "I.", title: "Inserisci i tuoi dati di nascita" },
-                { numeral: "II.", title: "Rispondi a poche domande brevi" },
-                { numeral: "III.", title: "Ricevi la tua lettura iniziale gratuitamente" },
-              ].map((item, i) => (
+              {la.howItWorks.steps
+                .map((title, i) => ({ numeral: ["I.", "II.", "III."][i], title }))
+                .map((item, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 14 }}
@@ -576,7 +571,7 @@ const IndexAttivazione = () => {
               className="text-[20px] md:text-[22px] italic leading-[1.6] text-foreground/85 max-w-md mx-auto"
               style={{ fontFamily: FONT_DISPLAY }}
             >
-              Inizia dalla tua lettura iniziale. Capirai meglio cosa ti accende e cosa ti blocca.
+              {la.finalCta.body}
             </motion.p>
 
             <motion.div
@@ -587,7 +582,7 @@ const IndexAttivazione = () => {
               className="mt-10"
             >
               <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
-                Inizia il quiz
+                {la.finalCta.cta}
                 <ArrowRight className="ml-1.5 h-5 w-5" />
               </Button>
             </motion.div>

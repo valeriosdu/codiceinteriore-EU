@@ -1,6 +1,8 @@
 // Anello score editoriale: cifra italica grande, anello sottile, tick decorativi
 // alle posizioni del quadrante (12, 3, 6, 9). Estetica manoscritto contemporaneo.
 
+import { useI18n } from '@/i18n/I18nProvider';
+
 interface ScoreOverallRingProps {
   score: number; // 0-100
   size?: number;
@@ -10,8 +12,10 @@ interface ScoreOverallRingProps {
 export function ScoreOverallRing({
   score,
   size = 180,
-  label = 'Compatibilità',
+  label,
 }: ScoreOverallRingProps) {
+  const { m } = useI18n();
+  const resolvedLabel = label ?? m.coppia.ringDefaultLabel;
   const safeScore = Math.max(0, Math.min(100, Math.round(score)));
   const cx = size / 2;
   const cy = size / 2;
@@ -41,7 +45,7 @@ export function ScoreOverallRing({
         viewBox={`0 0 ${size} ${size}`}
         className="block"
         role="img"
-        aria-label={`Punteggio ${safeScore} su 100`}
+        aria-label={m.coppia.ringAria(safeScore)}
       >
         {/* Tick marks zodiacali esterni */}
         {ticks.map((t, i) => (
@@ -108,12 +112,12 @@ export function ScoreOverallRing({
           /100
         </text>
       </svg>
-      {label && (
+      {resolvedLabel && (
         <span
           className="mt-3 text-[11px] uppercase text-muted-foreground"
           style={{ letterSpacing: '0.32em' }}
         >
-          {label}
+          {resolvedLabel}
         </span>
       )}
     </div>

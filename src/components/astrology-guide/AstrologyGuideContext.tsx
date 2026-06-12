@@ -11,7 +11,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { PACK_CREDITS, PACK_PRICE_LABEL } from "./constants";
+import { PACK_CREDITS } from "./constants";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export type AstrologyGuideQuestion = {
   id: string;
@@ -87,6 +88,9 @@ export const AstrologyGuideProvider = ({
   quizSessionId,
   children,
 }: AstrologyGuideProviderProps) => {
+  const { m, market } = useI18n();
+  const gt = m.astrologyGuide.toasts;
+  const packPrice = m.common.priceLabel(market.prices.astroPack);
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<AstrologyGuideCredits | null>(null);
   const [questions, setQuestions] = useState<AstrologyGuideQuestion[]>([]);
@@ -301,18 +305,14 @@ export const AstrologyGuideProvider = ({
             const added = current - baseline;
             await refresh();
             if (cancelled) return;
-            toast.success(
-              `Pacchetto attivato. Hai ${added} ${added === 1 ? "nuova domanda" : "nuove domande"}.`,
-            );
+            toast.success(gt.packActivated(added));
             navigate("/report", { replace: true });
             return;
           }
           await new Promise((r) => setTimeout(r, INTERVAL_MS));
         }
         if (cancelled) return;
-        toast.info(
-          "Il pagamento è in elaborazione. Ricarica tra qualche secondo per vedere le nuove domande.",
-        );
+        toast.info(gt.paymentProcessing);
         navigate("/report", { replace: true });
       } catch (err) {
         console.error("[astrology-guide] guide=activated flow error:", err);
@@ -384,15 +384,11 @@ export const AstrologyGuideProvider = ({
             // FunctionsHttpError exposes the response body on `context`
             ctx?.body?.error ||
             (error as Error)?.message ||
-            "Errore durante l'invio.";
+            gt.sendError;
           if (message === "no_credits") {
-            toast.error(
-              `Hai esaurito le tue domande. Acquista altre ${PACK_CREDITS} a ${PACK_PRICE_LABEL}.`,
-            );
+            toast.error(gt.noCredits(PACK_CREDITS, packPrice));
           } else if (message === "duplicate_question") {
-            toast.info(
-              "Hai già fatto questa domanda di recente. La risposta è nel thread (o sta arrivando).",
-            );
+            toast.info(gt.duplicate);
           } else {
             toast.error(message);
           }
@@ -406,13 +402,13 @@ export const AstrologyGuideProvider = ({
         return { success: true, scheduledFor: data?.scheduled_for };
       } catch (e) {
         console.error("[astrology-guide] submit error:", e);
-        toast.error("Non siamo riusciti a inviare la domanda. Riprova.");
+        toast.error(gt.submitError);
         return { success: false };
       } finally {
         setSubmitting(false);
       }
     },
-    [quizSessionId, refresh],
+    [quizSessionId, refresh, gt],
   );
 
   const buyPack: AstrologyGuideActions["buyPack"] = useCallback(async () => {
@@ -424,18 +420,14 @@ export const AstrologyGuideProvider = ({
         { body: { quizSessionId } },
       );
       if (error) throw error;
-      if (!data?.url) throw new Error("URL non disponibile");
+      if (!data?.url) throw new Error(gt.noUrl);
       window.location.href = data.url;
     } catch (e) {
       console.error("[astrology-guide] checkout error:", e);
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : "Non siamo riusciti ad aprire il pagamento. Riprova tra un istante.",
-      );
+      toast.error(e instanceof Error ? e.message : gt.checkoutError);
       setBuyingPack(false);
     }
-  }, [quizSessionId]);
+  }, [quizSessionId, gt]);
 
   const submitFeedback: AstrologyGuideActions["submitFeedback"] = useCallback(
     async (questionId, feedback, comment = null) => {

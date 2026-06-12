@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface OfferCardProps {
   name: string;
@@ -15,6 +16,7 @@ interface OfferCardProps {
 }
 
 const OfferCard = ({ name, price, promise, features, recommended, ctaLabel, onSelect, loading, index = 0 }: OfferCardProps) => {
+  const { m } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,7 +30,7 @@ const OfferCard = ({ name, price, promise, features, recommended, ctaLabel, onSe
     >
       {recommended && (
         <span className="absolute -top-3 left-6 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full">
-          Scelta consigliata
+          {m.common.recommendedChoice}
         </span>
       )}
       <div className="space-y-2">
@@ -50,7 +52,7 @@ const OfferCard = ({ name, price, promise, features, recommended, ctaLabel, onSe
         onClick={onSelect}
         disabled={loading}
       >
-        {loading ? 'Caricamento…' : ctaLabel}
+        {loading ? m.common.loading : ctaLabel}
       </Button>
     </motion.div>
   );

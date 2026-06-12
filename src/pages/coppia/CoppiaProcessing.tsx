@@ -8,6 +8,7 @@ import {
 } from '@/context/SynastryContext';
 import { useSynastrySession } from '@/hooks/useSynastrySession';
 import { pollUntilStatus } from '@/hooks/useSynastryStatus';
+import { useI18n } from '@/i18n/I18nProvider';
 
 const TIMEOUT_MS = 90_000;
 
@@ -15,11 +16,13 @@ export default function CoppiaProcessing() {
   const navigate = useNavigate();
   const { data, updateData } = useSynastry();
   const { createSession, triggerInsights } = useSynastrySession();
+  const { m, market } = useI18n();
+  const cp = m.coppia.processing;
   const ranRef = useRef(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Sinastria - Elaborazione | Codice Interiore';
+    document.title = m.coppia.titles.processing(market.siteName);
 
     // Idempotency: se l'utente e' gia stato sul teaser/offer (e quindi la sessione
     // esiste e i dati sono pronti), salta la creazione di una nuova sessione.
@@ -42,7 +45,7 @@ export default function CoppiaProcessing() {
         sessionId = await createSession();
       }
       if (!sessionId) {
-        setErrorMessage('Non sono riuscito a creare la sessione. Riprova fra qualche secondo.');
+        setErrorMessage(cp.errors.createSession);
         return;
       }
 
@@ -60,12 +63,12 @@ export default function CoppiaProcessing() {
       );
 
       if (!snap) {
-        setErrorMessage('La generazione sta richiedendo piu del previsto. Riprova tra poco.');
+        setErrorMessage(cp.errors.timeout);
         return;
       }
 
       if (snap.processing_status === 'failed') {
-        setErrorMessage(snap.processing_error || 'Generazione fallita. Riprova.');
+        setErrorMessage(snap.processing_error || cp.errors.failed);
         return;
       }
 
@@ -91,7 +94,7 @@ export default function CoppiaProcessing() {
         {errorMessage ? (
           <>
             <h1 className="font-display text-2xl font-semibold text-foreground mb-3">
-              C'e un problema
+              {cp.errorTitle}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">{errorMessage}</p>
             <button
@@ -99,7 +102,7 @@ export default function CoppiaProcessing() {
               onClick={() => navigate('/coppia/quiz')}
               className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90"
             >
-              Torna al quiz
+              {cp.backToQuiz}
             </button>
           </>
         ) : (
@@ -108,10 +111,10 @@ export default function CoppiaProcessing() {
               <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
             <h1 className="font-display text-2xl font-semibold text-foreground mb-3">
-              Sto calcolando la vostra sinastria
+              {cp.title}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sto componendo le due carte natali e i loro contatti. Pochi secondi.
+              {cp.body}
             </p>
           </>
         )}

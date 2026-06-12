@@ -2,7 +2,8 @@
 // Nome dell'archetipo in italic Cormorant grande, sopra una etichetta in
 // small caps tracking-extra che fa da "categoria" tipo libro Adelphi.
 
-import { getArchetypeMeta } from '@/lib/synastry-archetypes';
+import { resolveArchetypeId } from '@/lib/synastry-archetypes';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface ArchetypeBadgeProps {
   archetypeId: string | null | undefined;
@@ -11,7 +12,8 @@ interface ArchetypeBadgeProps {
 }
 
 export function ArchetypeBadge({ archetypeId, variant = 'inline' }: ArchetypeBadgeProps) {
-  const meta = getArchetypeMeta(archetypeId);
+  const { m } = useI18n();
+  const meta = m.coppia.archetypes[resolveArchetypeId(archetypeId)];
 
   if (variant === 'hero') {
     return (
@@ -20,7 +22,7 @@ export function ArchetypeBadge({ archetypeId, variant = 'inline' }: ArchetypeBad
           className="text-xs uppercase text-muted-foreground"
           style={{ letterSpacing: '0.42em' }}
         >
-          Archetipo
+          {m.coppia.archetypeLabel}
         </span>
         <h2
           className="font-editorial text-primary leading-[0.95]"
@@ -41,7 +43,7 @@ export function ArchetypeBadge({ archetypeId, variant = 'inline' }: ArchetypeBad
         className="uppercase text-muted-foreground font-medium"
         style={{ letterSpacing: '0.28em', fontSize: '0.65rem' }}
       >
-        Archetipo
+        {m.coppia.archetypeLabel}
       </span>
       <span
         aria-hidden

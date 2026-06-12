@@ -2,11 +2,14 @@ import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import Header from '@/components/Header';
 import { Ornament } from '@/components/coppia/Ornament';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function CoppiaLanding() {
+  const { m, market } = useI18n();
+  const cl = m.coppia.landing;
   useEffect(() => {
-    document.title = 'Sinastria di Coppia | Codice Interiore';
-  }, []);
+    document.title = m.coppia.titles.landing(market.siteName);
+  }, [m, market.siteName]);
 
   return (
     <div className="min-h-screen bg-background paper-grain">
@@ -24,14 +27,12 @@ export default function CoppiaLanding() {
               textWrap: 'balance',
             }}
           >
-            La vostra relazione,
+            {cl.heroLine1}
             <br />
-            <span className="text-primary">letta dalle stelle</span>
+            <span className="text-primary">{cl.heroLine2}</span>
           </h1>
           <p className="text-foreground/80 max-w-xl mx-auto text-lg md:text-xl leading-relaxed mb-8">
-            Vi siete mai chiesti perché su certe cose vi capite al volo, e su
-            altre vi scontrate sempre? La sinastria è la risposta astrologica a
-            questa domanda.
+            {cl.heroSubtitle}
           </p>
           <Link
             to="/coppia/quiz"
@@ -44,7 +45,7 @@ export default function CoppiaLanding() {
                 '0 1px 0 rgba(141,74,53,0.4), 0 12px 24px -10px rgba(141,74,53,0.35)',
             }}
           >
-            Inizia il quiz
+            {cl.cta}
             <span
               className="inline-block text-base transition-transform duration-300 group-hover:translate-x-1"
               aria-hidden="true"
@@ -56,9 +57,9 @@ export default function CoppiaLanding() {
             className="mt-4 text-xs uppercase text-muted-foreground leading-tight text-center"
             style={{ letterSpacing: '0.18em' }}
           >
-            Già 800+ coppie hanno scoperto
+            {cl.socialProofLine1}
             <br />
-            la loro sinastria di coppia
+            {cl.socialProofLine2}
           </p>
         </section>
 
@@ -70,7 +71,7 @@ export default function CoppiaLanding() {
               className="text-sm uppercase text-muted-foreground mb-3"
               style={{ letterSpacing: '0.32em' }}
             >
-              Cosa scoprirete
+              {cl.discoverKicker}
             </p>
             <h2
               className="font-editorial italic text-foreground leading-[1.05]"
@@ -80,32 +81,16 @@ export default function CoppiaLanding() {
                 textWrap: 'balance',
               }}
             >
-              Non un oroscopo di coppia.
+              {cl.discoverTitleLine1}
               <br />
-              Una lettura vera.
+              {cl.discoverTitleLine2}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3">
-            {(
-              [
-                {
-                  num: 'I',
-                  title: "L'archetipo della coppia",
-                  body: 'Che tipo di relazione siete? 14 configurazioni astrologiche distinte, calcolate dai vostri pianeti reali.',
-                },
-                {
-                  num: 'II',
-                  title: 'Sei punteggi di compatibilità',
-                  body: 'Sintonia emotiva, attrazione, comunicazione, stabilità, crescita, tensione. Misurati, spiegati, contestualizzati.',
-                },
-                {
-                  num: 'III',
-                  title: 'Otto sezioni di lettura',
-                  body: 'Ritratto della coppia, chimica, comunicazione, mondo emotivo, sfide, stabilità, schema karmico, direzione. In italiano chiaro.',
-                },
-              ] as const
-            ).map((item, i) => (
+            {cl.discoverItems
+              .map((item, i) => ({ num: ['I', 'II', 'III'][i], ...item }))
+              .map((item, i) => (
               <div
                 key={item.num}
                 className={`px-5 md:px-6 py-6 md:py-8 border-b border-primary/15 ${i < 2 ? 'md:border-r' : ''}`}
@@ -135,23 +120,10 @@ export default function CoppiaLanding() {
             className="text-sm uppercase text-muted-foreground text-center mb-6"
             style={{ letterSpacing: '0.32em' }}
           >
-            Come funziona
+            {cl.howKicker}
           </p>
           <div className="space-y-5">
-            {[
-              {
-                step: '1',
-                text: 'Inserite i dati di nascita di entrambi: data, ora (se la conoscete) e luogo.',
-              },
-              {
-                step: '2',
-                text: 'Calcoliamo la carta natale di ciascuno e analizziamo la sovrapposizione: è la sinastria.',
-              },
-              {
-                step: '3',
-                text: 'Ricevete il report completo: circa 10 pagine in italiano.',
-              },
-            ].map((s) => (
+            {cl.howSteps.map((text, i) => ({ step: String(i + 1), text })).map((s) => (
               <div key={s.step} className="flex gap-5 items-start">
                 <span
                   className="font-editorial italic text-primary/50 leading-none shrink-0"
@@ -180,7 +152,7 @@ export default function CoppiaLanding() {
                 '0 1px 0 rgba(141,74,53,0.4), 0 12px 24px -10px rgba(141,74,53,0.35)',
             }}
           >
-            Inizia il quiz
+            {cl.cta}
             <span
               className="inline-block text-base transition-transform duration-300 group-hover:translate-x-1"
               aria-hidden="true"

@@ -1,4 +1,17 @@
-const SITE_URL = "https://www.codiceinteriore.it";
+// JSON-LD per la SEO, parametrizzato sul mercato attivo. Vive fuori dall'albero
+// React, quindi legge MARKET (costante build-time) e il catalogo via
+// getMessages invece di useI18n.
+
+import { MARKET } from "@/markets";
+import { getMessages } from "@/i18n";
+
+const SITE_URL = MARKET.siteUrl;
+const LOCALE = MARKET.locale;
+const COUNTRY = MARKET.countryCode;
+const CURRENCY = MARKET.currency;
+const SITE_NAME = MARKET.siteName;
+const M = getMessages(MARKET.language);
+
 const DEFAULT_PRODUCT_IMAGES = [
   "/og/codice-interiore-1x1.webp",
   "https://storage.googleapis.com/gpt-engineer-file-uploads/aVZLfEnbxJa0xgnu23ciVWX02mn2/social-images/social-1775810599830-hf_20260410_084149_80649ee2-59cc-4089-b616-cd3a7ef4c012.webp",
@@ -9,8 +22,8 @@ const toAbsoluteImage = (raw: string) =>
 
 const digitalShippingDetails = {
   "@type": "OfferShippingDetails",
-  shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "EUR" },
-  shippingDestination: { "@type": "DefinedRegion", addressCountry: "IT" },
+  shippingRate: { "@type": "MonetaryAmount", value: "0", currency: CURRENCY },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: COUNTRY },
   deliveryTime: {
     "@type": "ShippingDeliveryTime",
     handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
@@ -20,7 +33,7 @@ const digitalShippingDetails = {
 
 const merchantReturnPolicy = {
   "@type": "MerchantReturnPolicy",
-  applicableCountry: "IT",
+  applicableCountry: COUNTRY,
   returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
   merchantReturnDays: 14,
   returnMethod: "https://schema.org/ReturnByMail",
@@ -42,20 +55,18 @@ export const productJsonLd = (overrides?: {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: overrides?.name ?? "Lettura del Tema Natale",
-    description:
-      overrides?.description ??
-      "Lettura personalizzata del tema natale, scritta in italiano. Report di circa 10 pagine basato sui dati di nascita, con focus psicologico anziché predittivo.",
-    brand: { "@type": "Brand", name: "Codice Interiore" },
+    name: overrides?.name ?? M.seo.product.name,
+    description: overrides?.description ?? M.seo.product.description,
+    brand: { "@type": "Brand", name: SITE_NAME },
     url: overrides?.url ?? SITE_URL,
     image,
-    category: "Astrologia psicologica",
+    category: M.seo.product.category,
     offers: [
       {
         "@type": "Offer",
-        name: "Lettura Completa",
-        price: "19",
-        priceCurrency: "EUR",
+        name: M.seo.product.offerBase,
+        price: String(MARKET.prices.base),
+        priceCurrency: CURRENCY,
         availability: "https://schema.org/InStock",
         url: SITE_URL,
         shippingDetails: digitalShippingDetails,
@@ -63,9 +74,9 @@ export const productJsonLd = (overrides?: {
       },
       {
         "@type": "Offer",
-        name: "Lettura + 1 mese di Transiti",
-        price: "29",
-        priceCurrency: "EUR",
+        name: M.seo.product.offerPremium,
+        price: String(MARKET.prices.premium),
+        priceCurrency: CURRENCY,
         availability: "https://schema.org/InStock",
         url: SITE_URL,
         shippingDetails: digitalShippingDetails,
@@ -102,9 +113,9 @@ export const breadcrumbJsonLd = (items: { name: string; path: string }[]) => ({
 export const contactPageJsonLd = () => ({
   "@context": "https://schema.org",
   "@type": "ContactPage",
-  name: "Contatti — Codice Interiore",
+  name: `${M.seo.contactPageName} — ${SITE_NAME}`,
   url: `${SITE_URL}/contatti`,
-  inLanguage: "it-IT",
+  inLanguage: LOCALE,
 });
 
 export const articleJsonLd = (args: {
@@ -131,13 +142,13 @@ export const articleJsonLd = (args: {
     description: args.description,
     url: fullUrl,
     mainEntityOfPage: { "@type": "WebPage", "@id": fullUrl },
-    inLanguage: "it-IT",
+    inLanguage: LOCALE,
     datePublished: args.datePublished,
     dateModified: args.dateModified ?? args.datePublished,
-    author: { "@type": "Organization", name: "Codice Interiore", url: SITE_URL },
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
     publisher: {
       "@type": "Organization",
-      name: "Codice Interiore",
+      name: SITE_NAME,
       logo: { "@type": "ImageObject", url: `${SITE_URL}/favicon.ico` },
     },
     ...(imageUrl ? { image: imageUrl } : {}),
@@ -165,7 +176,7 @@ export const definedTermJsonLd = (args: {
     name: args.term,
     description: args.description,
     url: `${SITE_URL}${args.path}`,
-    inLanguage: "it-IT",
+    inLanguage: LOCALE,
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
       name: args.inDefinedTermSetName,
@@ -185,28 +196,7 @@ export const collectionPageJsonLd = (args: {
   name: args.name,
   description: args.description,
   url: `${SITE_URL}${args.path}`,
-  inLanguage: "it-IT",
+  inLanguage: LOCALE,
 });
 
-export const DEFAULT_FAQS = [
-  {
-    question: "L'astrologia non è scienza, è fuffa?",
-    answer:
-      "Non è una predizione né una scienza esatta: è un linguaggio simbolico che usiamo come griglia per leggere la struttura interiore. Il valore viene dalla precisione psicologica della lettura, non da pretese predittive. Garanzia rimborso se la lettura ti sembra generica.",
-  },
-  {
-    question: "Trovo letture gratis online, perché pagare?",
-    answer:
-      "Le letture gratis sono frammenti tecnici (un significato per pianeta, uno per casa, uno per aspetto). Qui leggiamo la carta come insieme coerente, in italiano umano, in circa 10 pagine. È l'opposto della frammentazione.",
-  },
-  {
-    question: "Mi dirà cosa fare?",
-    answer:
-      "No, e lo diciamo prima. Descriviamo come sei costruito o costruita, non diamo consigli motivazionali. La credibilità del prodotto sta in questa modestia.",
-  },
-  {
-    question: "Quanto è personalizzata davvero?",
-    answer:
-      "La lettura è generata sulla tua carta natale specifica (data, ora e luogo di nascita) più le risposte a 2 domande di intake che modulano il tono. Tutto deriva dal cielo del giorno in cui sei nato o nata.",
-  },
-];
+export const DEFAULT_FAQS = M.seo.defaultFaqs;

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/I18nProvider";
 
 type Status = "loading" | "valid" | "already" | "confirming" | "done" | "error";
 
@@ -11,6 +12,8 @@ const Unsubscribe = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [status, setStatus] = useState<Status>("loading");
+  const { m, market } = useI18n();
+  const u = m.legal.unsubscribe;
 
   useEffect(() => {
     if (!token) {
@@ -65,20 +68,20 @@ const Unsubscribe = () => {
         {status === "loading" && (
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground text-sm">Verifica in corso…</p>
+            <p className="text-muted-foreground text-sm">{u.verifying}</p>
           </>
         )}
 
         {status === "valid" && (
           <>
             <h1 className="font-display text-2xl font-semibold text-foreground">
-              Cancellazione iscrizione
+              {u.validTitle}
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Confermi di voler annullare l'iscrizione alle email di Codice Interiore?
+              {u.validBody(market.siteName)}
             </p>
             <Button variant="premium" size="hero" className="w-full" onClick={handleConfirm}>
-              Conferma cancellazione
+              {u.confirm}
             </Button>
           </>
         )}
@@ -86,7 +89,7 @@ const Unsubscribe = () => {
         {status === "confirming" && (
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground text-sm">Elaborazione…</p>
+            <p className="text-muted-foreground text-sm">{u.processing}</p>
           </>
         )}
 
@@ -94,10 +97,10 @@ const Unsubscribe = () => {
           <>
             <CheckCircle className="h-10 w-10 text-green-600 mx-auto" />
             <h1 className="font-display text-2xl font-semibold text-foreground">
-              Iscrizione annullata
+              {u.doneTitle}
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Non riceverai più email da Codice Interiore.
+              {u.doneBody(market.siteName)}
             </p>
           </>
         )}
@@ -106,10 +109,10 @@ const Unsubscribe = () => {
           <>
             <CheckCircle className="h-10 w-10 text-muted-foreground mx-auto" />
             <h1 className="font-display text-2xl font-semibold text-foreground">
-              Già cancellato
+              {u.alreadyTitle}
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              La tua iscrizione è già stata annullata in precedenza.
+              {u.alreadyBody}
             </p>
           </>
         )}
@@ -118,10 +121,10 @@ const Unsubscribe = () => {
           <>
             <XCircle className="h-10 w-10 text-destructive mx-auto" />
             <h1 className="font-display text-2xl font-semibold text-foreground">
-              Link non valido
+              {u.errorTitle}
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Questo link di cancellazione non è valido o è scaduto.
+              {u.errorBody}
             </p>
           </>
         )}

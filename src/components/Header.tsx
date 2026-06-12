@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogIn, User } from "lucide-react";
 import logo from "@/assets/logo.webp";
 import { useAuthReady } from "@/hooks/useAuthReady";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface HeaderProps {
   backButton?: React.ReactNode;
@@ -13,6 +14,7 @@ interface HeaderProps {
 const Header = ({ backButton }: HeaderProps) => {
   const navigate = useNavigate();
   const { user } = useAuthReady();
+  const { m, market } = useI18n();
 
   const handleLogoClick = async () => {
     try {
@@ -56,14 +58,14 @@ const Header = ({ backButton }: HeaderProps) => {
       {backButton}
       <a
         href="/"
-        aria-label="Codice Interiore — Home"
+        aria-label={m.common.header.homeAria(market.siteName)}
         onClick={(e) => {
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
           e.preventDefault();
           handleLogoClick();
         }}
       >
-        <img src={logo} alt="Codice Interiore" className="h-8 cursor-pointer" />
+        <img src={logo} alt={market.siteName} className="h-8 cursor-pointer" />
       </a>
       <div className="ml-auto">
         {user ? (
@@ -74,7 +76,7 @@ const Header = ({ backButton }: HeaderProps) => {
             onClick={() => navigate("/report")}
           >
             <User className="h-4 w-4 mr-1.5 shrink-0" />
-            <span className="truncate">{user.email || "Il mio report"}</span>
+            <span className="truncate">{user.email || m.common.header.myReport}</span>
           </Button>
         ) : (
           <Button
@@ -84,7 +86,7 @@ const Header = ({ backButton }: HeaderProps) => {
             onClick={() => navigate("/activate")}
           >
             <LogIn className="h-4 w-4 mr-1.5" />
-            Accedi
+            {m.common.header.signIn}
           </Button>
         )}
       </div>

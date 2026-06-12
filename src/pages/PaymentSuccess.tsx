@@ -8,11 +8,14 @@ import { useQuiz } from "@/context/QuizContext";
 import { supabase } from "@/integrations/supabase/client";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const { trackPurchase } = useMetaConversions();
   const { data } = useQuiz();
+  const { m } = useI18n();
+  const s = m.success;
   const [verifying, setVerifying] = useState(true);
   const [sessionId, setSessionId] = useState<string>(
     () => new URLSearchParams(window.location.search).get("session_id") || "",
@@ -87,7 +90,7 @@ const PaymentSuccess = () => {
             paypal_order_id: paypalToken,
           });
         } else {
-          setPaypalError("Non siamo riusciti a confermare il pagamento PayPal. Contattaci se l'importo è stato addebitato.");
+          setPaypalError(s.paypalError);
         }
       } finally {
         if (!cancelled) setPaypalCapturing(false);
@@ -206,16 +209,16 @@ const PaymentSuccess = () => {
 
         <div className="space-y-3">
           <h1 className="font-display text-3xl font-semibold text-foreground">
-            {paypalError ? "C'è stato un problema" : "Pagamento completato"}
+            {paypalError ? s.titleProblem : s.titleOk}
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             {paypalError
               ? paypalError
               : paypalCapturing
-                ? "Stiamo confermando il pagamento PayPal…"
+                ? s.bodyPaypalCapturing
                 : verifying
-                  ? "Stiamo verificando il pagamento e collegando la tua lettura."
-                  : "Prima di accedere, crea il tuo account per salvare la lettura e ritrovarla quando vuoi."}
+                  ? s.bodyVerifying
+                  : s.bodyDefault}
           </p>
         </div>
 
@@ -228,7 +231,7 @@ const PaymentSuccess = () => {
           }}
         >
           {(verifying || paypalCapturing) ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {paypalCapturing ? "Conferma in corso…" : verifying ? "Verifica in corso…" : "Crea account e continua"}
+          {paypalCapturing ? s.ctaCapturing : verifying ? s.ctaVerifying : s.ctaContinue}
         </Button>
       </motion.div>
     </div>

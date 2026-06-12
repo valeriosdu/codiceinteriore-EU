@@ -5,4 +5,4 @@
 
 export const INCLUDED_FREE_CREDITS = 2;
 export const PACK_CREDITS = 10;
-export const PACK_PRICE_LABEL = "7,90 €";
+// Il prezzo del pacchetto è per-mercato: usa m.common.priceLabel(market.prices.astroPack).

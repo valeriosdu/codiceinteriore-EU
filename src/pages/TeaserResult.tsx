@@ -19,7 +19,8 @@ import { useAuthReady } from "@/hooks/useAuthReady";
 import CheckoutReview from "@/components/CheckoutReview";
 import { isLovablePreview, DEMO_TEASER_INSIGHTS, DEMO_USER_NAME } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
-import { getFunnelConfig } from "@/funnels/registry";
+import { getFunnelContent } from "@/funnels/registry";
+import { useI18n } from "@/i18n/I18nProvider";
 
 // Happy path is 5–10s, so keep the first-attempt window short. On timeout we
 // auto-retry (re-invoking process-session-insights) up to MAX_RECOVERY_ATTEMPTS
@@ -32,10 +33,12 @@ const MAX_RECOVERY_ATTEMPTS = 2;
 const TeaserResult = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
+  const { m, market } = useI18n();
+  const t = m.teaser;
   // Per-angle UI content (teaser fallbacks, offer copy, FAQ, trust bullets).
   // Defaults to classica when funnelSlug is not set on the session (e.g. user
   // arriving fresh on /teaser without a context).
-  const funnelConfig = getFunnelConfig(data.funnelSlug);
+  const funnelConfig = getFunnelContent(data.funnelSlug, m.funnels);
   const [hasPaid, setHasPaid] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [pollFailed, setPollFailed] = useState(false);
@@ -222,12 +225,12 @@ const TeaserResult = () => {
 
   const handleSelect = async (type: "base" | "premium") => {
     if (isLovablePreview()) {
-      toast.info("Anteprima Lovable: il pagamento è disabilitato in preview.");
+      toast.info(t.toasts.previewPaymentsDisabled);
       return;
     }
     const sessionId = data.sessionId || getStoredSessionId();
     if (!sessionId || !sessionReady) {
-      toast.error("Stiamo ancora completando la tua lettura iniziale. Riprova tra poco.");
+      toast.error(t.toasts.stillCompleting);
       return;
     }
 
@@ -258,7 +261,7 @@ const TeaserResult = () => {
       setReviewOpen(true);
     } catch (e: any) {
       console.error("Checkout pre-check error:", e);
-      toast.error("Stiamo ancora preparando la tua lettura. Riprova tra qualche secondo.");
+      toast.error(t.toasts.stillPreparing);
     } finally {
       setCheckoutLoading(null);
     }
@@ -300,10 +303,10 @@ const TeaserResult = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="font-display text-2xl font-semibold text-foreground">
-          Non siamo riusciti a generare la lettura
+          {t.failed.title}
         </h1>
         <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          Qualcosa non sta funzionando come dovrebbe. Riprova tra qualche istante.
+          {t.failed.body}
         </p>
         <Button
           variant="default"
@@ -313,7 +316,7 @@ const TeaserResult = () => {
             setRecoveryAttempt(0);
           }}
         >
-          Riprova
+          {t.failed.retry}
         </Button>
       </div>
     );
@@ -325,12 +328,10 @@ const TeaserResult = () => {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <h1 className="font-display text-2xl font-semibold text-foreground">
-          Stiamo completando la tua lettura iniziale
+          {t.loading.title}
         </h1>
         <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          {slowMessage
-            ? "Ci sta mettendo più del previsto. Resta su questa pagina: riproveremo automaticamente tra poco."
-            : "Stiamo verificando la carta natale e gli insight prima di mostrarti l'offerta."}
+          {slowMessage ? t.loading.slow : t.loading.normal}
         </p>
       </div>
     );
@@ -351,10 +352,10 @@ const TeaserResult = () => {
           className="text-center space-y-3 max-w-xl mx-auto"
         >
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground">
-            {data.userName ? `${data.userName}, ecco` : "Ecco"} la tua lettura iniziale
+            {t.hero.title(data.userName)}
           </h1>
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-            Quello che emerge da una prima lettura del tuo Tema Natale.
+            {t.hero.subtitle}
           </p>
           {(data.birthDate || data.birthTime || data.birthPlace) && (
             <div className="pt-2 text-xs text-muted-foreground/80 space-y-1">
@@ -390,7 +391,7 @@ const TeaserResult = () => {
                   }}
                   className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors"
                 >
-                  I dati non sono giusti?
+                  {t.hero.wrongData}
                 </button>
               )}
             </div>
@@ -420,7 +421,7 @@ const TeaserResult = () => {
             className="text-center space-y-3 py-2 max-w-xl mx-auto"
           >
             <Button variant="premium" size="hero" onClick={handleOpenFullReport}>
-              Apri la lettura completa
+              {t.openFullReport}
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </motion.div>
@@ -466,27 +467,22 @@ const TeaserResult = () => {
           {/* Offer cards */}
           <div id="offer-cards" className="grid gap-6 md:grid-cols-2">
             <OfferCard
-              name="Lettura Completa del tuo Tema Natale"
-              price="19€"
+              name={t.offers.baseName}
+              price={m.common.priceLabel(market.prices.base)}
               promise={funnelConfig.teaser.baseOffer.promise}
               features={funnelConfig.teaser.baseOffer.features}
-              ctaLabel="Ottieni la Lettura Completa"
+              ctaLabel={t.offers.baseCta}
               onSelect={() => handleSelect("base")}
               loading={checkoutLoading === "base"}
               index={0}
             />
             <OfferCard
-              name="Lettura Completa + 1 Mese di Transiti"
-              price="29€"
-              promise="Capire cosa ti guida in profondità e leggere con chiarezza anche il momento che stai vivendo adesso"
-              features={[
-                "Tutto ciò che è incluso nella Lettura Completa",
-                "1 mese di letture settimanali personalizzate sui transiti del periodo",
-                "Un aiuto in più per capire cosa si sta attivando emotivamente adesso",
-                "Omaggio: poesia trasformativa personale",
-              ]}
+              name={t.offers.premiumName}
+              price={m.common.priceLabel(market.prices.premium)}
+              promise={t.offers.premiumPromise}
+              features={t.offers.premiumFeatures}
               recommended
-              ctaLabel="Ottieni la Lettura + Transiti"
+              ctaLabel={t.offers.premiumCta}
               onSelect={() => handleSelect("premium")}
               loading={checkoutLoading === "premium"}
               index={1}
@@ -519,9 +515,9 @@ const TeaserResult = () => {
             className="pt-4 pb-2"
           >
             <div className="text-center space-y-3 mb-10">
-              <span className="text-xs uppercase tracking-[0.2em] text-primary/70 font-medium">Domande frequenti</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-primary/70 font-medium">{t.faq.kicker}</span>
               <h3 className="font-display text-2xl md:text-3xl font-semibold text-foreground">
-                Qui trovi le risposte ai dubbi più comuni prima dell'acquisto.
+                {t.faq.heading}
               </h3>
             </div>
 
@@ -552,7 +548,7 @@ const TeaserResult = () => {
                 document.getElementById("offer-cards")?.scrollIntoView({ behavior: "smooth", block: "center" })
               }
             >
-              Ottieni la lettura completa
+              {t.bottomCta}
             </Button>
           </div>
 
@@ -564,13 +560,13 @@ const TeaserResult = () => {
             className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground py-6"
           >
             <span className="flex items-center gap-1.5">
-              <Zap className="w-3 h-3" /> Accesso immediato
+              <Zap className="w-3 h-3" /> {t.reassurance.instantAccess}
             </span>
             <span className="flex items-center gap-1.5">
-              <Lock className="w-3 h-3" /> Pagamento sicuro
+              <Lock className="w-3 h-3" /> {t.reassurance.securePayment}
             </span>
             <span className="flex items-center gap-1.5">
-              <PenLine className="w-3 h-3" /> Lettura scritta in linguaggio umano
+              <PenLine className="w-3 h-3" /> {t.reassurance.humanLanguage}
             </span>
           </motion.div>
         </div>

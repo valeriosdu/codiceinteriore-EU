@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/I18nProvider";
 
 import hero from "@/assets/report-preview/hero.webp";
 import identita from "@/assets/report-preview/1-identita.webp";
@@ -13,21 +14,17 @@ import schemi from "@/assets/report-preview/5-schemi.webp";
 import consigli from "@/assets/report-preview/6-consigli.webp";
 import poesia from "@/assets/report-preview/7-poesia.webp";
 
-const slides = [
-  { src: hero, alt: "Anteprima del Report Completo Codice Interiore" },
-  { src: identita, alt: "Estratto della sezione Identità profonda" },
-  { src: emozioni, alt: "Estratto della sezione Dinamiche emotive" },
-  { src: relazioni, alt: "Estratto della sezione Relazioni e amore" },
-  { src: lavoro, alt: "Estratto della sezione Lavoro e direzione" },
-  { src: schemi, alt: "Estratto della sezione Schemi e blocchi ricorrenti" },
-  { src: consigli, alt: "Estratto della sezione Consigli pratici" },
-  { src: poesia, alt: "Estratto della Poesia trasformativa" },
-];
+// Screenshot del report italiano: asset per-lingua, da sostituire quando un
+// nuovo mercato avrà i propri estratti.
+const SLIDE_IMAGES = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
 
 const ReportPreviewCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
+  const { m } = useI18n();
+  const rp = m.social.reportPreview;
+  const slides = SLIDE_IMAGES.map((src, i) => ({ src, alt: rp.slideAlts[i] ?? "" }));
 
   useEffect(() => {
     if (!api) return;
@@ -47,8 +44,8 @@ const ReportPreviewCarousel = () => {
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setZoomedIndex(null);
-      if (e.key === "ArrowRight") setZoomedIndex((i) => (i === null ? i : (i + 1) % slides.length));
-      if (e.key === "ArrowLeft") setZoomedIndex((i) => (i === null ? i : (i - 1 + slides.length) % slides.length));
+      if (e.key === "ArrowRight") setZoomedIndex((i) => (i === null ? i : (i + 1) % SLIDE_IMAGES.length));
+      if (e.key === "ArrowLeft") setZoomedIndex((i) => (i === null ? i : (i - 1 + SLIDE_IMAGES.length) % SLIDE_IMAGES.length));
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -64,7 +61,7 @@ const ReportPreviewCarousel = () => {
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.5 }}
       className="space-y-8"
-      aria-label="Anteprima del report completo"
+      aria-label={rp.aria}
     >
       <div className="relative">
         <Carousel setApi={setApi} opts={{ align: "center", loop: true }} className="w-full">
@@ -74,7 +71,7 @@ const ReportPreviewCarousel = () => {
                 <button
                   type="button"
                   onClick={() => setZoomedIndex(i)}
-                  aria-label={`Ingrandisci: ${slide.alt}`}
+                  aria-label={rp.zoomAria(slide.alt)}
                   className="group block w-full overflow-hidden rounded-2xl bg-surface ring-1 ring-border/40 shadow-[0_8px_30px_-12px_hsl(var(--foreground)/0.15)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-zoom-in"
                 >
                   <img
@@ -94,7 +91,7 @@ const ReportPreviewCarousel = () => {
         <button
           type="button"
           onClick={() => api?.scrollPrev()}
-          aria-label="Slide precedente"
+          aria-label={rp.prevSlide}
           className="absolute left-1 md:left-2 lg:-left-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 md:h-11 md:w-11 flex items-center justify-center rounded-full bg-background/90 backdrop-blur ring-1 ring-border/60 text-foreground/80 hover:text-foreground hover:bg-background transition-colors shadow-sm"
         >
           <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
@@ -102,7 +99,7 @@ const ReportPreviewCarousel = () => {
         <button
           type="button"
           onClick={() => api?.scrollNext()}
-          aria-label="Slide successiva"
+          aria-label={rp.nextSlide}
           className="absolute right-1 md:right-2 lg:-right-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 md:h-11 md:w-11 flex items-center justify-center rounded-full bg-background/90 backdrop-blur ring-1 ring-border/60 text-foreground/80 hover:text-foreground hover:bg-background transition-colors shadow-sm"
         >
           <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
@@ -116,7 +113,7 @@ const ReportPreviewCarousel = () => {
             key={i}
             type="button"
             onClick={() => api?.scrollTo(i)}
-            aria-label={`Vai alla slide ${i + 1}`}
+            aria-label={rp.goToSlide(i + 1)}
             className={cn(
               "h-1.5 rounded-full transition-all",
               current === i ? "w-6 bg-primary" : "w-1.5 bg-foreground/20 hover:bg-foreground/40",
@@ -126,8 +123,7 @@ const ReportPreviewCarousel = () => {
       </div>
 
       <p className="text-center text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-        Estratto dimostrativo. Il Report completo che riceverai è personalizzato sui tuoi dati di nascita, ed è di circa
-        10 pagine.
+        {rp.note}
       </p>
 
       {/* Zoom Lightbox */}
@@ -142,7 +138,7 @@ const ReportPreviewCarousel = () => {
             onClick={() => setZoomedIndex(null)}
             role="dialog"
             aria-modal="true"
-            aria-label="Anteprima ingrandita"
+            aria-label={rp.zoomedAria}
           >
             {/* Close button */}
             <button
@@ -151,7 +147,7 @@ const ReportPreviewCarousel = () => {
                 e.stopPropagation();
                 setZoomedIndex(null);
               }}
-              aria-label="Chiudi anteprima"
+              aria-label={rp.closePreview}
               className="absolute top-4 right-4 z-10 h-11 w-11 flex items-center justify-center rounded-full bg-background/95 text-foreground hover:bg-background transition-colors shadow-lg"
             >
               <X className="h-5 w-5" />
@@ -164,7 +160,7 @@ const ReportPreviewCarousel = () => {
                 e.stopPropagation();
                 setZoomedIndex((i) => (i === null ? i : (i - 1 + slides.length) % slides.length));
               }}
-              aria-label="Immagine precedente"
+              aria-label={rp.prevImage}
               className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-10 h-11 w-11 flex items-center justify-center rounded-full bg-background/90 text-foreground hover:bg-background transition-colors shadow-lg"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -177,7 +173,7 @@ const ReportPreviewCarousel = () => {
                 e.stopPropagation();
                 setZoomedIndex((i) => (i === null ? i : (i + 1) % slides.length));
               }}
-              aria-label="Immagine successiva"
+              aria-label={rp.nextImage}
               className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-10 h-11 w-11 flex items-center justify-center rounded-full bg-background/90 text-foreground hover:bg-background transition-colors shadow-lg"
             >
               <ChevronRight className="h-5 w-5" />
@@ -196,7 +192,7 @@ const ReportPreviewCarousel = () => {
             />
 
             <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-background/70">
-              Tocca fuori o premi ESC per chiudere
+              {rp.escHint}
             </p>
           </motion.div>
         )}

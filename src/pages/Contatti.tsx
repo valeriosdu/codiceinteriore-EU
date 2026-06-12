@@ -20,15 +20,19 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { Messages } from "@/i18n";
+import { useMemo } from "react";
 
-const contactSchema = z.object({
-  name: z.string().trim().min(1, "Inserisci il tuo nome").max(100),
-  email: z.string().trim().email("Inserisci un'email valida").max(255),
-  message: z.string().trim().min(1, "Scrivi un messaggio").max(5000),
-  reason: z.string().optional(),
-});
+const makeContactSchema = (v: Messages["legal"]["contact"]["validation"]) =>
+  z.object({
+    name: z.string().trim().min(1, v.name).max(100),
+    email: z.string().trim().email(v.email).max(255),
+    message: z.string().trim().min(1, v.message).max(5000),
+    reason: z.string().optional(),
+  });
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type ContactFormData = z.infer<ReturnType<typeof makeContactSchema>>;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -40,7 +44,10 @@ const fadeUp = {
 };
 
 const Contatti = () => {
+  const { m, market } = useI18n();
+  const c = m.legal.contact;
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const contactSchema = useMemo(() => makeContactSchema(c.validation), [c.validation]);
 
   const {
     register,
@@ -94,8 +101,8 @@ const Contatti = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO
-        title="Contatti — Codice Interiore"
-        description="Hai una domanda sul tema natale, sul report o sull'accesso alla tua area personale? Scrivici dal modulo o invia un'email a info@codiceinteriore.it."
+        title={c.seoTitle(market.siteName)}
+        description={c.seoDescription(market.contactEmail)}
         path="/contatti"
         jsonLd={contactPageJsonLd()}
       />
@@ -111,13 +118,13 @@ const Contatti = () => {
           custom={0}
         >
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-3 font-medium">
-            Contatti
+            {c.kicker}
           </p>
           <h1 className="font-serif text-3xl md:text-4xl font-semibold text-foreground mb-4">
-            Scrivici
+            {c.title}
           </h1>
           <p className="text-muted-foreground text-base leading-relaxed max-w-md mx-auto">
-            Per domande, supporto o richieste, puoi contattarci qui. Ti risponderemo il prima possibile.
+            {c.subtitle}
           </p>
         </motion.div>
 
@@ -129,7 +136,7 @@ const Contatti = () => {
           variants={fadeUp}
           custom={1}
         >
-          Se hai un dubbio sul report, sull'accesso alla tua area personale o sul funzionamento del servizio, puoi scriverci direttamente tramite il modulo qui sotto.
+          {c.intro}
         </motion.p>
 
         {/* Form */}
@@ -143,15 +150,15 @@ const Contatti = () => {
           {status === "success" ? (
             <div className="flex flex-col items-center py-10 text-center gap-3">
               <CheckCircle2 className="h-10 w-10 text-primary" />
-              <p className="text-foreground font-medium text-lg">Messaggio inviato.</p>
-              <p className="text-muted-foreground text-sm">Ti risponderemo appena possibile.</p>
+              <p className="text-foreground font-medium text-lg">{c.sent}</p>
+              <p className="text-muted-foreground text-sm">{c.sentSub}</p>
               <Button
                 variant="ghost"
                 size="sm"
                 className="mt-4"
                 onClick={() => setStatus("idle")}
               >
-                Invia un altro messaggio
+                {c.sendAnother}
               </Button>
             </div>
           ) : (
@@ -159,11 +166,11 @@ const Contatti = () => {
               {/* Nome */}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-xs tracking-wide uppercase text-muted-foreground font-medium">
-                  Nome *
+                  {c.nameLabel}
                 </Label>
                 <Input
                   id="name"
-                  placeholder="Il tuo nome"
+                  placeholder={c.namePlaceholder}
                   {...register("name")}
                   className="bg-background"
                 />
@@ -175,12 +182,12 @@ const Contatti = () => {
               {/* Email */}
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs tracking-wide uppercase text-muted-foreground font-medium">
-                  Email *
+                  {c.emailLabel}
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="La tua email"
+                  placeholder={c.emailPlaceholder}
                   {...register("email")}
                   className="bg-background"
                 />
@@ -192,17 +199,17 @@ const Contatti = () => {
               {/* Motivo */}
               <div className="space-y-1.5">
                 <Label htmlFor="reason" className="text-xs tracking-wide uppercase text-muted-foreground font-medium">
-                  Motivo del contatto
+                  {c.reasonLabel}
                 </Label>
                 <Select onValueChange={(val) => setValue("reason", val)}>
                   <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Seleziona un motivo" />
+                    <SelectValue placeholder={c.reasonPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Supporto acquisto">Supporto acquisto</SelectItem>
-                    <SelectItem value="Accesso al report">Accesso al report</SelectItem>
-                    <SelectItem value="Domanda generale">Domanda generale</SelectItem>
-                    <SelectItem value="Collaborazioni">Collaborazioni</SelectItem>
+                    <SelectItem value={c.reasons.purchase}>{c.reasons.purchase}</SelectItem>
+                    <SelectItem value={c.reasons.report}>{c.reasons.report}</SelectItem>
+                    <SelectItem value={c.reasons.general}>{c.reasons.general}</SelectItem>
+                    <SelectItem value={c.reasons.collab}>{c.reasons.collab}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -210,11 +217,11 @@ const Contatti = () => {
               {/* Messaggio */}
               <div className="space-y-1.5">
                 <Label htmlFor="message" className="text-xs tracking-wide uppercase text-muted-foreground font-medium">
-                  Messaggio *
+                  {c.messageLabel}
                 </Label>
                 <Textarea
                   id="message"
-                  placeholder="Scrivi qui il tuo messaggio…"
+                  placeholder={c.messagePlaceholder}
                   rows={5}
                   {...register("message")}
                   className="bg-background resize-none"
@@ -227,7 +234,7 @@ const Contatti = () => {
               {status === "error" && (
                 <div className="flex items-center gap-2 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>Si è verificato un problema. Riprova tra poco.</span>
+                  <span>{c.error}</span>
                 </div>
               )}
 
@@ -240,10 +247,10 @@ const Contatti = () => {
                 {status === "loading" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Invio in corso…
+                    {c.sending}
                   </>
                 ) : (
-                  "Invia messaggio"
+                  c.send
                 )}
               </Button>
             </form>
@@ -259,16 +266,16 @@ const Contatti = () => {
           custom={3}
         >
           <h2 className="font-serif text-lg font-semibold text-foreground mb-2">
-            Altri contatti
+            {c.otherTitle}
           </h2>
           <p className="text-sm text-muted-foreground mb-1">
-            Se preferisci, puoi contattarci anche via email.
+            {c.otherSub}
           </p>
           <a
-            href="mailto:info@codiceinteriore.it"
+            href={`mailto:${market.contactEmail}`}
             className="text-sm text-primary hover:underline underline-offset-4 transition-colors"
           >
-            info@codiceinteriore.it
+            {market.contactEmail}
           </a>
         </motion.div>
 
@@ -280,7 +287,7 @@ const Contatti = () => {
           variants={fadeUp}
           custom={4}
         >
-          I tuoi dati verranno usati solo per rispondere alla tua richiesta.
+          {c.privacyNote}
         </motion.p>
       </main>
 

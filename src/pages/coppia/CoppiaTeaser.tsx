@@ -12,6 +12,8 @@ import { ScoreOverallRing } from '@/components/coppia/ScoreOverallRing';
 import { CoppiaOfferCard } from '@/components/coppia/CoppiaOfferCard';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import CheckoutReview, { type PurchaseType } from '@/components/CheckoutReview';
+import { useI18n } from '@/i18n/I18nProvider';
+import type { Messages } from '@/i18n';
 
 
 
@@ -55,81 +57,24 @@ function getDomainTier(score: number, isInverse = false): ScoreTier {
   return 'low';
 }
 
-interface OverallFraming {
-  ringLabel: string;
-  contextLine: string;
-  domainsSubtitle: string;
-  ctaLabel: string;
-  offerSubtitle: string;
-  extraBullet: string | null;
-}
+type FramingCopy = Messages['coppia']['teaser']['framing']['high'];
 
-function getOverallFraming(score: number): OverallFraming {
-  if (score >= 65) return {
-    ringLabel: 'Affinità',
-    contextLine: 'Un punteggio alto segnala terreno fertile. Ma anche le carte migliori hanno angoli ciechi: il report li attraversa uno per uno.',
-    domainsSubtitle: 'Nella lettura completa, ogni numero diventa una pagina, ancorata ai vostri pianeti reali.',
-    ctaLabel: 'Leggere la lettura',
-    offerSubtitle: 'sulla vostra relazione',
-    extraBullet: null,
-  };
-  if (score >= 40) return {
-    ringLabel: 'Dinamica',
-    contextLine: 'Un punteggio intermedio racconta una relazione con più sfumature che certezze. Sono proprio le sfumature a rendere la lettura interessante.',
-    domainsSubtitle: 'Ogni numero apre una domanda. Nella lettura completa, le domande trovano il contesto dei vostri pianeti reali.',
-    ctaLabel: 'Leggere la lettura',
-    offerSubtitle: 'sulla vostra relazione',
-    extraBullet: 'Cosa funziona e cosa chiede attenzione, dominio per dominio',
-  };
-  return {
-    ringLabel: 'Complessità',
-    contextLine: `Un punteggio basso non descrive quanto vi volete bene: descrive quanto c'è da capire. Le relazioni complesse sono quelle che, lette bene, restituiscono di più.`,
-    domainsSubtitle: `I numeri bassi non sono sentenze: sono i punti in cui la relazione chiede più attenzione. La lettura completa spiega il perché, pianeta per pianeta.`,
-    ctaLabel: 'Capire la dinamica',
-    offerSubtitle: 'per capire la vostra relazione',
-    extraBullet: 'Le ragioni astrologiche dietro le dinamiche più difficili',
-  };
+function getOverallFraming(score: number, framing: Messages['coppia']['teaser']['framing']): FramingCopy {
+  if (score >= 65) return framing.high;
+  if (score >= 40) return framing.medium;
+  return framing.low;
 }
 
 type ScoreKey = keyof NonNullable<ReturnType<typeof mapScoresIt>>;
 
-const SCORE_DOMAINS: Array<{
-  key: ScoreKey;
-  label: string;
-  hintByTier: Record<ScoreTier, string>;
-  isInverse?: boolean;
-}> = [
-  {
-    key: 'sintonia_emotiva',
-    label: 'Sintonia emotiva',
-    hintByTier: { high: 'Vi sentite a casa', medium: 'Un rifugio che si costruisce', low: 'Dove cercate sicurezza?' },
-  },
-  {
-    key: 'attrazione',
-    label: 'Attrazione',
-    hintByTier: { high: 'Chimica e desiderio', medium: 'Una chimica da decifrare', low: 'Cosa vi avvicina davvero?' },
-  },
-  {
-    key: 'comunicazione',
-    label: 'Comunicazione',
-    hintByTier: { high: 'Le parole scorrono', medium: 'Lingue diverse, stesso intento', low: 'Dove si inceppa il dialogo?' },
-  },
-  {
-    key: 'stabilita',
-    label: 'Stabilità',
-    hintByTier: { high: 'Tenuta nel tempo', medium: 'Le fondamenta si scelgono', low: 'Su cosa poggia la coppia?' },
-  },
-  {
-    key: 'crescita',
-    label: 'Crescita',
-    hintByTier: { high: 'Vi fate muovere', medium: 'Espansione con attrito', low: 'Cosa vi tiene fermi?' },
-  },
-  {
-    key: 'tensione',
-    label: 'Tensione',
-    isInverse: true,
-    hintByTier: { high: 'Frizione che trasforma', medium: 'Attrito costruttivo', low: 'Calma apparente o reale?' },
-  },
+// Domini in ordine di visualizzazione; label e hint vivono nel catalogo.
+const SCORE_DOMAIN_KEYS: Array<{ key: ScoreKey; isInverse?: boolean }> = [
+  { key: 'sintonia_emotiva' },
+  { key: 'attrazione' },
+  { key: 'comunicazione' },
+  { key: 'stabilita' },
+  { key: 'crescita' },
+  { key: 'tensione', isInverse: true },
 ];
 
 const DEV_PREVIEW_DATA = import.meta.env.DEV ? {
@@ -154,6 +99,8 @@ export default function CoppiaTeaser() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: ctxData, resetForNewPurchase } = useSynastry();
+  const { m, market } = useI18n();
+  const ct = m.coppia.teaser;
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const isDevPreview = import.meta.env.DEV && searchParams.get('preview') === 'true';
@@ -162,7 +109,7 @@ export default function CoppiaTeaser() {
     : ctxData;
 
   useEffect(() => {
-    document.title = 'Sinastria - Anteprima | Codice Interiore';
+    document.title = m.coppia.titles.teaser(market.siteName);
     if (!isDevPreview && !data.sessionId || !isDevPreview && !data.archetype) {
       navigate('/coppia/quiz', { replace: true });
     }
@@ -172,7 +119,7 @@ export default function CoppiaTeaser() {
 
   const scoresIt = mapScoresIt(data.scores);
   const displayOverall = computeDisplayOverall(data.scoreOverall);
-  const framing = getOverallFraming(displayOverall);
+  const framing = getOverallFraming(displayOverall, ct.framing);
 
   const reviewPurchaseType: PurchaseType = 'synastry_launch';
 
@@ -200,7 +147,7 @@ export default function CoppiaTeaser() {
               className="text-sm uppercase text-muted-foreground mb-4 text-center md:text-left"
               style={{ letterSpacing: '0.42em' }}
             >
-              La sinastria di
+              {ct.kicker}
             </p>
             <h1
               className="font-editorial italic text-foreground leading-[0.92] mb-4 text-center md:text-left text-pretty whitespace-nowrap"
@@ -209,11 +156,11 @@ export default function CoppiaTeaser() {
                 fontSize: 'clamp(2.25rem, 6vw, 5.25rem)',
               }}
             >
-              {data.personA.name || 'Persona A'}
+              {data.personA.name || ct.personA}
               <span className="inline-block px-2 md:px-3 text-primary/70 not-italic font-normal">
                 &amp;
               </span>
-              {data.personB.name || 'Persona B'}
+              {data.personB.name || ct.personB}
             </h1>
             {(data.personA.birthDate?.day || data.personB.birthDate?.day) && (
               <div className="flex flex-col gap-1 mb-5 text-center md:text-left">
@@ -234,16 +181,16 @@ export default function CoppiaTeaser() {
                   onClick={handleEditData}
                   className="py-1 text-[15px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
                 >
-                  I dati non sono giusti?
+                  {ct.wrongData}
                 </button>
               </div>
             )}
             <p className="text-foreground/80 max-w-md leading-relaxed text-lg md:text-xl text-center md:text-left mx-auto md:mx-0">
               {displayOverall >= 75
-                ? "C'è una base forte tra voi. La lettura completa vi mostra esattamente dove nasce questa sintonia e come proteggerla nel tempo."
+                ? ct.overallHigh
                 : displayOverall >= 55
-                  ? "La vostra relazione ha risorse e punti aperti: è il profilo che restituisce la lettura più ricca, perché c'è molto da capire e da usare."
-                  : "I numeri non sono un voto: raccontano dove la relazione scorre e dove chiede attenzione. Le coppie con dinamiche complesse sono quelle che, nella lettura, scoprono di più."}
+                  ? ct.overallMedium
+                  : ct.overallLow}
             </p>
           </div>
 
@@ -275,14 +222,14 @@ export default function CoppiaTeaser() {
                 boxShadow: '0 1px 0 rgba(141,74,53,0.4), 0 12px 24px -10px rgba(141,74,53,0.35)',
               }}
             >
-              Ottieni la sinastria completa
+              {ct.primaryCta}
               <span aria-hidden className="text-base transition-transform duration-300 group-hover:translate-x-1">
                 →
               </span>
             </button>
             <p className="text-[15px] text-foreground/80 inline-flex items-center gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/60"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              Pagamento sicuro e protetto
+              {ct.securePayment}
             </p>
           </div>
         </section>
@@ -291,9 +238,10 @@ export default function CoppiaTeaser() {
         {scoresIt && (
           <section className="my-10 md:my-14">
             <div className="grid grid-cols-2 md:grid-cols-3">
-              {SCORE_DOMAINS.map((d) => {
+              {SCORE_DOMAIN_KEYS.map((d) => {
                 const v = scoresIt[d.key];
                 const pct = Math.max(2, v);
+                const domainCopy = ct.domains[d.key];
                 return (
                   <div
                     key={d.key}
@@ -303,7 +251,7 @@ export default function CoppiaTeaser() {
                       className="text-sm uppercase text-muted-foreground mb-1"
                       style={{ letterSpacing: '0.32em' }}
                     >
-                      {d.label}
+                      {domainCopy.label}
                     </p>
                     <div className="mb-1">
                       <span
@@ -320,7 +268,7 @@ export default function CoppiaTeaser() {
                       />
                     </div>
                     <p className="text-foreground/70 text-[15px] leading-tight">
-                      {d.hintByTier[getDomainTier(v, d.isInverse)]}
+                      {domainCopy[getDomainTier(v, d.isInverse)]}
                     </p>
                   </div>
                 );
@@ -345,7 +293,7 @@ export default function CoppiaTeaser() {
               {data.teaserHighlight.body}
             </p>
             <p className="text-foreground/60 text-right mt-6 text-[15px]">
-              Estratto dal sommario della vostra lettura
+              {ct.excerptCaption}
             </p>
           </section>
         )}
@@ -354,15 +302,13 @@ export default function CoppiaTeaser() {
         <section id="offerta" className="my-12 scroll-mt-8">
           <CoppiaOfferCard
             onSelect={handleOpenCheckout}
-            priceLabel="14,90 €"
-            strikeThroughPrice="19,00 €"
-            ctaLabel="Ottieni la sinastria completa"
+            priceLabel={m.common.priceLabel(market.prices.synastryLaunch)}
+            strikeThroughPrice={m.common.priceLabel(market.prices.synastry)}
+            ctaLabel={ct.primaryCta}
             subtitleLine2={framing.offerSubtitle}
             bullets={[
               ...(framing.extraBullet ? [framing.extraBullet] : []),
-              'Otto sezioni: ritratto, chimica, comunicazione, mondo emotivo, sfide, stabilità, pattern karmico, direzione',
-              'PDF da scaricare, accesso permanente',
-              'Circa 10 pagine in italiano chiaro',
+              ...ct.offerBullets,
             ]}
           />
         </section>
@@ -373,27 +319,10 @@ export default function CoppiaTeaser() {
             className="font-editorial text-foreground text-center leading-[1.05] mb-8"
             style={{ fontWeight: 500, fontSize: 'clamp(1.5rem, 3.5vw, 2rem)' }}
           >
-            Domande frequenti
+            {ct.faqTitle}
           </h3>
           <Accordion type="single" collapsible className="space-y-3">
-            {[
-              {
-                q: 'Su cosa si basa la sinastria?',
-                a: 'La sinastria confronta le posizioni planetarie reali al momento della nascita di entrambi. Non usiamo segno solare generico: calcoliamo la carta natale completa di ciascuno e analizziamo gli aspetti tra i due temi.',
-              },
-              {
-                q: 'Posso regalare la sinastria a qualcuno?',
-                a: 'Certo. Ti basta conoscere i dati di nascita di entrambe le persone. Dopo il pagamento riceverai il PDF via email: puoi inoltrarlo o stamparlo come regalo.',
-              },
-              {
-                q: 'Quanto tempo ci vuole per ricevere la lettura?',
-                a: "La lettura viene generata in pochi minuti dopo il pagamento. Riceverai un'email con il link per accedere al PDF e alla versione web.",
-              },
-              {
-                q: 'Funziona anche per coppie in crisi o appena conosciute?',
-                a: 'La sinastria fotografa il potenziale della relazione, non il suo stato attuale. È utile sia per capire le dinamiche di una coppia consolidata sia per esplorare una connessione nuova.',
-              },
-            ].map((item, i) => (
+            {ct.faqItems.map((item, i) => (
               <AccordionItem
                 key={i}
                 value={`faq-${i}`}

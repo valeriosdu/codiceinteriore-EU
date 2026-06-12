@@ -2,61 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Loader2, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAstrologyGuide } from "./AstrologyGuideContext";
-
-const GENERIC_CHIPS = [
-  "Quale schema affettivo mi porto dietro dall'infanzia?",
-  "Quale parte di me sto evitando di guardare in questo momento?",
-];
-
-const SECTION_CHIPS: Record<string, string[]> = {
-  identity: [
-    "Quale aspetto della mia identità è più sotterraneo e meno visibile agli altri?",
-    "Cosa nella mia carta spiega il mio bisogno di sentirmi diverso/a dagli altri?",
-  ],
-  emotions: [
-    "Perché certe emozioni mi travolgono e altre le sento appena?",
-    "Cosa nasconde la mia tendenza a chiudermi quando soffro davvero?",
-  ],
-  emotions_relationships: [
-    "Quale ferita emotiva si riattiva sempre nelle mie relazioni intime?",
-    "Perché tendo a desiderare chi mi tiene a distanza?",
-  ],
-  relationships: [
-    "Quale schema affettivo si ripete nelle mie storie più importanti?",
-    "Cosa cerco davvero in un partner, oltre a quello che dico?",
-  ],
-  blocks_patterns: [
-    "Quale schema mi blocca proprio quando sto per cambiare davvero?",
-    "Cosa sto proteggendo quando mi chiudo o mi sabotaggio?",
-  ],
-  blocks: [
-    "Cosa nasconde la mia tendenza a fermarmi proprio sul più bello?",
-    "Quale paura sotterranea mi impedisce di prendere posizione?",
-  ],
-  patterns: [
-    "Quale schema riconosco ma non riesco ancora a sciogliere?",
-    "Da dove arriva la mia difficoltà a chiedere quello di cui ho bisogno?",
-  ],
-  work: [
-    "Quale lavoro mi rispecchia davvero, al di là di soldi e sicurezza?",
-    "Perché tendo a sentirmi prosciugato/a anche quando faccio cose che amo?",
-  ],
-  work_direction: [
-    "Cosa sto evitando di guardare nel mio percorso professionale?",
-    "Quale direzione mi rispecchia, anche se mi spaventa?",
-  ],
-  advice: [
-    "Cosa devo lasciare andare adesso per fare spazio a qualcosa di nuovo?",
-    "Su quale parte di me dovrei concentrarmi nei prossimi mesi?",
-  ],
-};
-
-const chipsForSection = (sectionId: string | null): string[] => {
-  if (!sectionId) return GENERIC_CHIPS;
-  return SECTION_CHIPS[sectionId] || GENERIC_CHIPS;
-};
+import { useI18n } from "@/i18n/I18nProvider";
 
 const AstrologyGuideComposer = () => {
+  const { m } = useI18n();
+  const g = m.astrologyGuide;
+  const chipsForSection = (sectionId: string | null): string[] => {
+    if (!sectionId) return g.composer.genericChips;
+    return g.composer.sectionChips[sectionId] || g.composer.genericChips;
+  };
   const {
     credits,
     questions,
@@ -146,7 +100,7 @@ const AstrologyGuideComposer = () => {
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, 250))}
           onKeyDown={handleKey}
-          placeholder="Scrivi la tua domanda…"
+          placeholder={g.composer.placeholder}
           rows={2}
           maxLength={250}
           disabled={submitting}
@@ -163,13 +117,13 @@ const AstrologyGuideComposer = () => {
           ) : (
             <Send className="h-5 w-5" />
           )}
-          Invia
+          {g.composer.send}
         </Button>
       </div>
       <div className="flex items-center justify-between text-sm text-muted-foreground/80">
         <span className="flex items-center gap-1">
           <Sparkles className="h-4 w-4" />
-          Ti restano {balance} {balance === 1 ? "domanda" : "domande"}.
+          {g.composer.remaining(balance)}
         </span>
         <span>{text.length}/250</span>
       </div>

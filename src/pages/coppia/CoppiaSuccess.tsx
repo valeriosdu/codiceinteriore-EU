@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function CoppiaSuccess() {
   const navigate = useNavigate();
+  const { m, market } = useI18n();
+  const cs = m.coppia.success;
   const [sessionId, setSessionId] = useState<string>(
     () => new URLSearchParams(window.location.search).get('session_id') || '',
   );
@@ -11,8 +14,8 @@ export default function CoppiaSuccess() {
   const [paypalError, setPaypalError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Pagamento ricevuto | Codice Interiore';
-  }, []);
+    document.title = m.coppia.titles.success(market.siteName);
+  }, [m, market.siteName]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -59,7 +62,7 @@ export default function CoppiaSuccess() {
         setSessionId(opaqueId);
 
         if (!recovered) {
-          setPaypalError("Non siamo riusciti a confermare il pagamento PayPal. Contattaci se l'importo è stato addebitato.");
+          setPaypalError(cs.paypalError);
         }
       } finally {
         if (!cancelled) setPaypalCapturing(false);
@@ -87,14 +90,14 @@ export default function CoppiaSuccess() {
           </svg>
         </div>
         <h1 className="font-display text-2xl font-semibold text-foreground mb-3">
-          {paypalError ? "C'è stato un problema" : 'Grazie, pagamento ricevuto'}
+          {paypalError ? cs.titleProblem : cs.titleOk}
         </h1>
         <p className="text-sm text-muted-foreground">
           {paypalError
             ? paypalError
             : paypalCapturing
-              ? 'Stiamo confermando il pagamento PayPal…'
-              : 'Sto preparando il tuo account. Un attimo…'}
+              ? cs.capturing
+              : cs.preparing}
         </p>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/i18n/I18nProvider';
 
 type Mode = 'signup' | 'signin' | 'forgot';
 
@@ -16,6 +17,9 @@ export default function CoppiaActivate() {
   const [params] = useSearchParams();
   const sessionId = params.get('session_id') || '';
   const { toast } = useToast();
+  const { m, market } = useI18n();
+  const a = m.activate;
+  const ca = m.coppia.activate;
 
   const [mode, setMode] = useState<Mode>('signup');
   const [email, setEmail] = useState('');
@@ -54,7 +58,7 @@ export default function CoppiaActivate() {
   };
 
   useEffect(() => {
-    document.title = 'Sinastria – Attiva il tuo account | Codice Interiore';
+    document.title = m.coppia.titles.activate(market.siteName);
 
     const fetchEmail = async () => {
       if (!sessionId) { setFetchingEmail(false); return; }
@@ -107,7 +111,7 @@ export default function CoppiaActivate() {
     });
 
     if (authError) {
-      toast({ title: 'Errore di autenticazione', description: authError, variant: 'destructive' });
+      toast({ title: a.toasts.authError, description: authError, variant: 'destructive' });
       setAuthChecked(true);
       return () => { mounted = false; subscription.unsubscribe(); };
     }
@@ -137,7 +141,7 @@ export default function CoppiaActivate() {
         },
       });
       if (error) {
-        toast({ title: 'Errore di autenticazione', description: error.message, variant: 'destructive' });
+        toast({ title: a.toasts.authError, description: error.message, variant: 'destructive' });
         setSsoLoading(null);
         return;
       }
@@ -145,7 +149,7 @@ export default function CoppiaActivate() {
       // picks up SIGNED_IN and redirects.
     } catch (err) {
       console.error('SSO login error:', err);
-      toast({ title: 'Errore di autenticazione', variant: 'destructive' });
+      toast({ title: a.toasts.authError, variant: 'destructive' });
       setSsoLoading(null);
     }
   };
@@ -163,10 +167,7 @@ export default function CoppiaActivate() {
         toast({ title: error.message, variant: 'destructive' });
         return;
       }
-      toast({
-        title: 'Controlla la tua email',
-        description: 'Se l\'indirizzo è registrato, riceverai un link per reimpostare la password.',
-      });
+      toast(ca.toasts.checkEmailReset);
       setMode('signin');
       setPassword('');
       return;
@@ -174,12 +175,12 @@ export default function CoppiaActivate() {
 
     if (mode === 'signup') {
       if (password.length < 6) {
-        toast({ title: 'La password deve avere almeno 6 caratteri', variant: 'destructive' });
+        toast({ title: a.toasts.passwordTooShort, variant: 'destructive' });
         setLoading(false);
         return;
       }
       if (password !== confirmPassword) {
-        toast({ title: 'Le password non coincidono', variant: 'destructive' });
+        toast({ title: a.toasts.passwordMismatch, variant: 'destructive' });
         setLoading(false);
         return;
       }
@@ -192,7 +193,7 @@ export default function CoppiaActivate() {
       });
       if (signUpErr) {
         if (signUpErr.message.toLowerCase().includes('already')) {
-          toast({ title: 'Esiste già un account con questa email. Accedi.', variant: 'destructive' });
+          toast({ title: ca.toasts.alreadyRegistered, variant: 'destructive' });
           setMode('signin');
         } else {
           toast({ title: signUpErr.message, variant: 'destructive' });
@@ -204,7 +205,7 @@ export default function CoppiaActivate() {
     } else {
       const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
       if (signInErr) {
-        toast({ title: 'Email o password non corretti.', variant: 'destructive' });
+        toast({ title: ca.toasts.wrongCredentials, variant: 'destructive' });
         setLoading(false);
         return;
       }
@@ -229,18 +230,10 @@ export default function CoppiaActivate() {
       >
         <div className="text-center space-y-3">
           <h1 className="font-display text-3xl font-semibold text-foreground">
-            {mode === 'signup'
-              ? 'Crea il tuo account'
-              : mode === 'forgot'
-                ? 'Recupera l\'accesso'
-                : 'Accedi al tuo account'}
+            {ca.titles[mode]}
           </h1>
           <p className="text-muted-foreground leading-relaxed text-sm">
-            {mode === 'signup'
-              ? 'Per accedere al tuo report di sinastria'
-              : mode === 'forgot'
-                ? 'Inserisci la tua email: ti invieremo un link per reimpostare la password.'
-                : 'Inserisci le tue credenziali per accedere al tuo report di sinastria.'}
+            {ca.subtitles[mode]}
           </p>
         </div>
 
@@ -263,7 +256,7 @@ export default function CoppiaActivate() {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
               )}
-              Continua con Google
+              {a.google}
             </Button>
           </div>
         )}
@@ -271,14 +264,14 @@ export default function CoppiaActivate() {
         {(mode === 'signup' || mode === 'signin') && (
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">oppure</span>
+            <span className="text-xs text-muted-foreground">{a.or}</span>
             <div className="flex-1 h-px bg-border" />
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground/80 text-sm">Email</Label>
+            <Label htmlFor="email" className="text-foreground/80 text-sm">{a.fields.email}</Label>
             <Input
               id="email"
               type="email"
@@ -286,7 +279,7 @@ export default function CoppiaActivate() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={fetchingEmail}
-              placeholder={fetchingEmail ? 'Caricamento...' : 'La tua email'}
+              placeholder={fetchingEmail ? a.fields.emailLoading : a.fields.emailPlaceholder}
               className="h-12 rounded-xl border-muted bg-card"
             />
           </div>
@@ -294,14 +287,14 @@ export default function CoppiaActivate() {
           {mode !== 'forgot' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-foreground/80 text-sm">Password</Label>
+                <Label htmlFor="password" className="text-foreground/80 text-sm">{a.fields.password}</Label>
                 {mode === 'signin' && (
                   <button
                     type="button"
                     onClick={() => { setMode('forgot'); setPassword(''); setConfirmPassword(''); }}
                     className="text-xs text-primary font-medium hover:underline"
                   >
-                    Password dimenticata?
+                    {a.forgotLink}
                   </button>
                 )}
               </div>
@@ -313,7 +306,7 @@ export default function CoppiaActivate() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
-                  placeholder="Almeno 6 caratteri"
+                  placeholder={a.fields.passwordPlaceholder}
                   className="h-12 rounded-xl border-muted bg-card pr-12"
                 />
                 <button
@@ -329,7 +322,7 @@ export default function CoppiaActivate() {
 
           {mode === 'signup' && (
             <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-foreground/80 text-sm">Conferma password</Label>
+              <Label htmlFor="confirm-password" className="text-foreground/80 text-sm">{a.fields.confirmPassword}</Label>
               <Input
                 id="confirm-password"
                 type={showPassword ? 'text' : 'password'}
@@ -337,7 +330,7 @@ export default function CoppiaActivate() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 minLength={6}
-                placeholder="Ripeti la password"
+                placeholder={a.fields.confirmPasswordPlaceholder}
                 className="h-12 rounded-xl border-muted bg-card"
               />
             </div>
@@ -353,14 +346,10 @@ export default function CoppiaActivate() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {mode === 'signup' ? 'Creazione in corso...' : mode === 'forgot' ? 'Invio in corso...' : 'Accesso in corso...'}
+                {a.cta.loading[mode]}
               </>
-            ) : mode === 'signup' ? (
-              'Accedi al tuo report'
-            ) : mode === 'forgot' ? (
-              'Invia link di reset'
             ) : (
-              'Accedi'
+              a.cta[mode]
             )}
           </Button>
         </form>
@@ -369,16 +358,16 @@ export default function CoppiaActivate() {
           <p className="text-center text-sm text-muted-foreground">
             {mode === 'signup' ? (
               <>
-                Hai già un account?{' '}
+                {a.toggle.haveAccount}{' '}
                 <button type="button" onClick={() => setMode('signin')} className="text-primary font-medium hover:underline">
-                  Accedi
+                  {a.toggle.signIn}
                 </button>
               </>
             ) : (
               <>
-                Non hai un account?{' '}
+                {a.toggle.noAccount}{' '}
                 <button type="button" onClick={() => setMode('signup')} className="text-primary font-medium hover:underline">
-                  Registrati
+                  {a.toggle.signUp}
                 </button>
               </>
             )}
@@ -388,13 +377,13 @@ export default function CoppiaActivate() {
         {mode === 'forgot' && (
           <p className="text-center text-sm">
             <button type="button" onClick={() => setMode('signin')} className="text-primary font-medium hover:underline">
-              Torna al login
+              {a.toggle.backToLogin}
             </button>
           </p>
         )}
 
         <p className="text-center text-xs text-muted-foreground/70">
-          I tuoi dati sono al sicuro. Non condivideremo mai la tua email.
+          {a.privacyNote}
         </p>
       </motion.div>
     </div>

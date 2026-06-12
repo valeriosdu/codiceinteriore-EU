@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_customer_merges: {
@@ -286,6 +311,8 @@ export type Database = {
           customer_email: string | null
           id: string
           includes_transits: boolean
+          market: string
+          meta_purchase_sent_at: string | null
           payment_completed_at: string | null
           payment_provider: string
           payment_status: string
@@ -310,6 +337,8 @@ export type Database = {
           customer_email?: string | null
           id?: string
           includes_transits?: boolean
+          market?: string
+          meta_purchase_sent_at?: string | null
           payment_completed_at?: string | null
           payment_provider?: string
           payment_status?: string
@@ -334,6 +363,8 @@ export type Database = {
           customer_email?: string | null
           id?: string
           includes_transits?: boolean
+          market?: string
+          meta_purchase_sent_at?: string | null
           payment_completed_at?: string | null
           payment_provider?: string
           payment_status?: string
@@ -582,8 +613,10 @@ export type Database = {
           id: string
           insights_completed_at: string | null
           insights_started_at: string | null
+          language: string
           llm_input: Json | null
           llm_output: Json | null
+          market: string
           natal_chart: Json | null
           natal_chart_png: string | null
           natal_chart_svg: string | null
@@ -611,8 +644,10 @@ export type Database = {
           id?: string
           insights_completed_at?: string | null
           insights_started_at?: string | null
+          language?: string
           llm_input?: Json | null
           llm_output?: Json | null
+          market?: string
           natal_chart?: Json | null
           natal_chart_png?: string | null
           natal_chart_svg?: string | null
@@ -640,8 +675,10 @@ export type Database = {
           id?: string
           insights_completed_at?: string | null
           insights_started_at?: string | null
+          language?: string
           llm_input?: Json | null
           llm_output?: Json | null
+          market?: string
           natal_chart?: Json | null
           natal_chart_png?: string | null
           natal_chart_svg?: string | null
@@ -652,6 +689,27 @@ export type Database = {
           report_started_at?: string | null
           teaser_insights?: Json | null
           user_name?: string | null
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          identifier: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          identifier?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -753,8 +811,10 @@ export type Database = {
           full_report: Json | null
           funnel_slug: string
           id: string
+          language: string
           llm_input: Json | null
           llm_output: Json | null
+          market: string
           person_a_birth_date: Json | null
           person_a_birth_lat: number | null
           person_a_birth_lng: number | null
@@ -799,8 +859,10 @@ export type Database = {
           full_report?: Json | null
           funnel_slug?: string
           id?: string
+          language?: string
           llm_input?: Json | null
           llm_output?: Json | null
+          market?: string
           person_a_birth_date?: Json | null
           person_a_birth_lat?: number | null
           person_a_birth_lng?: number | null
@@ -845,8 +907,10 @@ export type Database = {
           full_report?: Json | null
           funnel_slug?: string
           id?: string
+          language?: string
           llm_input?: Json | null
           llm_output?: Json | null
+          market?: string
           person_a_birth_date?: Json | null
           person_a_birth_lat?: number | null
           person_a_birth_lng?: number | null
@@ -1007,7 +1071,9 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          language: string
           last_invoice_id: string | null
+          market: string
           profile_id: string
           quiz_session_id: string
           status: string
@@ -1023,7 +1089,9 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          language?: string
           last_invoice_id?: string | null
+          market?: string
           profile_id: string
           quiz_session_id: string
           status?: string
@@ -1039,7 +1107,9 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          language?: string
           last_invoice_id?: string | null
+          market?: string
           profile_id?: string
           quiz_session_id?: string
           status?: string
@@ -1333,6 +1403,8 @@ export type Database = {
         Args: { p_profile_id: string; p_quiz_session_id: string }
         Returns: boolean
       }
+      create_quiz_session: { Args: { p_payload: Json }; Returns: string }
+      create_synastry_session: { Args: { p_payload: Json }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1340,6 +1412,32 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_quiz_session_public: {
+        Args: { p_session_id: string }
+        Returns: {
+          id: string
+          natal_chart: Json
+          natal_chart_svg: string
+          processing_status: string
+          teaser_insights: Json
+          user_name: string
+        }[]
+      }
+      get_synastry_session_public: {
+        Args: { p_session_id: string }
+        Returns: {
+          archetype: string
+          archetype_label: string
+          bi_wheel_svg: string
+          full_report: Json
+          id: string
+          processing_error: string
+          processing_status: string
+          score_overall: number
+          scores: Json
+          teaser_highlight: Json
+        }[]
       }
       grant_astrology_credits: {
         Args: {
@@ -1373,6 +1471,15 @@ export type Database = {
         }
         Returns: number
       }
+      rate_limit_check: {
+        Args: {
+          p_bucket: string
+          p_identifier: string
+          p_max: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -1381,12 +1488,21 @@ export type Database = {
           read_ct: number
         }[]
       }
+      resolve_email_key: { Args: { p_email: string }; Returns: string }
       restore_astrology_credit: {
         Args: { p_profile_id: string; p_quiz_session_id: string }
         Returns: boolean
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      user_owns_quiz_session: {
+        Args: { p_session_id: string }
+        Returns: boolean
+      }
+      user_owns_synastry_session: {
+        Args: { p_session_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1515,6 +1631,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

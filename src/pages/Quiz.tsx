@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz } from '@/context/QuizContext';
@@ -9,18 +9,13 @@ import Header from '@/components/Header';
 import { trackEvent } from '@/lib/analytics';
 import PickerField from '@/components/PickerField';
 import { type WheelItem } from '@/components/WheelPicker';
-
-const MONTHS = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
-];
+import { useI18n } from '@/i18n/I18nProvider';
 
 // Wheel options, built once. The wheels open centered on these anchors while the
 // field is still unset (birth year ~1980, mid-day/month/hour), then the user
 // swipes to their value. Minutes stay in 5-minute steps.
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const DAY_ITEMS: WheelItem[] = Array.from({ length: 31 }, (_, i) => ({ value: i + 1, label: String(i + 1) }));
-const MONTH_ITEMS: WheelItem[] = MONTHS.map((m, i) => ({ value: i + 1, label: m }));
 const YEAR_ITEMS: WheelItem[] = (() => {
   const current = new Date().getFullYear();
   return Array.from({ length: current - 1920 + 1 }, (_, i) => {
@@ -62,31 +57,17 @@ const GIFT_STEPS: StepKey[] = ['date', 'time', 'place', 'name'];
 // each funnel (the only steps rendered as answer boxes).
 const AUTO_ADVANCE_STEPS: StepKey[] = ['intent', 'attachment', 'symptom', 'narrative', 'focus'];
 
-const INTENT_OPTIONS = [
-  'Le mie dinamiche relazionali e d\'amore',
-  'Cosa mi tiene fermo/a e dove crescere',
-  'Una panoramica generale di me',
-];
-
-const SYMPTOM_OPTIONS = [
-  'Mi sembra che mi sfugga qualcosa che gli altri vedono',
-  'So cosa dovrei fare, ma non ci riesco',
-  'Vado avanti, ma non sento di star andando dove vorrei',
-  'Tutto sembra fermo, non solo dentro di me',
-];
-
-const NARRATIVE_OPTIONS = [
-  'Una versione di me più libera',
-  'Una versione di me più realizzata',
-  'Una versione di me più sicura, con meno dubbi',
-  'Una versione di me più determinata, meno in attesa',
-];
-
 const Quiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { data, updateData, resetQuizForNewPurchase } = useQuiz();
+  const { m } = useI18n();
+  const q = m.quiz;
+  const MONTH_ITEMS: WheelItem[] = useMemo(
+    () => q.months.map((monthLabel, i) => ({ value: i + 1, label: monthLabel })),
+    [q.months],
+  );
 
   // The /regalo route is the public entry point for the gift flow (e.g. shared
   // via email or campaigns). We reset on mount to make sure no leftover quiz
@@ -155,8 +136,8 @@ const Quiz = () => {
   }, [isAttivazione]);
 
   const helperTextFor = (key: StepKey): string => {
-    if (key === 'focus') return 'Manca poco';
-    if (key === 'name') return 'Ancora un passaggio';
+    if (key === 'focus') return q.helper.focus;
+    if (key === 'name') return q.helper.name;
     return '';
   };
 
@@ -205,9 +186,7 @@ const Quiz = () => {
         const resolvedName = await placeRef.current?.resolve();
         setResolvingPlace(false);
         if (!resolvedName) {
-          setPlaceError(
-            'Non riusciamo a trovare questo luogo. Scegli un suggerimento dall\'elenco.'
-          );
+          setPlaceError(q.steps.place.error);
           return;
         }
         // resolve() updated the input text and QuizContext via onChange.
@@ -267,10 +246,10 @@ const Quiz = () => {
 
   const ctaLabel =
     stepKey === 'name'
-      ? (forOther ? 'Vai al pagamento' : 'Vedi la tua lettura')
+      ? (forOther ? q.cta.toPayment : q.cta.seeReading)
       : stepKey === 'place' && resolvingPlace
-        ? 'Verifica luogo…'
-        : 'Continua';
+        ? q.cta.resolvingPlace
+        : q.cta.continue;
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
@@ -278,7 +257,7 @@ const Quiz = () => {
         <button
           onClick={() => setStep(s => s - 1)}
           className="p-1.5 -ml-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          aria-label="Torna indietro"
+          aria-label={q.back}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
@@ -300,10 +279,10 @@ const Quiz = () => {
               {stepKey === 'intent' && (
                 <>
                   <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
-                    Cosa ti interessa capire di più?
+                    {q.steps.intent.question}
                   </h2>
                   <div className="space-y-3">
-                    {INTENT_OPTIONS.map(option => (
+                    {q.steps.intent.options.map(option => (
                       <div
                         key={option}
                         className={optionCardClasses(intent === option)}
@@ -319,22 +298,12 @@ const Quiz = () => {
               {stepKey === 'attachment' && (
                 <>
                   <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
-                    {forOther
-                      ? 'Quando qualcuno si allontana o diventa ambiguo, questa persona istintivamente tende a:'
-                      : 'Quando qualcuno si allontana o diventa ambiguo, tendi istintivamente a:'}
+                    {forOther ? q.steps.attachment.question.other : q.steps.attachment.question.self}
                   </h2>
                   <div className="space-y-3">
                     {(forOther
-                      ? [
-                          'Cercare più contatto',
-                          'Chiudersi e prendere distanza',
-                          'Restare in attesa di un segnale',
-                        ]
-                      : [
-                          'Cercare più contatto',
-                          'Chiuderti e prendere distanza',
-                          'Restare in attesa di un segnale',
-                        ]
+                      ? q.steps.attachment.options.other
+                      : q.steps.attachment.options.self
                     ).map(option => (
                       <div
                         key={option}
@@ -351,10 +320,10 @@ const Quiz = () => {
               {stepKey === 'symptom' && (
                 <>
                   <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
-                    Cosa senti più spesso, quando guardi la tua vita oggi?
+                    {q.steps.symptom.question}
                   </h2>
                   <div className="space-y-3">
-                    {SYMPTOM_OPTIONS.map(option => (
+                    {q.steps.symptom.options.map(option => (
                       <div
                         key={option}
                         className={optionCardClasses(symptom === option)}
@@ -370,10 +339,10 @@ const Quiz = () => {
               {stepKey === 'narrative' && (
                 <>
                   <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
-                    Quando pensi a chi avresti potuto essere, cosa ti viene in mente?
+                    {q.steps.narrative.question}
                   </h2>
                   <div className="space-y-3">
-                    {NARRATIVE_OPTIONS.map(option => (
+                    {q.steps.narrative.options.map(option => (
                       <div
                         key={option}
                         className={optionCardClasses(narrative === option)}
@@ -389,12 +358,12 @@ const Quiz = () => {
               {stepKey === 'date' && (
                 <>
                   <h2 className="font-display text-2xl font-semibold text-foreground">
-                    {forOther ? 'La sua data di nascita' : 'La tua data di nascita'}
+                    {forOther ? q.steps.date.title.other : q.steps.date.title.self}
                   </h2>
                   <div className="grid grid-cols-3 gap-3">
-                    <PickerField label="Giorno" items={DAY_ITEMS} value={day || null} anchor={DAY_ANCHOR} onChange={setDay} />
-                    <PickerField label="Mese" items={MONTH_ITEMS} value={month || null} anchor={MONTH_ANCHOR} onChange={setMonth} />
-                    <PickerField label="Anno" items={YEAR_ITEMS} value={year || null} anchor={YEAR_ANCHOR} onChange={setYear} />
+                    <PickerField label={q.steps.date.day} items={DAY_ITEMS} value={day || null} anchor={DAY_ANCHOR} onChange={setDay} />
+                    <PickerField label={q.steps.date.month} items={MONTH_ITEMS} value={month || null} anchor={MONTH_ANCHOR} onChange={setMonth} />
+                    <PickerField label={q.steps.date.year} items={YEAR_ITEMS} value={year || null} anchor={YEAR_ANCHOR} onChange={setYear} />
                   </div>
                 </>
               )}
@@ -402,14 +371,14 @@ const Quiz = () => {
               {stepKey === 'time' && (
                 <>
                   <h2 className="font-display text-2xl font-semibold text-foreground">
-                    {forOther ? 'La sua ora di nascita' : 'La tua ora di nascita'}
+                    {forOther ? q.steps.time.title.other : q.steps.time.title.self}
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
-                    <PickerField label="Ora" items={HOUR_ITEMS} value={hour >= 0 ? hour : null} anchor={HOUR_ANCHOR} onChange={setHour} />
-                    <PickerField label="Minuti" items={MINUTE_ITEMS} value={minute >= 0 ? minute : null} anchor={MINUTE_ANCHOR} onChange={setMinute} />
+                    <PickerField label={q.steps.time.hour} items={HOUR_ITEMS} value={hour >= 0 ? hour : null} anchor={HOUR_ANCHOR} onChange={setHour} />
+                    <PickerField label={q.steps.time.minute} items={MINUTE_ITEMS} value={minute >= 0 ? minute : null} anchor={MINUTE_ANCHOR} onChange={setMinute} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Se non la conosci con precisione, scegli l'orario più vicino possibile.
+                    {q.steps.time.hint}
                   </p>
                 </>
               )}
@@ -417,10 +386,10 @@ const Quiz = () => {
               {stepKey === 'place' && (
                 <>
                   <h2 className="font-display text-2xl font-semibold text-foreground">
-                    {forOther ? 'Il suo luogo di nascita' : 'Il tuo luogo di nascita'}
+                    {forOther ? q.steps.place.title.other : q.steps.place.title.self}
                   </h2>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground">Luogo di nascita</label>
+                    <label className="text-xs text-muted-foreground">{q.steps.place.label}</label>
                     <PlaceAutocomplete
                       ref={placeRef}
                       value={place}
@@ -456,13 +425,13 @@ const Quiz = () => {
                           });
                         }
                       }}
-                      placeholder="es. Milano, Roma, Napoli..."
+                      placeholder={q.steps.place.placeholder}
                     />
                     {placeError ? (
                       <p className="text-xs text-destructive">{placeError}</p>
                     ) : (
                       <p className="text-xs text-muted-foreground">
-                        Scegli un luogo dai suggerimenti per una lettura più precisa.
+                        {q.steps.place.hint}
                       </p>
                     )}
                   </div>
@@ -472,24 +441,12 @@ const Quiz = () => {
               {stepKey === 'focus' && (
                 <>
                   <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
-                    {forOther
-                      ? 'Quale parte delle sue dinamiche relazionali vuoi capire meglio?'
-                      : 'Quale parte delle tue dinamiche relazionali vuoi capire meglio?'}
+                    {forOther ? q.steps.focus.question.other : q.steps.focus.question.self}
                   </h2>
                   <div className="space-y-3">
                     {(forOther
-                      ? [
-                          'Come sceglie',
-                          'Che schemi ripete',
-                          'Come si difende',
-                          'Cosa cerca davvero',
-                        ]
-                      : [
-                          'Come scegli',
-                          'Che schemi ripeti',
-                          'Come ti difendi',
-                          'Cosa cerchi davvero',
-                        ]
+                      ? q.steps.focus.options.other
+                      : q.steps.focus.options.self
                     ).map(option => (
                       <div
                         key={option}
@@ -506,22 +463,20 @@ const Quiz = () => {
               {stepKey === 'name' && (
                 <>
                   <h2 className="font-display text-2xl font-semibold text-foreground">
-                    {forOther ? 'Il suo nome' : 'Il tuo nome'}
+                    {forOther ? q.steps.name.title.other : q.steps.name.title.self}
                   </h2>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground">Nome</label>
+                    <label className="text-xs text-muted-foreground">{q.steps.name.label}</label>
                     <input
                       type="text"
                       className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none"
-                      placeholder="es. Maria, Giulia, Marco..."
+                      placeholder={q.steps.name.placeholder}
                       value={userName}
                       onChange={e => setUserName(e.target.value)}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {forOther
-                      ? 'Useremo il suo nome per personalizzare la lettura.'
-                      : 'Useremo il tuo nome per personalizzare la lettura.'}
+                    {forOther ? q.steps.name.hint.other : q.steps.name.hint.self}
                   </p>
                 </>
               )}

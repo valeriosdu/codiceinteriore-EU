@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSynastrySessionPublic } from '@/lib/sessionAccess';
 import { useSynastry } from '@/context/SynastryContext';
+import { useI18n } from '@/i18n/I18nProvider';
 
 const POLL_INTERVAL = 3000;
 const TIMEOUT_MS = 180_000;
@@ -15,12 +16,14 @@ export default function CoppiaReportProcessing() {
   const [params] = useSearchParams();
   const stripeSessionId = params.get('session_id') || '';
   const { data, updateData } = useSynastry();
+  const { m, market } = useI18n();
+  const crp = m.coppia.reportProcessing;
   const [error, setError] = useState<string | null>(null);
-  const [progressNote, setProgressNote] = useState('Stiamo preparando il vostro report');
+  const [progressNote, setProgressNote] = useState(crp.preparing);
   const ranRef = useRef(false);
 
   useEffect(() => {
-    document.title = 'Sinastria - Generazione | Codice Interiore';
+    document.title = m.coppia.titles.reportProcessing(market.siteName);
     if (ranRef.current) return;
     ranRef.current = true;
 
@@ -39,7 +42,7 @@ export default function CoppiaReportProcessing() {
       }
 
       if (!synastrySessionId) {
-        setError('Non riesco a trovare la tua sessione. Contattaci se il problema persiste.');
+        setError(crp.errors.sessionNotFound);
         return;
       }
 
@@ -66,14 +69,14 @@ export default function CoppiaReportProcessing() {
         }
 
         if (s.processing_status === 'failed') {
-          setError(s.processing_error || 'Generazione fallita. Contattaci se il problema persiste.');
+          setError(s.processing_error || crp.errors.failed);
           return;
         }
 
         if (s.processing_status === 'report_processing') {
-          setProgressNote('Sto scrivendo il vostro report. Pochi minuti...');
+          setProgressNote(crp.writing);
         } else if (s.processing_status === 'synastry_ready' || s.processing_status === 'insights_ready') {
-          setProgressNote('Sto avviando la scrittura del report...');
+          setProgressNote(crp.starting);
 
           // Se siamo authed, trigghera generate-synastry-report (in caso il webhook non l'abbia fatto)
           const { data: { session } } = await supabase.auth.getSession();
@@ -85,7 +88,7 @@ export default function CoppiaReportProcessing() {
         }
       }
 
-      setError('La generazione sta richiedendo piu del previsto. Riprova fra qualche minuto.');
+      setError(crp.errors.timeout);
     };
 
     void run();
@@ -97,7 +100,7 @@ export default function CoppiaReportProcessing() {
         {error ? (
           <>
             <h1 className="font-display text-2xl font-semibold text-foreground mb-3">
-              C'e un problema
+              {crp.errorTitle}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">{error}</p>
           </>
@@ -110,7 +113,7 @@ export default function CoppiaReportProcessing() {
               {progressNote}
             </h1>
             <p className="text-sm text-muted-foreground">
-              La generazione del report richiede da 1 a 3 minuti.
+              {crp.duration}
             </p>
           </>
         )}

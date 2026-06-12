@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QuizProvider } from "@/context/QuizContext";
 import { SynastryProvider } from "@/context/SynastryContext";
+import { I18nProvider } from "@/i18n/I18nProvider";
+import { MARKET } from "@/markets";
 import Index from "./pages/Index.tsx";
 // Funnel-conversion path (Quiz → Processing → Teaser → Checkout → Success →
 // Activate → ReportProcessing → Report) is loaded eagerly: every drop-off
@@ -70,6 +72,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <I18nProvider>
       <QuizProvider>
         <SynastryProvider>
         <BrowserRouter>
@@ -104,10 +107,16 @@ const App = () => (
             <Route path="/contatti" element={<Contatti />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/termini" element={<Terms />} />
-            <Route path="/guide" element={<GuideIndex />} />
-            <Route path="/guide/:slug" element={<GuidePage />} />
-            <Route path="/glossario" element={<GlossarioIndex />} />
-            <Route path="/glossario/:tipo/:slug" element={<GlossarioPage />} />
+            {/* Contenuti editoriali solo nei mercati che li hanno (per ora IT);
+                negli altri mercati queste route cadono sul NotFound. */}
+            {MARKET.editorialContent && (
+              <>
+                <Route path="/guide" element={<GuideIndex />} />
+                <Route path="/guide/:slug" element={<GuidePage />} />
+                <Route path="/glossario" element={<GlossarioIndex />} />
+                <Route path="/glossario/:tipo/:slug" element={<GlossarioPage />} />
+              </>
+            )}
             {/* Redirect dalla vecchia URL admin reports verso la nuova vista CRM */}
             <Route path="/admin/reports" element={<Navigate to="/admin/clienti" replace />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -133,6 +142,7 @@ const App = () => (
         </BrowserRouter>
         </SynastryProvider>
       </QuizProvider>
+      </I18nProvider>
     </TooltipProvider>
   </QueryClientProvider>
   </HelmetProvider>

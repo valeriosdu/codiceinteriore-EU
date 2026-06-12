@@ -35,7 +35,8 @@ import { AstrologyGuideProvider } from "@/components/astrology-guide/AstrologyGu
 import AstrologyGuideWidget from "@/components/astrology-guide/AstrologyGuideWidget";
 import AskAboutSectionButton from "@/components/astrology-guide/AskAboutSectionButton";
 import { isLovablePreview, DEMO_FULL_REPORT, DEMO_USER_NAME, DEMO_EMAIL } from "@/lib/preview-mode";
-import { getFunnelConfig } from "@/funnels/registry";
+import { getFunnelContent } from "@/funnels/registry";
+import { useI18n } from "@/i18n/I18nProvider";
 import { toast } from "sonner";
 import { useSynastryReport } from "@/hooks/useSynastryReport";
 import SynastryReportCard from "@/components/SynastryReportCard";
@@ -89,12 +90,11 @@ type TransitState = {
   subscription: TransitSubscription | null;
 };
 
-const MONTH_LABEL_IT = [
-  "gen", "feb", "mar", "apr", "mag", "giu",
-  "lug", "ago", "set", "ott", "nov", "dic",
-];
-
-const formatTransitPeriod = (start: string | null | undefined, end: string | null | undefined) => {
+const formatTransitPeriodWith = (
+  monthShort: string[],
+  start: string | null | undefined,
+  end: string | null | undefined,
+) => {
   if (!start || !end) return "";
   const parse = (s: string) => {
     const [y, m, d] = s.split("-").map(Number);
@@ -104,7 +104,7 @@ const formatTransitPeriod = (start: string | null | undefined, end: string | nul
   const b = parse(end);
   if (!a.y || !b.y) return "";
   const fmt = (p: { y: number; m: number; d: number }, includeYear: boolean) =>
-    `${p.d} ${MONTH_LABEL_IT[p.m - 1] || ""}${includeYear ? " " + p.y : ""}`;
+    `${p.d} ${monthShort[p.m - 1] || ""}${includeYear ? " " + p.y : ""}`;
   return `${fmt(a, a.y !== b.y)} – ${fmt(b, true)}`;
 };
 
@@ -173,10 +173,14 @@ const Report = () => {
   const feedbackSource: "web" | "pdf" = new URLSearchParams(location.search).get("source") === "pdf" ? "pdf" : "web";
   const { data, updateData, resetQuizForNewPurchase } = useQuiz();
   const { isReady: authReady, user } = useAuthReady();
+  const { m, market } = useI18n();
+  const r = m.report;
+  const formatTransitPeriod = (start: string | null | undefined, end: string | null | undefined) =>
+    formatTransitPeriodWith(r.monthShort, start, end);
   // Per-angle section list. Drives both the sidebar nav and the body render.
   // Sections whose id is missing from full_report (e.g. legacy classica reports
   // viewed under attivazione registry, or vice versa) silently skip.
-  const funnelConfig = getFunnelConfig(data.funnelSlug);
+  const funnelConfig = getFunnelContent(data.funnelSlug, m.funnels);
   const reportSections = funnelConfig.report.sections;
   const sectionIds = reportSections.map(({ id, label }) => ({ id, label }));
   const [activeSection, setActiveSection] = useState(reportSections[0]?.id || "identity");
@@ -203,9 +207,9 @@ const Report = () => {
   const { sessions: synSessions } = useSynastryReport(profileId, userEmail);
   const visibleSectionIds = (() => {
     const ids = transitState.hasAccess
-      ? [...sectionIds, { id: "transits", label: "Transiti" }]
+      ? [...sectionIds, { id: "transits", label: r.nav.transits }]
       : [...sectionIds];
-    if (synSessions.length > 0) ids.push({ id: "synastry", label: "Sinastria" });
+    if (synSessions.length > 0) ids.push({ id: "synastry", label: r.nav.synastry });
     return ids;
   })();
 
@@ -302,11 +306,11 @@ const Report = () => {
     try {
       const { data, error } = await supabase.functions.invoke("create-transit-portal-session");
       if (error) throw error;
-      if (!data?.url) throw new Error("Portale non disponibile");
+      if (!data?.url) throw new Error(r.transits.portalUnavailable);
       window.open(data.url, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error("portal error:", err);
-      toast.error(err instanceof Error ? err.message : "Non siamo riusciti ad aprire la gestione abbonamento.");
+      toast.error(err instanceof Error ? err.message : r.transits.portalError);
     } finally {
       setPortalLoading(false);
     }
@@ -371,7 +375,7 @@ const Report = () => {
           id: item.id,
           quizSessionId: item.quiz_session_id,
           stripeSessionId: item.stripe_session_id,
-          label: item.label || item.quiz_sessions?.user_name || "Lettura personale",
+          label: item.label || item.quiz_sessions?.user_name || r.hero.personalReading,
           isActive: Boolean(item.is_active),
           createdAt: item.created_at,
           userName: item.quiz_sessions?.user_name || "",
@@ -512,7 +516,7 @@ const Report = () => {
           if (cycleRow?.status === "completed") {
             if (!cancelled) {
               navigate("/report", { replace: true });
-              toast.success("Transiti attivati. Trovi la sezione qui sotto.");
+              toast.success(r.transits.activated);
             }
             return;
           }
@@ -602,7 +606,7 @@ const Report = () => {
   ) => {
     if (isLovablePreview()) {
       const { toast } = await import("sonner");
-      toast.info("Download PDF disponibile solo in produzione.");
+      toast.info(r.pdf.previewOnly);
       return;
     }
 
@@ -617,10 +621,10 @@ const Report = () => {
       if (fallbackTab) {
         try {
           fallbackTab.document.write(
-            `<!doctype html><html><head><meta charset="utf-8"><title>Codice Interiore — PDF</title>
+            `<!doctype html><html><head><meta charset="utf-8"><title>${market.siteName} — ${r.pdf.tabTitleSuffix}</title>
             <meta name="viewport" content="width=device-width,initial-scale=1">
             <style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f1e8;color:#2a1f18;padding:32px;text-align:center;line-height:1.5}</style>
-            </head><body><p>Stiamo preparando il tuo PDF...</p></body></html>`,
+            </head><body><p>${r.pdf.preparingTab}</p></body></html>`,
           );
         } catch (_) {
           /* cross-origin write may fail; ignored */
@@ -647,7 +651,7 @@ const Report = () => {
       } = await supabase.auth.getSession();
       if (!session) {
         closeFallbackTab();
-        toast.error("Accedi di nuovo per scaricare il PDF.");
+        toast.error(r.pdf.signInAgain);
         return;
       }
 
@@ -667,10 +671,10 @@ const Report = () => {
 
       if (!response.ok) {
         closeFallbackTab();
-        let message = "Non siamo riusciti a preparare il PDF. Scrivici e te lo inviamo subito.";
-        if (response.status === 401) message = "Accedi di nuovo per scaricare il PDF.";
-        if (response.status === 403) message = "Questo download non è incluso nel tuo accesso.";
-        if (response.status === 404) message = "Il PDF non è ancora disponibile per il download.";
+        let message = r.pdf.genericError;
+        if (response.status === 401) message = r.pdf.signInAgain;
+        if (response.status === 403) message = r.pdf.notIncluded;
+        if (response.status === 404) message = r.pdf.notAvailableYet;
         if (response.status >= 500) {
           try {
             const errBody = await response.json();
@@ -678,7 +682,7 @@ const Report = () => {
           } catch (_) {
             /* noop */
           }
-          message = "Errore durante la generazione del PDF. Riprova tra un istante o scrivici.";
+          message = r.pdf.serverError;
         }
         throw new Error(message);
       }
@@ -687,7 +691,7 @@ const Report = () => {
       const signedUrl = payload?.url;
       if (!signedUrl) {
         closeFallbackTab();
-        throw new Error("PDF non disponibile.");
+        throw new Error(r.pdf.unavailable);
       }
 
       const filename =
@@ -702,7 +706,7 @@ const Report = () => {
       if (needsTabFallback) {
         if (fallbackTab && !fallbackTab.closed) {
           fallbackTab.location.href = signedUrl;
-          toast.success("PDF aperto in una nuova scheda. Tocca Condividi per salvarlo.");
+          toast.success(r.pdf.openedInTab);
         } else {
           window.location.href = signedUrl;
         }
@@ -716,12 +720,12 @@ const Report = () => {
         link.click();
         document.body.removeChild(link);
         closeFallbackTab();
-        toast.success("Download avviato.");
+        toast.success(r.pdf.downloadStarted);
       }
     } catch (err) {
       console.error("PDF download error:", err);
       closeFallbackTab();
-      toast.error(err instanceof Error ? err.message : "Errore durante il download. Riprova o scrivici.");
+      toast.error(err instanceof Error ? err.message : r.pdf.downloadError);
     } finally {
       setLoading(false);
     }
@@ -732,10 +736,11 @@ const Report = () => {
     navigate("/quiz");
   };
 
-  const handleDownloadPdf = () => downloadPdfFromFunction("generate-report-pdf", setPdfLoading, "codice-interiore");
+  const pdfFileBase = market.siteName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const handleDownloadPdf = () => downloadPdfFromFunction("generate-report-pdf", setPdfLoading, pdfFileBase);
 
   const handleDownloadTransitPdf = () =>
-    downloadPdfFromFunction("generate-transit-pdf", setTransitPdfLoading, "codice-interiore-transiti");
+    downloadPdfFromFunction("generate-transit-pdf", setTransitPdfLoading, `${pdfFileBase}-transiti`);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
@@ -797,14 +802,14 @@ const Report = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border">
           <div className="container max-w-3xl mx-auto py-4 flex items-center justify-between">
-            <img src={logo} alt="Codice Interiore" className="h-8" />
+            <img src={logo} alt={market.siteName} className="h-8" />
           </div>
         </header>
         <main className="flex-1 flex items-center justify-center px-6 py-16">
           <div className="max-w-sm w-full text-center space-y-6">
-            <h1 className="font-display text-3xl font-semibold text-foreground">Accedi al tuo spazio</h1>
+            <h1 className="font-display text-3xl font-semibold text-foreground">{r.access.title}</h1>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              Per aprire la tua lettura, accedi con la stessa email che hai usato al momento dell'acquisto.
+              {r.access.body}
             </p>
             <div className="space-y-3 pt-2">
               <Button
@@ -813,14 +818,14 @@ const Report = () => {
                 className="w-full"
                 onClick={() => navigate("/activate?intent=signin")}
               >
-                Accedi
+                {r.access.signIn}
               </Button>
               <button
                 type="button"
                 onClick={() => navigate("/activate?intent=signup")}
                 className="block w-full text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
               >
-                Hai pagato e non hai ancora un account? Creane uno
+                {r.access.signUp}
               </button>
             </div>
           </div>
@@ -836,17 +841,17 @@ const Report = () => {
       {/* Customer header with logo, user info, logout */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm shadow-sm">
         <div className="container max-w-3xl lg:max-w-6xl mx-auto px-4 lg:px-8 py-2.5 lg:py-4 flex items-center justify-between gap-2 lg:gap-4">
-          <img src={logo} alt="Codice Interiore" className="h-7 lg:h-12" />
+          <img src={logo} alt={market.siteName} className="h-7 lg:h-12" />
           <div className="flex items-center gap-1 lg:gap-2">
             <Button
               variant="outline-premium"
               size="sm"
               onClick={handleStartNewReport}
               className="h-8 lg:h-11 px-2.5 lg:px-5 gap-1.5 lg:gap-2 rounded-full text-xs sm:text-sm lg:text-base"
-              aria-label="Acquista una nuova lettura"
+              aria-label={r.header.newReadingAria}
             >
               <UserPlus className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" />
-              <span>Nuova lettura</span>
+              <span>{r.header.newReading}</span>
             </Button>
           {(() => {
             const sub = transitState.subscription;
@@ -859,16 +864,16 @@ const Report = () => {
                     variant="ghost"
                     size="sm"
                     className="h-8 lg:h-11 px-2 lg:px-3 text-muted-foreground hover:text-foreground gap-2 max-w-[60vw] sm:max-w-none lg:text-sm"
-                    aria-label="Menu utente"
+                    aria-label={r.header.userMenuAria}
                   >
                     <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
-                    <span className="hidden sm:inline truncate">{userEmail || "Account"}</span>
+                    <span className="hidden sm:inline truncate">{userEmail || r.header.account}</span>
                     <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 shrink-0 opacity-70" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64" onCloseAutoFocus={(e) => e.preventDefault()}>
                   <DropdownMenuLabel className="font-normal">
-                    <p className="text-xs lg:text-sm text-muted-foreground">Connesso come</p>
+                    <p className="text-xs lg:text-sm text-muted-foreground">{r.header.connectedAs}</p>
                     <p className="text-sm text-foreground truncate">{userEmail || "—"}</p>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -878,16 +883,16 @@ const Report = () => {
                     }}
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    Il mio report
+                    {r.header.myReport}
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => handleStartNewReport()}>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Acquista un'altra lettura
+                    {r.header.buyAnother}
                   </DropdownMenuItem>
                   {subActive ? (
                     <DropdownMenuItem onSelect={() => openTransitPortal()} disabled={portalLoading}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Gestisci abbonamento transiti
+                      {r.header.manageTransitSub}
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem
@@ -900,17 +905,17 @@ const Report = () => {
                       }}
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Leggi i transiti del mese
+                      {r.header.readMonthlyTransits}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onSelect={() => navigate("/contatti")}>
                     <Mail className="mr-2 h-4 w-4" />
-                    Contatti / Supporto
+                    {r.header.contactSupport}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={() => handleLogout()} className="text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Esci
+                    {r.header.logout}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -943,12 +948,12 @@ const Report = () => {
 
       <div className="container max-w-2xl lg:max-w-3xl mx-auto py-10 space-y-10">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-2 pb-6">
-          <p className="text-sm lg:text-base text-muted-foreground">{(firstReportName || userName) ? `Ciao ${firstReportName || userName}` : "Il tuo spazio personale"}</p>
-          <h1 className="font-display text-3xl lg:text-4xl font-semibold text-foreground">La tua lettura completa</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">{(firstReportName || userName) ? r.hero.greeting(firstReportName || userName || "") : r.hero.noName}</p>
+          <h1 className="font-display text-3xl lg:text-4xl font-semibold text-foreground">{r.hero.title}</h1>
           {reportOptions.length > 1 && (
             <div className="pt-5 text-left space-y-3">
               <p className="text-xs lg:text-sm font-medium uppercase tracking-wider text-primary text-center">
-                Scegli quale lettura visualizzare
+                {r.hero.chooseReport}
               </p>
               <div className="grid gap-2">
                 {reportOptions.map((option) => {
@@ -972,11 +977,11 @@ const Report = () => {
                         {isSwitchingThis ? (
                           <Loader2 className="h-4 w-4 animate-spin text-primary" />
                         ) : (
-                          isSelected && <span className="text-xs lg:text-sm text-primary">Attivo</span>
+                          isSelected && <span className="text-xs lg:text-sm text-primary">{r.hero.active}</span>
                         )}
                       </span>
                       <span className="mt-1 block text-xs lg:text-sm opacity-80">
-                        Report generato il {new Date(option.createdAt).toLocaleDateString("it-IT")}
+                        {r.hero.generatedOn(new Date(option.createdAt).toLocaleDateString(market.locale))}
                       </span>
                     </button>
                   );
@@ -992,12 +997,12 @@ const Report = () => {
             className="mt-4 gap-2 text-muted-foreground hover:text-foreground"
           >
             {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            {pdfLoading ? "Preparazione..." : "Scarica il PDF"}
+            {pdfLoading ? r.hero.preparing : r.hero.downloadPdf}
           </Button>
         </motion.div>
 
         {data.natalChartSvg && (
-          <NatalChartSvg svg={data.natalChartSvg} caption="Tocca per ingrandire la tua carta natale" />
+          <NatalChartSvg svg={data.natalChartSvg} caption={r.chartCaption} />
         )}
 
         {reportSections.map((section, index) => {
@@ -1029,11 +1034,11 @@ const Report = () => {
 
         {transitState.hasAccess && (
           <div id="transits" className="scroll-mt-28 lg:scroll-mt-32">
-            <ReportSection title={`Transiti del mese${userName ? ` di ${userName}` : ""}`} index={reportSections.length}>
+            <ReportSection title={r.transits.sectionTitle(userName)} index={reportSections.length}>
               {transitState.cycle && (
                 <div className="-mt-2 mb-4 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs lg:text-sm text-muted-foreground">
-                    Periodo: {formatTransitPeriod(transitState.cycle.period_start, transitState.cycle.period_end)}
+                    {r.transits.period} {formatTransitPeriod(transitState.cycle.period_start, transitState.cycle.period_end)}
                   </p>
                   <div className="flex items-center gap-2">
                     {transitState.cycle.interpreted_transits && (
@@ -1049,19 +1054,19 @@ const Report = () => {
                         ) : (
                           <Download className="h-3 w-3" />
                         )}
-                        {transitPdfLoading ? "Preparazione..." : "Scarica PDF"}
+                        {transitPdfLoading ? r.transits.preparing : r.transits.downloadPdf}
                       </Button>
                     )}
                     {transitState.allCycles.length > 1 && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm" className="h-8 gap-1 text-xs">
-                            Cambia mese
+                            {r.transits.changeMonth}
                             <ChevronDown className="h-3 w-3" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
-                          <DropdownMenuLabel className="text-xs">I tuoi periodi di transiti</DropdownMenuLabel>
+                          <DropdownMenuLabel className="text-xs">{r.transits.yourPeriods}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           {transitState.allCycles.map((c) => {
                             const isSelected = transitState.cycle?.id === c.id;
@@ -1078,7 +1083,7 @@ const Report = () => {
                                 <span className="flex-1">{formatTransitPeriod(c.period_start, c.period_end)}</span>
                                 {isCurrent && (
                                   <span className="ml-2 text-[10px] lg:text-xs uppercase tracking-wider text-primary">
-                                    in corso
+                                    {r.transits.current}
                                   </span>
                                 )}
                               </DropdownMenuItem>
@@ -1091,16 +1096,16 @@ const Report = () => {
                 </div>
               )}
               {!transitState.cycle || ["pending", "processing"].includes(transitState.cycle.status) ? (
-                <p>I transiti del mese sono in preparazione. La tua lettura natale è già sopra.</p>
+                <p>{r.transits.pending}</p>
               ) : transitState.cycle.status === "failed" ? (
-                <p>Non siamo riusciti a generare la lettura dei transiti. Riproveremo a breve, oppure scrivici se preferisci.</p>
+                <p>{r.transits.failed}</p>
               ) : transitState.cycle.interpreted_transits ? (
                 <div className="space-y-6">
                   {transitState.cycle.interpreted_transits.summary ? (
                     <>
                       {!!transitState.cycle.interpreted_transits.summary.main_themes?.length && (
                         <div className="space-y-2">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Temi principali</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.mainThemes}</h3>
                           <ul className="list-disc pl-5 space-y-2">
                             {transitState.cycle.interpreted_transits.summary.main_themes.map((theme, index) => (
                               <li key={index}>{theme}</li>
@@ -1110,7 +1115,7 @@ const Report = () => {
                       )}
                       {transitState.cycle.interpreted_transits.summary.overall_reading && (
                         <div className="space-y-2">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Lettura del mese</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.monthReading}</h3>
                           <p>{transitState.cycle.interpreted_transits.summary.overall_reading}</p>
                         </div>
                       )}
@@ -1143,7 +1148,7 @@ const Report = () => {
                       )}
                       {!!transitState.cycle.interpreted_transits.mainThemes?.length && (
                         <div className="space-y-2">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Temi principali</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.mainThemes}</h3>
                           <ul className="list-disc pl-5 space-y-2">
                             {transitState.cycle.interpreted_transits.mainThemes.map((theme, index) => (
                               <li key={index}>{theme}</li>
@@ -1153,7 +1158,7 @@ const Report = () => {
                       )}
                       {!!transitState.cycle.interpreted_transits.weeklyWindows?.length && (
                         <div className="space-y-3">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Finestre del mese</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.weeklyWindows}</h3>
                           {transitState.cycle.interpreted_transits.weeklyWindows.map((item, index) => (
                             <div key={index} className="border-l-2 border-primary/40 pl-4 space-y-1">
                               <h4 className="font-medium text-foreground">{item.title}</h4>
@@ -1164,7 +1169,7 @@ const Report = () => {
                       )}
                       {!!transitState.cycle.interpreted_transits.keyAspects?.length && (
                         <div className="space-y-3">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Aspetti rilevanti</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.keyAspects}</h3>
                           {transitState.cycle.interpreted_transits.keyAspects.map((item, index) => (
                             <div key={index} className="space-y-1">
                               <h4 className="font-medium text-foreground">{item.title}</h4>
@@ -1175,7 +1180,7 @@ const Report = () => {
                       )}
                       {!!transitState.cycle.interpreted_transits.practicalNotes?.length && (
                         <div className="space-y-2">
-                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">Indicazioni pratiche</h3>
+                          <h3 className="font-display text-lg lg:text-xl font-semibold text-foreground">{r.transits.practicalNotes}</h3>
                           <ul className="list-disc pl-5 space-y-2">
                             {transitState.cycle.interpreted_transits.practicalNotes.map((note, index) => (
                               <li key={index}>{note}</li>
@@ -1187,7 +1192,7 @@ const Report = () => {
                   )}
                 </div>
               ) : (
-                <p>Stiamo scrivendo la lettura dei transiti di questo mese.</p>
+                <p>{r.transits.writing}</p>
               )}
             </ReportSection>
           </div>
@@ -1203,10 +1208,10 @@ const Report = () => {
               return (
                 <div className="rounded-2xl border border-border/60 bg-surface px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Abbonamento transiti mensile attivo</p>
+                    <p className="text-sm font-medium text-foreground">{r.subscription.active}</p>
                     {sub?.current_period_end && (
                       <p className="text-xs lg:text-sm text-muted-foreground mt-0.5">
-                        Prossimo rinnovo il {new Date(sub.current_period_end).toLocaleDateString("it-IT")}
+                        {r.subscription.nextRenewal(new Date(sub.current_period_end).toLocaleDateString(market.locale))}
                       </p>
                     )}
                   </div>
@@ -1218,7 +1223,7 @@ const Report = () => {
                     className="gap-2"
                   >
                     {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings className="h-4 w-4" />}
-                    Gestisci abbonamento
+                    {r.subscription.manage}
                   </Button>
                 </div>
               );
@@ -1227,10 +1232,10 @@ const Report = () => {
               return (
                 <div className="rounded-2xl border border-border/60 bg-surface px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Abbonamento in disdetta</p>
+                    <p className="text-sm font-medium text-foreground">{r.subscription.cancelling}</p>
                     {sub?.current_period_end && (
                       <p className="text-xs lg:text-sm text-muted-foreground mt-0.5">
-                        Accesso attivo fino al {new Date(sub.current_period_end).toLocaleDateString("it-IT")}
+                        {r.subscription.accessUntil(new Date(sub.current_period_end).toLocaleDateString(market.locale))}
                       </p>
                     )}
                   </div>
@@ -1242,7 +1247,7 @@ const Report = () => {
                     className="gap-2"
                   >
                     {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Settings className="h-4 w-4" />}
-                    Gestisci abbonamento
+                    {r.subscription.manage}
                   </Button>
                 </div>
               );
@@ -1269,14 +1274,13 @@ const Report = () => {
         >
           <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-[0.18em] font-medium">
             <UserPlus className="h-3.5 w-3.5" />
-            Una nuova lettura
+            {r.newReadingCard.kicker}
           </div>
           <h3 className="mt-3 font-display text-xl sm:text-2xl font-semibold text-foreground leading-snug">
-            Una lettura per qualcun altro?
+            {r.newReadingCard.title}
           </h3>
           <p className="mt-2 text-[15px] lg:text-base text-muted-foreground leading-relaxed max-w-prose">
-            Acquista una nuova lettura completa con dati di nascita differenti, per una persona vicina o per fare un
-            regalo.
+            {r.newReadingCard.body}
           </p>
           <Button
             variant="premium"
@@ -1285,7 +1289,7 @@ const Report = () => {
             className="mt-5 gap-2 w-full sm:w-auto"
           >
             <Sparkles className="h-4 w-4" />
-            Acquista una nuova lettura
+            {r.newReadingCard.cta}
           </Button>
         </motion.div>
 

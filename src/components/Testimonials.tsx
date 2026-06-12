@@ -1,34 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const testimonials = [
-  {
-    text: "Mi aspettavo qualcosa di generico. Invece ci sono stati vari passaggi che mi hanno descritta in un modo quasi scomodo da quanto erano precisi.",
-    name: "Giulia",
-    age: 31,
-  },
-  {
-    text: "La differenza rispetto alle letture gratuite online si sente. Qui non trovi frasi sparse: c'è un filo, una struttura. Alla fine hai davvero una visione più completa di come funzioni e di cosa fare",
-    name: "Serena",
-    age: 39,
-  },
-  {
-    text: "Mi è piaciuto perché non cerca di predire tutto. Ti aiuta piuttosto a capire cosa si ripete, dove ti blocchi, che tipo di dinamica stai vivendo adesso e cosa fare.",
-    name: "Valentina",
-    age: 33,
-  },
-  {
-    text: "Avevo paura fosse una lettura costruita per dire cose belle a tutti. Invece no: soprattutto nella parte relazionale mi sono sentita veramente vista.",
-    name: "Laura",
-    age: 35,
-  },
-  {
-    text: "Il report completo mi ha aiutata a capire la struttura, che in parte già intuivo ma non con così tanta chiarezza... Il resto mi ha fatto collegare tutto a quello che sto vivendo adesso. Consigliato l'acquisto.",
-    name: "Beatrice",
-    age: 24,
-  },
-];
+import { useI18n } from "@/i18n/I18nProvider";
 
 const TestimonialCard = ({ text, name, age }: { text: string; name: string; age: number }) => (
   <div className="rounded-2xl border border-border/40 bg-card p-7 md:p-8 flex flex-col justify-between h-full">
@@ -43,6 +16,8 @@ const Testimonials = () => {
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { m } = useI18n();
+  const testimonials = m.social.testimonials.items;
 
   useEffect(() => {
     if (!isMobile || !scrollRef.current) return;
@@ -56,14 +31,14 @@ const Testimonials = () => {
     };
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [isMobile]);
+  }, [isMobile, testimonials.length]);
 
   return (
     <motion.section initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="py-2">
       <div className="text-center space-y-3 mb-10">
-        <span className="text-xs uppercase tracking-[0.2em] text-primary/70 font-medium">Testimonianze</span>
+        <span className="text-xs uppercase tracking-[0.2em] text-primary/70 font-medium">{m.social.testimonials.kicker}</span>
         <h3 className="font-display text-2xl md:text-3xl font-semibold text-foreground max-w-xl mx-auto leading-snug">
-          Cosa ha colpito di più i nostri clienti
+          {m.social.testimonials.heading}
         </h3>
       </div>
 

@@ -9,12 +9,15 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
 import { isLovablePreview, DEMO_EMAIL } from "@/lib/preview-mode";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const Activate = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { updateData } = useQuiz();
+  const { m } = useI18n();
+  const a = m.activate;
 
   const hasStripeSession = !!searchParams.get("session_id");
   const intentParam = searchParams.get("intent");
@@ -205,10 +208,7 @@ const Activate = () => {
         // così ha senso indirizzarlo verso il funnel anziché lasciarlo a vuoto.
         const hasExistingReport = !!existingProfile?.quiz_session_id;
         if (!hasExistingReport) {
-          toast({
-            title: "Bentornato!",
-            description: "Inizia da qui il tuo Codice Interiore: bastano pochi minuti.",
-          });
+          toast(a.toasts.welcomeBack);
         }
         navigate(hasExistingReport ? "/report" : "/", { replace: true });
         return;
@@ -237,7 +237,7 @@ const Activate = () => {
             quiz_session_id: resolvedQuizSessionId,
             stripe_session_id: stripeSessionIdLocal || null,
             purchase_type: purchaseTypeLocal,
-            label: [linkedSession?.user_name, linkedSession?.birth_place].filter(Boolean).join(" · ") || "Lettura personale",
+            label: [linkedSession?.user_name, linkedSession?.birth_place].filter(Boolean).join(" · ") || a.personalReadingLabel,
             is_active: true,
           },
           { onConflict: "profile_id,quiz_session_id" },
@@ -260,11 +260,11 @@ const Activate = () => {
 
     if (mode === "signup" || mode === "reset") {
       if (password.length < 6) {
-        toast({ title: "La password deve avere almeno 6 caratteri", variant: "destructive" });
+        toast({ title: a.toasts.passwordTooShort, variant: "destructive" });
         return;
       }
       if (password !== confirmPassword) {
-        toast({ title: "Le password non coincidono", variant: "destructive" });
+        toast({ title: a.toasts.passwordMismatch, variant: "destructive" });
         return;
       }
     }
@@ -277,10 +277,7 @@ const Activate = () => {
       // waiting for the 24h cron.
       await supabase.functions.invoke("request-account-recovery", { body: { email } });
       setLoading(false);
-      toast({
-        title: "Controlla la tua email",
-        description: "Se l'indirizzo è registrato o associato a un acquisto, riceverai un link per accedere.",
-      });
+      toast(a.toasts.checkEmailRecovery);
       setMode("signin");
       setPassword("");
       return;
@@ -293,7 +290,7 @@ const Activate = () => {
         setLoading(false);
         return;
       }
-      toast({ title: "Password aggiornata", description: "Ti stiamo portando al tuo report." });
+      toast(a.toasts.passwordUpdated);
       if (data.user) {
         await saveProfileAndRedirect(data.user.id);
       } else {
@@ -336,10 +333,7 @@ const Activate = () => {
     if (data.session && data.user) {
       await saveProfileAndRedirect(data.user.id);
     } else {
-      toast({
-        title: "Controlla la tua email",
-        description: "Ti abbiamo inviato un link per confermare il tuo account.",
-      });
+      toast(a.toasts.checkEmailConfirm);
       setLoading(false);
     }
   };
@@ -355,7 +349,7 @@ const Activate = () => {
       });
 
       if (error) {
-        toast({ title: "Errore di autenticazione", description: error.message, variant: "destructive" });
+        toast({ title: a.toasts.authError, description: error.message, variant: "destructive" });
         setSsoLoading(null);
         return;
       }
@@ -364,7 +358,7 @@ const Activate = () => {
       // picks up SIGNED_IN and calls saveProfileAndRedirect.
     } catch (err) {
       console.error("SSO login error:", err);
-      toast({ title: "Errore di autenticazione", variant: "destructive" });
+      toast({ title: a.toasts.authError, variant: "destructive" });
       setSsoLoading(null);
     }
   };
@@ -443,7 +437,7 @@ const Activate = () => {
     });
 
     if (authError) {
-      toast({ title: "Errore di autenticazione", description: authError, variant: "destructive" });
+      toast({ title: a.toasts.authError, description: authError, variant: "destructive" });
       setAuthChecking(false);
       return () => {
         mounted = false;
@@ -492,22 +486,10 @@ const Activate = () => {
       >
         <div className="text-center space-y-3">
           <h1 className="font-display text-3xl font-semibold text-foreground">
-            {mode === "signup"
-              ? "Attiva il tuo account"
-              : mode === "forgot"
-                ? "Recupera l'accesso al tuo account"
-                : mode === "reset"
-                  ? "Imposta una nuova password"
-                  : "Accedi al tuo account"}
+            {a.titles[mode]}
           </h1>
           <p className="text-muted-foreground leading-relaxed text-sm">
-            {mode === "signup"
-              ? "Crea le tue credenziali per accedere al report e ritrovarlo quando vuoi."
-              : mode === "forgot"
-                ? "Inserisci la tua email: ti invieremo un link per entrare. Funziona anche se hai pagato ma non hai ancora creato l'account."
-                : mode === "reset"
-                  ? "Scegli una nuova password per il tuo account."
-                  : "Inserisci le tue credenziali per accedere al tuo report."}
+            {a.subtitles[mode]}
           </p>
         </div>
 
@@ -531,7 +513,7 @@ const Activate = () => {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
             )}
-            Continua con Google
+            {a.google}
           </Button>
         </div>
         )}
@@ -540,7 +522,7 @@ const Activate = () => {
         {(mode === "signup" || mode === "signin") && (
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">oppure</span>
+          <span className="text-xs text-muted-foreground">{a.or}</span>
           <div className="flex-1 h-px bg-border" />
         </div>
         )}
@@ -549,7 +531,7 @@ const Activate = () => {
           {mode !== "reset" && (
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground/80 text-sm">
-                Email
+                {a.fields.email}
               </Label>
               <Input
                 id="email"
@@ -558,7 +540,7 @@ const Activate = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={fetchingEmail}
-                placeholder={fetchingEmail ? "Caricamento..." : "La tua email"}
+                placeholder={fetchingEmail ? a.fields.emailLoading : a.fields.emailPlaceholder}
                 className="h-12 rounded-xl border-muted bg-card"
               />
             </div>
@@ -568,7 +550,7 @@ const Activate = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-foreground/80 text-sm">
-                  {mode === "reset" ? "Nuova password" : "Password"}
+                  {mode === "reset" ? a.fields.newPassword : a.fields.password}
                 </Label>
                 {mode === "signin" && (
                   <button
@@ -580,7 +562,7 @@ const Activate = () => {
                     }}
                     className="text-xs text-primary font-medium hover:underline"
                   >
-                    Password dimenticata?
+                    {a.forgotLink}
                   </button>
                 )}
               </div>
@@ -592,7 +574,7 @@ const Activate = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  placeholder="Almeno 6 caratteri"
+                  placeholder={a.fields.passwordPlaceholder}
                   className="h-12 rounded-xl border-muted bg-card pr-12"
                 />
                 <button
@@ -609,7 +591,7 @@ const Activate = () => {
           {(mode === "signup" || mode === "reset") && (
             <div className="space-y-2">
               <Label htmlFor="confirm-password" className="text-foreground/80 text-sm">
-                Conferma password
+                {a.fields.confirmPassword}
               </Label>
               <Input
                 id="confirm-password"
@@ -618,7 +600,7 @@ const Activate = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                placeholder="Ripeti la password"
+                placeholder={a.fields.confirmPasswordPlaceholder}
                 className="h-12 rounded-xl border-muted bg-card"
               />
             </div>
@@ -627,14 +609,14 @@ const Activate = () => {
           {mode === "signup" && (
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-foreground/80 text-sm">
-                Numero di telefono
+                {a.fields.phone}
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+39 333 1234567"
+                placeholder={a.fields.phonePlaceholder}
                 className="h-12 rounded-xl border-muted bg-card"
               />
             </div>
@@ -650,22 +632,10 @@ const Activate = () => {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {mode === "signup"
-                  ? "Creazione in corso…"
-                  : mode === "forgot"
-                    ? "Invio in corso…"
-                    : mode === "reset"
-                      ? "Salvataggio in corso…"
-                      : "Accesso in corso…"}
+                {a.cta.loading[mode]}
               </>
-            ) : mode === "signup" ? (
-              "Accedi al tuo report"
-            ) : mode === "forgot" ? (
-              "Invia link di reset"
-            ) : mode === "reset" ? (
-              "Imposta password"
             ) : (
-              "Accedi"
+              a.cta[mode]
             )}
           </Button>
         </form>
@@ -673,7 +643,7 @@ const Activate = () => {
         {(mode === "signup" || mode === "signin") && (
           <div className="rounded-xl border border-muted bg-card/50 px-4 py-3 text-center space-y-1">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Hai già pagato ma non riesci a ricevere l'email di attivazione?
+              {a.recoveryBox.question}
             </p>
             <button
               type="button"
@@ -684,7 +654,7 @@ const Activate = () => {
               }}
               className="text-xs text-primary font-medium hover:underline"
             >
-              Recupera l'accesso con la tua email
+              {a.recoveryBox.action}
             </button>
           </div>
         )}
@@ -694,13 +664,13 @@ const Activate = () => {
           <p className="text-center text-sm text-muted-foreground">
             {mode === "signup" ? (
               <>
-                Hai già un account?{" "}
+                {a.toggle.haveAccount}{" "}
                 <button
                   type="button"
                   onClick={() => setMode("signin")}
                   className="text-primary font-medium hover:underline"
                 >
-                  Accedi
+                  {a.toggle.signIn}
                 </button>
               </>
             ) : mode === "forgot" ? (
@@ -709,17 +679,17 @@ const Activate = () => {
                 onClick={() => setMode("signin")}
                 className="text-primary font-medium hover:underline"
               >
-                Torna al login
+                {a.toggle.backToLogin}
               </button>
             ) : (
               <>
-                Non hai un account?{" "}
+                {a.toggle.noAccount}{" "}
                 <button
                   type="button"
                   onClick={() => setMode("signup")}
                   className="text-primary font-medium hover:underline"
                 >
-                  Registrati
+                  {a.toggle.signUp}
                 </button>
               </>
             )}
@@ -727,7 +697,7 @@ const Activate = () => {
         )}
 
         <p className="text-center text-xs text-muted-foreground/70">
-          I tuoi dati sono al sicuro. Non condivideremo mai la tua email.
+          {a.privacyNote}
         </p>
       </motion.div>
     </div>

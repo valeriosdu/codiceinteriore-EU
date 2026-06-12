@@ -26,17 +26,12 @@ import {
 } from '@/context/SynastryContext';
 import PickerField from '@/components/PickerField';
 import { type WheelItem } from '@/components/WheelPicker';
-
-const MONTHS_IT = [
-  'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
-  'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre',
-];
+import { useI18n } from '@/i18n/I18nProvider';
 
 // Wheel options, built once. Wheels open centered on these anchors while unset.
 // Minutes stay in 5-minute steps.
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const DAY_ITEMS: WheelItem[] = Array.from({ length: 31 }, (_, i) => ({ value: i + 1, label: String(i + 1) }));
-const MONTH_ITEMS: WheelItem[] = MONTHS_IT.map((m, i) => ({ value: i + 1, label: m }));
 const YEAR_ITEMS: WheelItem[] = (() => {
   const current = new Date().getFullYear();
   return Array.from({ length: current - 1920 + 1 }, (_, i) => {
@@ -53,13 +48,8 @@ const YEAR_ANCHOR = 1980;
 const HOUR_ANCHOR = 12;
 const MINUTE_ANCHOR = 0;
 
-const DURATION_OPTIONS: { id: RelationshipDuration | 'skip'; label: string }[] = [
-  { id: 'under_1y', label: 'Meno di 1 anno' },
-  { id: '1_to_3y', label: '1-3 anni' },
-  { id: '3_to_7y', label: '3-7 anni' },
-  { id: '7_to_15y', label: '7-15 anni' },
-  { id: 'over_15y', label: 'Oltre 15 anni' },
-  { id: 'skip', label: 'Preferisco non rispondere' },
+const DURATION_IDS: (RelationshipDuration | 'skip')[] = [
+  'under_1y', '1_to_3y', '3_to_7y', '7_to_15y', 'over_15y', 'skip',
 ];
 
 type StepKey =
@@ -82,6 +72,12 @@ function aOrB(step: StepKey): 'a' | 'b' | null {
 export default function CoppiaQuiz() {
   const navigate = useNavigate();
   const { data, updatePersonA, updatePersonB, updateData } = useSynastry();
+  const { m, market } = useI18n();
+  const cq = m.coppia.quiz;
+  const MONTH_ITEMS: WheelItem[] = useMemo(
+    () => m.quiz.months.map((label, i) => ({ value: i + 1, label: label.toLowerCase() })),
+    [m.quiz.months],
+  );
   const [step, setStep] = useState(1);
   const stepKey = STEPS[step - 1];
   const placeRef = useRef<PlaceAutocompleteHandle>(null);
@@ -90,9 +86,9 @@ export default function CoppiaQuiz() {
   const [placeText, setPlaceText] = useState('');
 
   useEffect(() => {
-    document.title = 'Sinastria di Coppia - Quiz | Codice Interiore';
+    document.title = m.coppia.titles.quiz(market.siteName);
     markSynastryFunnelStage('quiz');
-  }, []);
+  }, [m, market.siteName]);
 
   // Quando entriamo in uno step "place", sincronizza il testo del campo con
   // il valore gia salvato nel context (es. tornando indietro).
@@ -155,9 +151,7 @@ export default function CoppiaQuiz() {
         const resolvedName = await placeRef.current?.resolve();
         setResolvingPlace(false);
         if (!resolvedName) {
-          setPlaceError(
-            "Non riusciamo a trovare questo luogo. Scegli un suggerimento dall'elenco.",
-          );
+          setPlaceError(cq.place.error);
           return;
         }
         setPlaceText(resolvedName);
@@ -179,22 +173,16 @@ export default function CoppiaQuiz() {
     if (step > 1) setStep((s) => s - 1);
   };
 
-  // Render labels dinamici (es. "nome del partner" oppure "nome di Anna")
-  const personPossessive = (which: 'a' | 'b') => {
-    if (which === 'a') return data.personA.name ? data.personA.name : 'tuo';
-    return data.personB.name ? data.personB.name : 'del/della partner';
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-xl mx-auto px-4 pt-10 pb-24">
         {/* Indicatore step */}
         <div className="mb-6">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-            <span>Passo {step} di {STEPS.length}</span>
+            <span>{cq.stepOf(step, STEPS.length)}</span>
             {which && (
               <span>
-                {which === 'a' ? 'Persona 1 (te)' : 'Persona 2 (partner)'}
+                {which === 'a' ? cq.personA : cq.personB}
               </span>
             )}
           </div>
@@ -210,28 +198,28 @@ export default function CoppiaQuiz() {
         {(stepKey === 'date_a' || stepKey === 'date_b') && target && (
           <div className="space-y-5">
             <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? 'Quando sei nato/a' : 'Quando e nato/a il tuo partner'}
+              {which === 'a' ? cq.date.titleA : cq.date.titleB}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Scorri per scegliere giorno, mese e anno.
+              {cq.date.hint}
             </p>
             <div className="grid grid-cols-3 gap-2">
               <PickerField
-                label="Giorno"
+                label={cq.date.day}
                 items={DAY_ITEMS}
                 value={target.birthDate.day ?? null}
                 anchor={DAY_ANCHOR}
                 onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, day: v } })}
               />
               <PickerField
-                label="Mese"
+                label={cq.date.month}
                 items={MONTH_ITEMS}
                 value={target.birthDate.month ?? null}
                 anchor={MONTH_ANCHOR}
                 onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, month: v } })}
               />
               <PickerField
-                label="Anno"
+                label={cq.date.year}
                 items={YEAR_ITEMS}
                 value={target.birthDate.year ?? null}
                 anchor={YEAR_ANCHOR}
@@ -244,23 +232,22 @@ export default function CoppiaQuiz() {
         {(stepKey === 'time_a' || stepKey === 'time_b') && target && (
           <div className="space-y-5">
             <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? 'A che ora sei nato/a' : 'A che ora e nato/a il tuo partner'}
+              {which === 'a' ? cq.time.titleA : cq.time.titleB}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Se non la conosci con precisione, indica l'orario piu vicino possibile,
-              o spunta "non la conosco" qui sotto.
+              {cq.time.hint}
             </p>
             {target.timeKnown && (
               <div className="grid grid-cols-2 gap-2">
                 <PickerField
-                  label="Ora"
+                  label={cq.time.hour}
                   items={HOUR_ITEMS}
                   value={target.birthTime.hour ?? null}
                   anchor={HOUR_ANCHOR}
                   onChange={(v) => updateTarget({ birthTime: { ...target.birthTime, hour: v } })}
                 />
                 <PickerField
-                  label="Minuti"
+                  label={cq.time.minute}
                   items={MINUTE_ITEMS}
                   value={target.birthTime.minute ?? null}
                   anchor={MINUTE_ANCHOR}
@@ -281,13 +268,11 @@ export default function CoppiaQuiz() {
                   })
                 }
               />
-              Non la conosco
+              {cq.time.unknownLabel}
             </label>
             {!target.timeKnown && (
               <p className="text-xs text-muted-foreground">
-                Senza l'ora la sinastria sara parziale per questa persona
-                (niente case e ascendente). Procedi tranquillamente, il resto dell'analisi
-                resta valido.
+                {cq.time.unknownNote}
               </p>
             )}
           </div>
@@ -296,10 +281,10 @@ export default function CoppiaQuiz() {
         {(stepKey === 'place_a' || stepKey === 'place_b') && target && (
           <div className="space-y-5">
             <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? 'Dove sei nato/a' : 'Dove e nato/a il tuo partner'}
+              {which === 'a' ? cq.place.titleA : cq.place.titleB}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Citta. Inizia a digitare e scegli dai suggerimenti.
+              {cq.place.hint}
             </p>
             <PlaceAutocomplete
               ref={placeRef}
@@ -336,13 +321,13 @@ export default function CoppiaQuiz() {
                   });
                 }
               }}
-              placeholder="es. Milano, Roma, Napoli..."
+              placeholder={cq.place.placeholder}
             />
             {placeError ? (
               <p className="text-xs text-destructive">{placeError}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                Scegli un luogo dai suggerimenti per una lettura piu precisa.
+                {cq.place.suggestionHint}
               </p>
             )}
           </div>
@@ -351,16 +336,16 @@ export default function CoppiaQuiz() {
         {(stepKey === 'name_a' || stepKey === 'name_b') && target && (
           <div className="space-y-5">
             <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? 'Come ti chiami' : 'Come si chiama il tuo partner'}
+              {which === 'a' ? cq.name.titleA : cq.name.titleB}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Solo il nome di battesimo, lo useremo nel report.
+              {cq.name.hint}
             </p>
             <input
               type="text"
               value={target.name}
               onChange={(e) => updateTarget({ name: e.target.value })}
-              placeholder={which === 'a' ? 'Il tuo nome' : 'Nome del partner'}
+              placeholder={which === 'a' ? cq.name.placeholderA : cq.name.placeholderB}
               className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm focus:ring-2 focus:ring-ring focus:outline-none"
               autoFocus
             />
@@ -371,24 +356,24 @@ export default function CoppiaQuiz() {
           <div className="space-y-6">
             <div>
               <h2 className="font-display text-2xl font-semibold text-foreground mb-1">
-                Da quanto state insieme?
+                {cq.context.title}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Opzionale. Aiuta la lettura a calibrarsi sulla fase della relazione.
+                {cq.context.hint}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DURATION_OPTIONS.map((opt) => {
-                const selected = opt.id === 'skip'
+              {DURATION_IDS.map((id) => {
+                const selected = id === 'skip'
                   ? data.relationshipDuration === 'prefer_not_to_say'
-                  : data.relationshipDuration === opt.id;
+                  : data.relationshipDuration === id;
                 return (
                   <button
-                    key={opt.id}
+                    key={id}
                     type="button"
                     onClick={() =>
                       updateData({
-                        relationshipDuration: opt.id === 'skip' ? 'prefer_not_to_say' : opt.id,
+                        relationshipDuration: id === 'skip' ? 'prefer_not_to_say' : id,
                       })
                     }
                     className={`h-11 px-4 rounded-lg border text-sm text-left transition-colors ${
@@ -397,7 +382,7 @@ export default function CoppiaQuiz() {
                         : 'border-border bg-background hover:bg-accent/30'
                     }`}
                   >
-                    {opt.label}
+                    {cq.context.durations[id]}
                   </button>
                 );
               })}
@@ -405,13 +390,13 @@ export default function CoppiaQuiz() {
 
             <div>
               <label className="text-xs text-muted-foreground">
-                Focus della lettura (opzionale)
+                {cq.context.focusLabel}
               </label>
               <input
                 type="text"
                 value={data.focusRelational}
                 onChange={(e) => updateData({ focusRelational: e.target.value })}
-                placeholder="Es. capire le sfide, decidere se sposarci, sciogliere un blocco..."
+                placeholder={cq.context.focusPlaceholder}
                 className="mt-1.5 h-11 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm focus:ring-2 focus:ring-ring focus:outline-none"
               />
             </div>
@@ -426,7 +411,7 @@ export default function CoppiaQuiz() {
               onClick={handleBack}
               className="h-11 px-5 rounded-lg border border-border text-sm hover:bg-accent/30"
             >
-              Indietro
+              {cq.back}
             </button>
           ) : (
             <span />
@@ -438,10 +423,10 @@ export default function CoppiaQuiz() {
             className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
           >
             {resolvingPlace
-              ? 'Verifico...'
+              ? cq.resolving
               : step === STEPS.length
-                ? 'Calcola la sinastria'
-                : 'Avanti'}
+                ? cq.finalCta
+                : cq.next}
           </button>
         </div>
       </main>

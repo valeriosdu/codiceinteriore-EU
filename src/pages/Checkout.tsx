@@ -15,7 +15,8 @@ import { fetchQuizSessionPublic } from "@/lib/sessionAccess";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
-import { getFunnelConfig } from "@/funnels/registry";
+import { getFunnelContent } from "@/funnels/registry";
+import { useI18n } from "@/i18n/I18nProvider";
 
 // Happy path is 5–10s. On timeout we auto-retry (re-invoking
 // process-session-insights) up to MAX_RECOVERY_ATTEMPTS times before
@@ -25,15 +26,12 @@ const POLL_INTERVAL_MS = 4000;
 const RETRY_PAUSE_MS = 2000;
 const MAX_RECOVERY_ATTEMPTS = 2;
 
-const MONTHS_SHORT = [
-  "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
-  "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
-];
-
 const Checkout = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
-  const funnelConfig = getFunnelConfig(data.funnelSlug);
+  const { m, market } = useI18n();
+  const c = m.checkout;
+  const funnelConfig = getFunnelContent(data.funnelSlug, m.funnels);
   const [sessionReady, setSessionReady] = useState(false);
   const [pollFailed, setPollFailed] = useState(false);
   const [recoveryAttempt, setRecoveryAttempt] = useState(0);
@@ -184,12 +182,12 @@ const Checkout = () => {
 
   const handleSelect = async (type: "base" | "premium") => {
     if (isLovablePreview()) {
-      toast.info("Anteprima Lovable: il pagamento è disabilitato in preview.");
+      toast.info(m.teaser.toasts.previewPaymentsDisabled);
       return;
     }
     const sessionId = data.sessionId || getStoredSessionId();
     if (!sessionId || !sessionReady) {
-      toast.error("Stiamo ancora preparando la lettura. Riprova tra poco.");
+      toast.error(c.toasts.stillPreparingShort);
       return;
     }
 
@@ -209,7 +207,7 @@ const Checkout = () => {
       setReviewOpen(true);
     } catch (e) {
       console.error("Checkout pre-check error:", e);
-      toast.error("Stiamo ancora preparando la lettura. Riprova tra qualche secondo.");
+      toast.error(c.toasts.stillPreparingRetry);
     } finally {
       setCheckoutLoading(null);
     }
@@ -219,10 +217,10 @@ const Checkout = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="font-display text-2xl font-semibold text-foreground">
-          Non siamo riusciti a preparare la lettura
+          {c.failed.title}
         </h1>
         <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          Qualcosa non sta funzionando come dovrebbe. Riprova tra qualche istante.
+          {c.failed.body}
         </p>
         <Button
           variant="default"
@@ -232,7 +230,7 @@ const Checkout = () => {
             setRecoveryAttempt(0);
           }}
         >
-          Riprova
+          {c.failed.retry}
         </Button>
       </div>
     );
@@ -244,12 +242,10 @@ const Checkout = () => {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <h1 className="font-display text-2xl font-semibold text-foreground">
-          Stiamo preparando la lettura
+          {c.loading.title}
         </h1>
         <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          {slowMessage
-            ? "Ci sta mettendo più del previsto. Resta su questa pagina: riproveremo automaticamente tra poco."
-            : "Calcoliamo la carta natale prima di mostrarti l'offerta."}
+          {slowMessage ? c.loading.slow : c.loading.normal}
         </p>
       </div>
     );
@@ -258,12 +254,12 @@ const Checkout = () => {
   const hasRealInsights = data.teaserInsights && data.teaserInsights.length > 0;
   const previewInsights = hasRealInsights ? data.teaserInsights! : funnelConfig.teaser.fallbackInsights;
 
-  const recipientName = data.userName || "lui/lei";
+  const recipientName = data.userName || c.hero.fallbackRecipient;
   const birthSummary = (() => {
     const parts: string[] = [];
     if (data.birthDate) {
-      const m = MONTHS_SHORT[(data.birthDate.month || 1) - 1];
-      parts.push(`${data.birthDate.day} ${m} ${data.birthDate.year}`);
+      const monthLabel = (m.quiz.months[(data.birthDate.month || 1) - 1] || "").toLowerCase();
+      parts.push(`${data.birthDate.day} ${monthLabel} ${data.birthDate.year}`);
     }
     if (data.birthTime) {
       parts.push(`${String(data.birthTime.hour).padStart(2, "0")}:${String(data.birthTime.minute).padStart(2, "0")}`);
@@ -283,10 +279,10 @@ const Checkout = () => {
           className="text-center space-y-3"
         >
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground">
-            La lettura per {recipientName} è pronta
+            {c.hero.title(recipientName)}
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-            Abbiamo calcolato la carta natale. Scegli il formato per generare la lettura completa.
+            {c.hero.subtitle}
           </p>
           {birthSummary && (
             <p className="pt-2 text-xs text-muted-foreground/80">{birthSummary}</p>
@@ -295,7 +291,7 @@ const Checkout = () => {
             onClick={() => navigate("/quiz")}
             className="text-xs text-primary/80 hover:text-primary underline underline-offset-2 transition-colors"
           >
-            I dati non sono giusti?
+            {c.hero.wrongData}
           </button>
         </motion.div>
 
@@ -317,32 +313,22 @@ const Checkout = () => {
 
         <div id="offer-cards" className="grid gap-6 md:grid-cols-2">
           <OfferCard
-            name="Lettura Completa del Tema Natale"
-            price="19€"
-            promise={`Per capire con più chiarezza la struttura emotiva, relazionale e personale di ${recipientName}, e vedere cosa tende a ripetersi nella sua vita.`}
-            features={[
-              "Comprendi blocchi emotivi, difese e dinamiche ricorrenti con un linguaggio umano, non tecnico",
-              "Vedi come questi schemi influenzano relazioni, lavoro, direzione personale e scelte di vita",
-              "Ricevi spunti pratici su cosa osservare, favorire o correggere",
-              "Accesso immediato alla lettura online e via e-mail",
-            ]}
-            ctaLabel="Ottieni la Lettura Completa"
+            name={c.offers.baseName}
+            price={m.common.priceLabel(market.prices.base)}
+            promise={c.offers.basePromise(recipientName)}
+            features={c.offers.baseFeatures}
+            ctaLabel={m.teaser.offers.baseCta}
             onSelect={() => handleSelect("base")}
             loading={checkoutLoading === "base"}
             index={0}
           />
           <OfferCard
-            name="Lettura Completa + 1 Mese di Transiti"
-            price="29€"
-            promise={`Capire cosa guida ${recipientName} in profondità e leggere con chiarezza anche il momento che sta vivendo adesso.`}
-            features={[
-              "Tutto ciò che è incluso nella Lettura Completa",
-              "1 mese di letture settimanali personalizzate sui transiti del periodo",
-              "Un aiuto in più per capire cosa si sta attivando emotivamente adesso",
-              "Omaggio: poesia trasformativa personale",
-            ]}
+            name={m.teaser.offers.premiumName}
+            price={m.common.priceLabel(market.prices.premium)}
+            promise={c.offers.premiumPromise(recipientName)}
+            features={m.teaser.offers.premiumFeatures}
             recommended
-            ctaLabel="Ottieni la Lettura + Transiti"
+            ctaLabel={m.teaser.offers.premiumCta}
             onSelect={() => handleSelect("premium")}
             loading={checkoutLoading === "premium"}
             index={1}
@@ -356,13 +342,13 @@ const Checkout = () => {
           className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground py-2"
         >
           <span className="flex items-center gap-1.5">
-            <Zap className="w-3 h-3" /> Accesso immediato
+            <Zap className="w-3 h-3" /> {m.teaser.reassurance.instantAccess}
           </span>
           <span className="flex items-center gap-1.5">
-            <Lock className="w-3 h-3" /> Pagamento sicuro
+            <Lock className="w-3 h-3" /> {m.teaser.reassurance.securePayment}
           </span>
           <span className="flex items-center gap-1.5">
-            <PenLine className="w-3 h-3" /> Lettura scritta in linguaggio umano
+            <PenLine className="w-3 h-3" /> {m.teaser.reassurance.humanLanguage}
           </span>
         </motion.div>
       </div>

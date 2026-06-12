@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { MARKET } from '@/markets';
 
 interface PlaceResult {
   name: string;
@@ -71,7 +72,7 @@ const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteP
       const q = query.trim();
       if (q.length < 2) return [];
       const { data, error } = await supabase.functions.invoke<GeoSearchResponse>('city-search', {
-        body: { q, limit: 8 },
+        body: { q, limit: 8, lang: MARKET.language, country: MARKET.countryCode },
       });
       if (error || !data) return [];
       return data.results ?? [];

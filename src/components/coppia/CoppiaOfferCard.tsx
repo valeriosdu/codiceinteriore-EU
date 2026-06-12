@@ -2,6 +2,8 @@
 // Niente card box bouncy: una composizione tipografica con la pagina come 14
 // grande italico al margine, prezzo in stile colophon, CTA confident ma sobrio.
 
+import { useI18n } from '@/i18n/I18nProvider';
+
 interface CoppiaOfferCardProps {
   priceLabel?: string;
   /** Prezzo barrato (listino se sconto attivo) */
@@ -16,22 +18,22 @@ interface CoppiaOfferCardProps {
   subtitleLine2?: string;
 }
 
-const DEFAULT_BULLETS = [
-  'Otto sezioni: ritratto, chimica, comunicazione, mondo emotivo, sfide, stabilità, pattern karmico, direzione',
-  'PDF da scaricare, accesso permanente',
-  'Circa 10 pagine in italiano chiaro',
-];
-
 export function CoppiaOfferCard({
-  priceLabel = '19,00 €',
+  priceLabel,
   strikeThroughPrice,
   badge,
-  bullets = DEFAULT_BULLETS,
+  bullets,
   onSelect,
   loading,
-  ctaLabel = 'Ottieni la sinastria completa',
-  subtitleLine2 = 'sulla vostra relazione',
+  ctaLabel,
+  subtitleLine2,
 }: CoppiaOfferCardProps) {
+  const { m, market } = useI18n();
+  const oc = m.coppia.offerCard;
+  const resolvedPrice = priceLabel ?? m.common.priceLabel(market.prices.synastry);
+  const resolvedBullets = bullets ?? oc.defaultBullets;
+  const resolvedCta = ctaLabel ?? oc.defaultCta;
+  const resolvedSubtitle = subtitleLine2 ?? oc.defaultSubtitle;
   return (
     <article className="relative border-t border-b border-primary/30 py-10 md:py-14">
       {/* "14" gigante a sfondo, sul lato sinistro, come numero del capitolo */}
@@ -63,18 +65,18 @@ export function CoppiaOfferCard({
             className="text-[11px] uppercase text-muted-foreground mb-3"
             style={{ letterSpacing: '0.42em' }}
           >
-            La lettura completa
+            {oc.kicker}
           </p>
           <h3 className="font-editorial text-foreground leading-[1]"
             style={{ fontWeight: 500, fontSize: 'clamp(2.25rem, 5.5vw, 3.5rem)' }}
           >
-            Una lettura astrologica completa
+            {oc.titleLine1}
             <br />
-            <span className="text-primary">{subtitleLine2}</span>
+            <span className="text-primary">{resolvedSubtitle}</span>
           </h3>
 
           <ul className="mt-7 space-y-2.5">
-            {bullets.map((b, i) => (
+            {resolvedBullets.map((b, i) => (
               <li
                 key={i}
                 className="flex items-start gap-3 text-[17px] leading-snug text-foreground/90"
@@ -102,7 +104,7 @@ export function CoppiaOfferCard({
             <span className="font-editorial text-primary"
               style={{ fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, lineHeight: 1 }}
             >
-              {priceLabel}
+              {resolvedPrice}
             </span>
           </div>
           <button
@@ -118,10 +120,10 @@ export function CoppiaOfferCard({
             }}
           >
             {loading ? (
-              'Apertura checkout…'
+              oc.loadingCta
             ) : (
               <>
-                {ctaLabel}
+                {resolvedCta}
                 <span
                   aria-hidden
                   className="text-base transition-transform duration-300 group-hover:translate-x-1"
@@ -135,7 +137,7 @@ export function CoppiaOfferCard({
             className="mt-4 text-xs text-muted-foreground md:text-right max-w-[18rem] md:ml-auto"
             style={{ letterSpacing: '0.04em' }}
           >
-            Pagamento sicuro e protetto. Riceverai un'email per accedere alla lettura.
+            {oc.secureNote}
           </p>
         </div>
       </div>

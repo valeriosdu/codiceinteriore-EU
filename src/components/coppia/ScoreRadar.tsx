@@ -2,6 +2,8 @@
 // Input: scores 0-100 in italiano (sintonia_emotiva, attrazione, comunicazione,
 // stabilita, crescita, tensione).
 
+import { useI18n } from '@/i18n/I18nProvider';
+
 interface ScoreRadarProps {
   scores: {
     sintonia_emotiva?: number;
@@ -14,16 +16,18 @@ interface ScoreRadarProps {
   size?: number;
 }
 
-const AXES = [
-  { key: 'sintonia_emotiva', label: 'Sintonia' },
-  { key: 'attrazione', label: 'Attrazione' },
-  { key: 'comunicazione', label: 'Comunicazione' },
-  { key: 'stabilita', label: 'Stabilita' },
-  { key: 'crescita', label: 'Crescita' },
-  { key: 'tensione', label: 'Tensione' },
+const AXIS_KEYS = [
+  'sintonia_emotiva',
+  'attrazione',
+  'comunicazione',
+  'stabilita',
+  'crescita',
+  'tensione',
 ] as const;
 
 export function ScoreRadar({ scores, size = 280 }: ScoreRadarProps) {
+  const { m } = useI18n();
+  const AXES = AXIS_KEYS.map((key) => ({ key, label: m.coppia.radar[key] }));
   const cx = size / 2;
   const cy = size / 2;
   const radius = size / 2 - 40;

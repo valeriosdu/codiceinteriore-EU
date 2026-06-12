@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { createSynastrySession } from '@/lib/sessionAccess';
+import { MARKET } from '@/markets';
 import {
   useSynastry,
   SynastryPersonData,
@@ -36,6 +37,8 @@ export function useSynastrySession() {
     const insertPayload: Record<string, unknown> = {
       funnel_slug: 'coppia',
       processing_status: 'pending',
+      language: MARKET.language,
+      market: MARKET.id,
       client_name: data.clientName || null,
       focus_relational: data.focusRelational || null,
       relationship_duration: data.relationshipDuration ?? null,

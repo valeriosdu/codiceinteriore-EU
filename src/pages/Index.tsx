@@ -15,6 +15,7 @@ import {
   faqJsonLd,
   productJsonLd,
 } from "@/lib/seo-jsonld";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -28,6 +29,8 @@ const fadeUp = {
 const Index = () => {
   const navigate = useNavigate();
   const { isReady, user } = useAuthReady();
+  const { m } = useI18n();
+  const l = m.landing;
   const [checking, setChecking] = useState(true);
   const startQuiz = () => navigate("/quiz");
 
@@ -120,8 +123,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Tema Natale online, lettura in italiano"
-        description="Lettura del tuo tema natale, scritta in italiano e personalizzata sui dati di nascita. Prima parte gratuita, senza registrazione."
+        title={l.seo.title}
+        description={l.seo.description}
         path="/"
         jsonLd={[productJsonLd(), faqJsonLd(DEFAULT_FAQS)]}
       />
@@ -135,7 +138,7 @@ const Index = () => {
           transition={{ duration: 0.6 }}
           className="font-display text-4xl md:text-5xl font-semibold text-foreground leading-tight text-balance"
         >
-          Il tuo Tema Natale, spiegato in modo chiaro
+          {l.hero.title}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -143,8 +146,7 @@ const Index = () => {
           transition={{ delay: 0.15, duration: 0.5 }}
           className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto"
         >
-          Scopri cosa emerge dalla tua struttura emotiva e relazionale a partire dai tuoi dati di nascita. Gratis e
-          senza registrazione.
+          {l.hero.subtitle}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -153,10 +155,10 @@ const Index = () => {
           className="space-y-3"
         >
           <Button variant="premium" size="hero" onClick={startQuiz}>
-            Inizia il quiz
+            {l.hero.cta}
             <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
-          <p className="text-xs text-muted-foreground">Quiz di 2 minuti · Nessuna conoscenza necessaria</p>
+          <p className="text-xs text-muted-foreground">{l.hero.microcopy}</p>
         </motion.div>
       </section>
 
@@ -169,14 +171,9 @@ const Index = () => {
           className="bg-surface rounded-2xl p-8 md:p-10 space-y-5"
         >
           <motion.p variants={fadeUp} custom={0} className="text-sm font-medium text-primary uppercase tracking-wider">
-            Ti capita mai?
+            {l.problems.kicker}
           </motion.p>
-          {[
-            "Ti leghi a persone poco disponibili",
-            "Confondi intensità e connessione",
-            "Sai cosa succede, ma lo ripeti",
-            "Alterni inseguimento a distanza",
-          ].map((text, i) => (
+          {l.problems.items.map((text, i) => (
             <motion.div key={i} variants={fadeUp} custom={i + 1} className="flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
               <p className="text-foreground/85 leading-relaxed">{text}</p>
@@ -193,7 +190,7 @@ const Index = () => {
           viewport={{ once: true }}
           className="font-display text-2xl md:text-3xl font-semibold text-foreground"
         >
-          Cosa scoprirai
+          {l.discover.title}
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 8 }}
@@ -201,8 +198,7 @@ const Index = () => {
           viewport={{ once: true }}
           className="text-muted-foreground leading-relaxed max-w-lg mx-auto"
         >
-          Riceverai una prima lettura del tuo tema natale: come tendi a legarti, cosa si attiva quando senti distanza o
-          ambiguità, e quali dinamiche relazionali tendono a ripetersi.
+          {l.discover.body}
         </motion.p>
       </section>
 
@@ -214,14 +210,10 @@ const Index = () => {
           viewport={{ once: true }}
           className="font-display text-2xl md:text-3xl font-semibold text-foreground text-center mb-10"
         >
-          Come funziona
+          {l.howItWorks.title}
         </motion.h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {[
-            { step: "1", title: "Inserisci i tuoi dati di nascita" },
-            { step: "2", title: "Rispondi a poche domande brevi" },
-            { step: "3", title: "Ricevi la tua lettura iniziale gratuitamente" },
-          ].map((item, i) => (
+          {l.howItWorks.steps.map((title, i) => ({ step: String(i + 1), title })).map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 16 }}
@@ -242,10 +234,10 @@ const Index = () => {
       {/* Final CTA */}
       <section className="container max-w-2xl mx-auto py-16 text-center space-y-6">
         <p className="text-muted-foreground leading-relaxed">
-          Inizia dalla tua lettura iniziale. Il resto emergerà con più chiarezza.
+          {l.finalCta.body}
         </p>
         <Button variant="premium" size="hero" onClick={startQuiz}>
-          Inizia il quiz
+          {l.finalCta.cta}
           <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </section>

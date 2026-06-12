@@ -4,16 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz, getFunnelStage } from '@/context/QuizContext';
 import { supabase } from '@/integrations/supabase/client';
 import { createQuizSession, fetchQuizSessionPublic } from '@/lib/sessionAccess';
+import { useI18n } from '@/i18n/I18nProvider';
 import logo from '@/assets/logo.webp';
 
-const messages = [
-  'Stiamo leggendo i tuoi dati di nascita',
-  'Stiamo mappando i tuoi pattern relazionali',
-  'Stiamo traducendo la tua carta in insight chiari',
-  'Stiamo preparando la tua lettura iniziale',
-];
-
-const waitingMessage = 'Ci vuole un attimo in più, ci siamo quasi…';
 // Hard ceiling for waiting in the browser. The background job continues
 // even if we navigate away — TeaserResult will keep polling.
 const HANDOFF_TIMEOUT_MS = 35000;
@@ -22,6 +15,9 @@ const POLL_INTERVAL_MS = 3000;
 const Processing = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
+  const { m, market } = useI18n();
+  const messages = m.processing.messages;
+  const waitingMessage = m.processing.waiting;
   const [currentIndex, setCurrentIndex] = useState(0);
   const fetchStarted = useRef(false);
   const [ready, setReady] = useState(false);
@@ -76,6 +72,8 @@ const Processing = () => {
           processing_status: 'pending',
           funnel_slug: funnelSlug,
           quiz_answers: quizAnswers,
+          language: market.language,
+          market: market.id,
         };
         if (funnelSlug === 'classica') {
           insertPayload.attachment_response = data.attachmentResponse;
@@ -159,7 +157,7 @@ const Processing = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <div className="max-w-sm w-full space-y-12 text-center">
-        <img src={logo} alt="Codice Interiore" className="h-8" />
+        <img src={logo} alt={market.siteName} className="h-8" />
 
         <div className="h-24 flex items-center justify-center">
           <AnimatePresence mode="wait">

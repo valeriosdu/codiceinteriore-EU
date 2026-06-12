@@ -1,6 +1,8 @@
 import { Helmet } from "react-helmet-async";
+import { MARKET } from "@/markets";
 
-const SITE_URL = "https://www.codiceinteriore.it";
+const SITE_URL = MARKET.siteUrl;
+const OG_LOCALE = MARKET.locale.replace("-", "_");
 const DEFAULT_OG_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/aVZLfEnbxJa0xgnu23ciVWX02mn2/social-images/social-1775810599830-hf_20260410_084149_80649ee2-59cc-4089-b616-cd3a7ef4c012.webp";
 
@@ -52,8 +54,8 @@ export const SEO = ({
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={resolvedOg} />
       <meta property="og:type" content="website" />
-      <meta property="og:locale" content="it_IT" />
-      <meta property="og:site_name" content="Codice Interiore" />
+      <meta property="og:locale" content={OG_LOCALE} />
+      <meta property="og:site_name" content={MARKET.siteName} />
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />

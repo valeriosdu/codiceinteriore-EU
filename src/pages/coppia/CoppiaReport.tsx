@@ -6,24 +6,22 @@ import { ArchetypeBadge } from '@/components/coppia/ArchetypeBadge';
 import { ScoreOverallRing } from '@/components/coppia/ScoreOverallRing';
 import { ScoreRadar } from '@/components/coppia/ScoreRadar';
 import { SynastryReportSection } from '@/components/coppia/SynastryReportSection';
+import { useI18n } from '@/i18n/I18nProvider';
 
 function compressScore(raw: number): number {
   return Math.round(30 + (raw / 100) * 67);
 }
 
-const SECTION_META: Array<{
-  key: string;
-  section: 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  title: string;
-}> = [
-  { key: 'ritratto_coppia', section: 1, title: 'Il ritratto della coppia' },
-  { key: 'attrazione_chimica', section: 2, title: 'Attrazione e chimica' },
-  { key: 'comunicazione', section: 3, title: 'Comunicazione' },
-  { key: 'mondo_emotivo', section: 4, title: 'Mondo emotivo' },
-  { key: 'sfide', section: 5, title: 'Sfide come crescita' },
-  { key: 'pattern_karmico', section: 6, title: 'Pattern karmico' },
-  { key: 'direzione', section: 7, title: 'Direzione' },
-];
+// Chiavi/ordine sezioni (contratto col backend); i titoli vivono nel catalogo.
+const SECTION_KEYS = [
+  'ritratto_coppia',
+  'attrazione_chimica',
+  'comunicazione',
+  'mondo_emotivo',
+  'sfide',
+  'pattern_karmico',
+  'direzione',
+] as const;
 
 function mapScoresIt(raw: any) {
   if (!raw) return {};
@@ -40,10 +38,12 @@ function mapScoresIt(raw: any) {
 export default function CoppiaReport() {
   const navigate = useNavigate();
   const { data } = useSynastry();
+  const { m, market } = useI18n();
+  const cr = m.coppia.report;
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    document.title = 'Sinastria di Coppia - Report | Codice Interiore';
+    document.title = m.coppia.titles.report(market.siteName);
     if (!data.fullReport) {
       // Se manca il report (es. accesso diretto al URL), torna al processing
       navigate('/coppia/report-processing', { replace: true });
@@ -74,7 +74,7 @@ export default function CoppiaReport() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `codice-interiore-coppia-${data.personA.name || 'persona-a'}-${data.personB.name || 'persona-b'}.pdf`;
+      a.download = `${market.siteName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-coppia-${data.personA.name || 'persona-a'}-${data.personB.name || 'persona-b'}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -94,10 +94,10 @@ export default function CoppiaReport() {
         {/* COVER */}
         <header className="text-center mb-12">
           <p className="text-sm uppercase tracking-widest text-primary mb-2">
-            {data.personA.name || 'Persona A'} & {data.personB.name || 'Persona B'}
+            {data.personA.name || cr.personA} & {data.personB.name || cr.personB}
           </p>
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-6">
-            La vostra sinastria
+            {cr.title}
           </h1>
           <div className="flex flex-col items-center gap-3">
             {data.scoreOverall != null && <ScoreOverallRing score={compressScore(Math.max(0, Math.min(100, Math.round(data.scoreOverall))))} />}
@@ -109,14 +109,14 @@ export default function CoppiaReport() {
         {(data.fullReport as any)?.apertura && (
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8 mb-12">
             <h2 className="font-display text-xl font-semibold text-foreground mb-6">
-              La vostra mappa
+              {cr.yourMap}
             </h2>
             <dl className="space-y-4">
               {([
-                ['Cosa siete', (data.fullReport as any).apertura.cosa_siete],
-                ['Dove brillate', (data.fullReport as any).apertura.dove_brillate],
-                ['Dove inciampate', (data.fullReport as any).apertura.dove_inciampate],
-                ['Dove andate', (data.fullReport as any).apertura.dove_andate],
+                [cr.mapLabels.cosa_siete, (data.fullReport as any).apertura.cosa_siete],
+                [cr.mapLabels.dove_brillate, (data.fullReport as any).apertura.dove_brillate],
+                [cr.mapLabels.dove_inciampate, (data.fullReport as any).apertura.dove_inciampate],
+                [cr.mapLabels.dove_andate, (data.fullReport as any).apertura.dove_andate],
               ] as const).map(([label, value]) => value && (
                 <div key={label}>
                   <dt className="text-sm font-medium text-primary tracking-wide uppercase">{label}</dt>
@@ -130,7 +130,7 @@ export default function CoppiaReport() {
         {/* SCORE RADAR */}
         <div className="rounded-2xl border border-border bg-card p-6 mb-12 flex flex-col items-center">
           <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-            I sei domini della vostra relazione
+            {cr.sixDomains}
           </h2>
           <ScoreRadar scores={scoresIt} />
         </div>
@@ -139,7 +139,7 @@ export default function CoppiaReport() {
         {data.biWheelSvg && (
           <div className="rounded-2xl border border-border bg-card p-6 mb-12">
             <h2 className="font-display text-xl font-semibold text-foreground mb-4 text-center">
-              La carta della coppia
+              {cr.coupleChart}
             </h2>
             <div
               className="flex justify-center"
@@ -149,11 +149,11 @@ export default function CoppiaReport() {
         )}
 
         {/* 7 SEZIONI */}
-        {SECTION_META.map(({ key, section, title }) => {
+        {SECTION_KEYS.map((key, i) => {
           const body = (data.fullReport as any)?.[key];
           if (!body) return null;
           return (
-            <SynastryReportSection key={key} section={section} title={title} body={body} />
+            <SynastryReportSection key={key} section={(i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7} title={m.synastryCard.sections[key]} body={body} />
           );
         })}
 
@@ -165,7 +165,7 @@ export default function CoppiaReport() {
             disabled={downloading}
             className="h-12 px-8 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-60"
           >
-            {downloading ? 'Preparazione PDF...' : 'Scarica il PDF'}
+            {downloading ? cr.downloading : cr.downloadPdf}
           </button>
         </div>
       </main>

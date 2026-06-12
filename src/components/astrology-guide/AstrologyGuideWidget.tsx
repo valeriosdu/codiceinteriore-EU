@@ -4,10 +4,14 @@ import { useAstrologyGuide } from "./AstrologyGuideContext";
 import AstrologyGuideMessage from "./AstrologyGuideMessage";
 import AstrologyGuideComposer from "./AstrologyGuideComposer";
 import BuyMoreCreditsCard from "./BuyMoreCreditsCard";
-import { INCLUDED_FREE_CREDITS, PACK_CREDITS, PACK_PRICE_LABEL } from "./constants";
+import { INCLUDED_FREE_CREDITS, PACK_CREDITS } from "./constants";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const AstrologyGuideWidget = () => {
   const { isOpen, toggle, close, questions, credits, loading } = useAstrologyGuide();
+  const { m, market } = useI18n();
+  const g = m.astrologyGuide;
+  const packPrice = m.common.priceLabel(market.prices.astroPack);
   const threadRef = useRef<HTMLDivElement>(null);
   const balance = credits?.balance ?? 0;
   const totalGranted = credits?.total_granted ?? 0;
@@ -33,14 +37,14 @@ const AstrologyGuideWidget = () => {
         <button
           type="button"
           onClick={toggle}
-          aria-label="Apri la Guida astrologica"
+          aria-label={g.openAria}
           className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 px-5 py-3.5 hover:opacity-95 transition"
         >
           <MessageCircle className="h-5 w-5" />
-          <span className="text-base font-medium">Guida astrologica</span>
+          <span className="text-base font-medium">{g.name}</span>
           {showFreeBadge && (
             <span className="ml-1 text-[10px] uppercase tracking-wider bg-primary-foreground/20 px-2 py-0.5 rounded-full">
-              {freeRemaining} gratis
+              {g.freeBadge(freeRemaining)}
             </span>
           )}
         </button>
@@ -50,20 +54,20 @@ const AstrologyGuideWidget = () => {
         <div
           className="fixed inset-0 z-50 sm:inset-auto sm:bottom-5 sm:right-5"
           role="dialog"
-          aria-label="Guida astrologica"
+          aria-label={g.name}
         >
           <div className="w-full sm:w-[440px] h-[100dvh] sm:h-[680px] sm:max-h-[88vh] flex flex-col bg-background border border-border rounded-none sm:rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-primary" />
                 <h3 className="font-display text-lg font-semibold text-foreground">
-                  Guida astrologica
+                  {g.name}
                 </h3>
                 <span className="text-base text-muted-foreground">
-                  {balance} {balance === 1 ? "domanda" : "domande"}
+                  {g.questionsCount(balance)}
                   {showFreeBadge ? (
                     <span className="ml-1 text-[11px] uppercase tracking-wider text-primary">
-                      · {freeRemaining} gratis
+                      {' '}{g.freeInline(freeRemaining)}
                     </span>
                   ) : null}
                 </span>
@@ -71,7 +75,7 @@ const AstrologyGuideWidget = () => {
               <button
                 type="button"
                 onClick={close}
-                aria-label="Chiudi"
+                aria-label={g.closeAria}
                 className="p-1.5 rounded hover:bg-secondary transition"
               >
                 <X className="h-5 w-5 text-muted-foreground" />
@@ -86,11 +90,10 @@ const AstrologyGuideWidget = () => {
                   </div>
                   <div className="space-y-2">
                     <p className="font-display text-lg font-semibold text-foreground">
-                      Hai esaurito le tue domande
+                      {g.empty.exhaustedTitle}
                     </p>
                     <p className="text-base text-muted-foreground leading-relaxed max-w-[320px]">
-                      Aggiungi un nuovo pacchetto da {PACK_CREDITS} domande per continuare
-                      ad approfondire la tua carta.
+                      {g.empty.exhaustedBody(PACK_CREDITS)}
                     </p>
                   </div>
                 </div>
@@ -102,24 +105,18 @@ const AstrologyGuideWidget = () => {
 
                   <div className="space-y-2">
                     <p className="font-display text-lg font-semibold text-foreground">
-                      La tua guida astrologica personale
+                      {g.empty.introTitle}
                     </p>
                     <p className="text-base text-muted-foreground leading-relaxed max-w-[320px]">
-                      Fai domande sul tuo tema natale e, se hai acquistato la sinastria
-                      di coppia o i transiti del mese, anche su quelli: le risposte sono
-                      sempre personalizzate sui tuoi dati astrologici.
+                      {g.empty.introBody}
                     </p>
                   </div>
 
                   <div className="w-full max-w-[340px] bg-secondary/40 rounded-xl p-4 space-y-3 text-left">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Come funziona
+                      {g.empty.howTitle}
                     </p>
-                    {[
-                      "Fai una domanda qui sotto, libera o partendo dai suggerimenti.",
-                      "La risposta arriva entro qualche ora in orari lavorativi.",
-                      "La leggi qui e nella tua email.",
-                    ].map((step, i) => (
+                    {g.empty.howSteps.map((step, i) => (
                       <div key={i} className="flex items-start gap-3 text-base">
                         <span className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
                           {i + 1}
@@ -131,16 +128,16 @@ const AstrologyGuideWidget = () => {
 
                   <div className="w-full max-w-[340px] space-y-1.5">
                     <div className="flex items-center justify-between text-sm px-1">
-                      <span className="text-muted-foreground">Prime 2 domande</span>
+                      <span className="text-muted-foreground">{g.empty.firstQuestions}</span>
                       {showFreeBadge ? (
-                        <span className="text-primary font-medium">Gratuite ✦</span>
+                        <span className="text-primary font-medium">{g.empty.free}</span>
                       ) : (
                         <span className="text-foreground">—</span>
                       )}
                     </div>
                     <div className="flex items-center justify-between text-sm px-1">
-                      <span className="text-muted-foreground">Domande aggiuntive</span>
-                      <span className="text-foreground">{PACK_CREDITS} domande extra a {PACK_PRICE_LABEL}</span>
+                      <span className="text-muted-foreground">{g.empty.additional}</span>
+                      <span className="text-foreground">{g.empty.additionalValue(PACK_CREDITS, packPrice)}</span>
                     </div>
                   </div>
                 </div>
