@@ -624,6 +624,32 @@ async function generateNatalChartSvg(session: QuizSession): Promise<string | nul
   }
 }
 
+const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+// Gemini intermittently returns 503 (model overloaded) / 429 (rate limit).
+// Google recommends retrying these with backoff; flash-lite is fast (~3s) so a
+// couple of retries stay well within the client's teaser polling window.
+async function geminiInsightsFetch(body: string): Promise<Response> {
+  const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+  const MAX_ATTEMPTS = 3;
+  let response: Response;
+  for (let attempt = 1; ; attempt++) {
+    response = await fetch(GEMINI_CHAT_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+    if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt >= MAX_ATTEMPTS) {
+      return response;
+    }
+    await response.text().catch(() => {}); // drain body so the connection frees up
+    await new Promise((r) => setTimeout(r, attempt * 1000)); // backoff: 1s, then 2s
+  }
+}
+
 async function generateInsights(
   natalChart: any,
   funnelSlug: string,
@@ -635,7 +661,7 @@ async function generateInsights(
 ) {
   const systemPrompt = systemPromptFor(funnelSlug, lang);
   const userPrompt = buildUserPrompt(natalChart, funnelSlug, intake, userName);
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.1-flash-lite";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-session-insights",
@@ -644,14 +670,13 @@ async function generateInsights(
     attempt: 1,
   };
 
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${GEMINI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  // reasoning_effort "low": flash-lite stays ~3s but gets a little extra
+  // reasoning for the chart's aspect/orb selection. "high" is avoided — it
+  // pushes the request onto congested capacity and starts returning 503.
+  const response = await geminiInsightsFetch(
+    JSON.stringify({
       model,
+      reasoning_effort: "low",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -686,7 +711,7 @@ async function generateInsights(
       ],
       tool_choice: { type: "function", function: { name: "return_insights" } },
     }),
-  });
+  );
 
   if (!response.ok) {
     const errText = await response.text();

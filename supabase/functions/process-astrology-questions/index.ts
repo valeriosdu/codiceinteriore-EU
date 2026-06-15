@@ -54,7 +54,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
 
-const MODEL = "gemini-3-flash-preview";
+const MODEL = "gemini-3.1-flash-lite";
 const MAX_RETRIES = 3;
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
 const HISTORY_LIMIT = 10;
@@ -463,6 +463,7 @@ const callGemini = async (
 
   const aiRequestBody = {
     model: MODEL,
+    reasoning_effort: "medium",
     max_tokens: 1200,
     messages,
     tools: [

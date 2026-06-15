@@ -1042,7 +1042,8 @@ Genera il report completo personalizzato.`;
           : ["identity", "emotions", "relationships", "work", "patterns_blocks", "advice", "poem"];
 
         const aiRequestBody = {
-          model: "gemini-3.1-pro-preview",
+          model: "gemini-3.5-flash",
+          reasoning_effort: "high",
           max_tokens: 16384,
           messages: [
             { role: "system", content: systemPrompt },

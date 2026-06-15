@@ -36,6 +36,32 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") ?? "";
 
+const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+// Gemini Flash ritorna 503 (overloaded) / 429 a intermittenza: retry con
+// backoff. flash-lite e' veloce (~3s), un paio di retry restano nella finestra
+// di polling del teaser di coppia.
+async function geminiFetchWithRetry(body: string): Promise<Response> {
+  const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+  const MAX_ATTEMPTS = 3;
+  let response: Response;
+  for (let attempt = 1; ; attempt++) {
+    response = await fetch(GEMINI_CHAT_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+    if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt >= MAX_ATTEMPTS) {
+      return response;
+    }
+    await response.text().catch(() => {});
+    await new Promise((r) => setTimeout(r, attempt * 1000));
+  }
+}
+
 const SYSTEM_PROMPT = `# Chi sei
 Sei un astrologo italiano colto. Scrivi il teaser di anteprima della sinastria
 di una coppia che ha appena terminato il quiz. Il loro obiettivo dichiarato:
@@ -261,7 +287,7 @@ async function generateTeaserHighlight(
     `Restituisci via tool call return_synastry_teaser.`,
   ].join("\n");
 
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.1-flash-lite";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-synastry-insights",
@@ -272,16 +298,10 @@ async function generateTeaserHighlight(
     attempt: 1,
   };
 
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${GEMINI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  const response = await geminiFetchWithRetry(
+    JSON.stringify({
         model,
+        reasoning_effort: "low",
         messages: [
           { role: "system", content: outputLanguageDirective(resolvePromptLang(session.language)) + SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
@@ -321,7 +341,6 @@ async function generateTeaserHighlight(
           function: { name: "return_synastry_teaser" },
         },
       }),
-    },
   );
 
   const elapsed = Date.now() - t0;
