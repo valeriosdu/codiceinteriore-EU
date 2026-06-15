@@ -27,7 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import logo from "@/assets/logo.webp";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import NatalChartSvg from "@/components/NatalChartSvg";
 import TransitsUpsellCard from "@/components/TransitsUpsellCard";
@@ -802,7 +801,7 @@ const Report = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <header className="border-b border-border">
           <div className="container max-w-3xl mx-auto py-4 flex items-center justify-between">
-            <img src={logo} alt={market.siteName} className="h-8" />
+            <img src={market.logo} alt={market.siteName} className="h-8" />
           </div>
         </header>
         <main className="flex-1 flex items-center justify-center px-6 py-16">
@@ -841,7 +840,7 @@ const Report = () => {
       {/* Customer header with logo, user info, logout */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm shadow-sm">
         <div className="container max-w-3xl lg:max-w-6xl mx-auto px-4 lg:px-8 py-2.5 lg:py-4 flex items-center justify-between gap-2 lg:gap-4">
-          <img src={logo} alt={market.siteName} className="h-7 lg:h-12" />
+          <img src={market.logo} alt={market.siteName} className="h-7 lg:h-12" />
           <div className="flex items-center gap-1 lg:gap-2">
             <Button
               variant="outline-premium"

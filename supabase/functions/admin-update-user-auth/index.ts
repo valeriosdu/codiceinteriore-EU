@@ -7,6 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,7 +18,27 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
-const PUBLIC_SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://codiceinteriore.it";
+
+// Ricava il mercato di un utente dalla sua quiz_session (via profiles), per
+// costruire il link di recovery sul dominio giusto. Ripiega su `it`.
+async function resolveUserMarket(
+  admin: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<string | null> {
+  const { data: prof } = await admin
+    .from("profiles")
+    .select("quiz_session_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const quizSessionId = (prof as { quiz_session_id?: string | null } | null)?.quiz_session_id;
+  if (!quizSessionId) return null;
+  const { data: qs } = await admin
+    .from("quiz_sessions")
+    .select("market")
+    .eq("id", quizSessionId)
+    .maybeSingle();
+  return (qs as { market?: string | null } | null)?.market ?? null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -113,8 +134,9 @@ serve(async (req) => {
         currentEmail = userData.user.email;
       }
 
+      const market = getMarket(await resolveUserMarket(admin, userId));
       const { error: recoveryErr } = await admin.auth.resetPasswordForEmail(currentEmail, {
-        redirectTo: `${PUBLIC_SITE_URL}/activate?intent=signin`,
+        redirectTo: `${market.siteUrl}/activate?intent=signin`,
       });
 
       if (recoveryErr) {

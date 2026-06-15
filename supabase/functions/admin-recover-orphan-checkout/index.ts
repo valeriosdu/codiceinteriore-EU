@@ -13,6 +13,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +25,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 
-const PUBLIC_SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://codiceinteriore.it";
 
 const addMonths = (date: Date, months: number) => {
   const next = new Date(date);
@@ -134,7 +134,7 @@ serve(async (req) => {
     const { data: checkout, error: checkoutErr } = await admin
       .from("checkout_sessions")
       .select(
-        "id, quiz_session_id, customer_email, payment_status, payment_completed_at, includes_transits, transit_months, purchase_type, product_code, claimed_profile_id, stripe_session_id, payment_provider, recovery_invite_count, amount_total, currency",
+        "id, quiz_session_id, customer_email, payment_status, payment_completed_at, includes_transits, transit_months, purchase_type, product_code, claimed_profile_id, stripe_session_id, payment_provider, recovery_invite_count, amount_total, currency, market",
       )
       .eq("stripe_session_id", stripeSessionId)
       .maybeSingle();
@@ -228,7 +228,7 @@ serve(async (req) => {
       if (sendInvite) {
         const { data: inviteData, error: inviteErr } =
           await admin.auth.admin.inviteUserByEmail(customerEmail, {
-            redirectTo: `${PUBLIC_SITE_URL}/activate?session_id=${encodeURIComponent(
+            redirectTo: `${getMarket((checkout as { market?: string | null }).market).siteUrl}/activate?session_id=${encodeURIComponent(
               stripeSessionId,
             )}`,
             data: inviteName ? { name: inviteName } : undefined,

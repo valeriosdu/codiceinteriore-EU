@@ -25,6 +25,12 @@ export interface MarketConfig {
   siteUrl: string;
   hostnames: string[];
   siteName: string;
+  // Logo orizzontale trasparente (asset importato), mostrato in Header/Report/
+  // Processing. Per-mercato perché il wordmark cambia col brand.
+  logo: string;
+  // Immagine OG/social quadrata brandizzata (path da public/). Usata come
+  // default og:image e come immagine prodotto nello structured data.
+  ogImage: string;
   contactEmail: string;
   currency: 'EUR';
   countryCode: string;

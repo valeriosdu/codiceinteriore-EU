@@ -7,6 +7,7 @@ import {
   PDF_VERSION,
   ReportContent,
 } from "../_shared/report-pdf.ts";
+import { brandSlug, getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,22 +17,22 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function safeFilename(userName: string | null) {
+function safeFilename(userName: string | null, market: string | null) {
   const base = (userName || "report")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9-_]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .toLowerCase() || "report";
-  return `codice-interiore-${base}.pdf`;
+  return `${brandSlug(getMarket(market))}-${base}.pdf`;
 }
 
-function pdfDownloadResponse(pdfBytes: Uint8Array, userName: string | null) {
+function pdfDownloadResponse(pdfBytes: Uint8Array, filename: string) {
   return new Response(pdfBytes, {
     headers: {
       ...corsHeaders,
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${safeFilename(userName)}"`,
+      "Content-Disposition": `inline; filename="${filename}"`,
       "Cache-Control": "no-store",
       "X-PDF-Version": PDF_VERSION,
     },
@@ -147,7 +148,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Report not generated yet" }, 404);
     }
 
-    const filename = safeFilename(session.user_name);
+    const filename = safeFilename(session.user_name, (session as any).market);
 
     // Try to serve the cached PDF: do a direct download instead of listing
     // the folder (more reliable, fewer storage round-trips, doesn't rely on
@@ -174,7 +175,7 @@ Deno.serve(async (req) => {
               cached: true,
             });
           }
-          return pdfDownloadResponse(bytes, session.user_name);
+          return pdfDownloadResponse(bytes, filename);
         }
         console.warn("[generate-report-pdf] cached PDF version mismatch — regenerating");
       }
@@ -235,7 +236,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return pdfDownloadResponse(pdfBytes, session.user_name);
+    return pdfDownloadResponse(pdfBytes, filename);
   } catch (err) {
     console.error("[generate-report-pdf] error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";

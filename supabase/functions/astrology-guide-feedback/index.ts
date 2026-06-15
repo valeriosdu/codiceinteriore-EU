@@ -5,15 +5,17 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { getMarket } from "../_shared/markets.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://codiceinteriore.it";
 
-const redirect = (path: string) =>
+// baseUrl per-mercato: il default (it) copre i link malformati (senza domanda
+// da cui dedurre il mercato); il caso valido passa il siteUrl del mercato giusto.
+const redirect = (path: string, baseUrl: string = getMarket(null).siteUrl) =>
   new Response(null, {
     status: 302,
-    headers: { Location: `${SITE_URL}${path}` },
+    headers: { Location: `${baseUrl}${path}` },
   });
 
 serve(async (req) => {
@@ -27,11 +29,23 @@ serve(async (req) => {
 
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  await supabaseAdmin
+  const { data: updatedRows } = await supabaseAdmin
     .from("astrology_guide_questions")
     .update({ feedback })
     .eq("id", questionId)
-    .eq("status", "completed");
+    .eq("status", "completed")
+    .select("quiz_session_id");
 
-  return redirect(`/report?guideFeedback=${feedback}`);
+  let marketId: string | null = null;
+  const quizSessionId = updatedRows?.[0]?.quiz_session_id as string | undefined;
+  if (quizSessionId) {
+    const { data: qs } = await supabaseAdmin
+      .from("quiz_sessions")
+      .select("market")
+      .eq("id", quizSessionId)
+      .maybeSingle();
+    marketId = (qs as { market?: string | null } | null)?.market ?? null;
+  }
+
+  return redirect(`/report?guideFeedback=${feedback}`, getMarket(marketId).siteUrl);
 });

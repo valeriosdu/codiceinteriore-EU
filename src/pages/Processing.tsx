@@ -5,7 +5,6 @@ import { useQuiz, getFunnelStage } from '@/context/QuizContext';
 import { supabase } from '@/integrations/supabase/client';
 import { createQuizSession, fetchQuizSessionPublic } from '@/lib/sessionAccess';
 import { useI18n } from '@/i18n/I18nProvider';
-import logo from '@/assets/logo.webp';
 
 // Hard ceiling for waiting in the browser. The background job continues
 // even if we navigate away — TeaserResult will keep polling.
@@ -157,7 +156,7 @@ const Processing = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <div className="max-w-sm w-full space-y-12 text-center">
-        <img src={logo} alt={market.siteName} className="h-8" />
+        <img src={market.logo} alt={market.siteName} className="h-8" />
 
         <div className="h-24 flex items-center justify-center">
           <AnimatePresence mode="wait">

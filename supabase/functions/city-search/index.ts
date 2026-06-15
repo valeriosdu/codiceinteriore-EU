@@ -146,13 +146,18 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Il luogo di nascita puo' essere ovunque, quindi una fetch globale (senza
+    // country) garantisce risultati mondiali. La fetch country-scoped assicura
+    // che le citta' locali compaiano comunque; il sort sotto le mette in cima.
     // Se q e' prefisso di un endonimo italiano MA NON dell'esonimo inglese,
-    // sparo in parallelo anche una fetch con l'esonimo. Upstream indicizza
-    // "Rome" non "Roma", quindi q=roma non troverebbe mai Roma IT senza questo.
+    // aggiungo una fetch con l'esonimo: upstream indicizza "Rome" non "Roma",
+    // quindi q=roma non troverebbe mai Roma IT senza questo.
     const aliasExonym = aliasNeedingSecondFetch(qLower)
-    const queries = aliasExonym ? [q, aliasExonym] : [q]
+    const tasks: Array<{ q: string; country: string }> = [{ q, country: '' }]
+    if (country) tasks.push({ q, country })
+    if (aliasExonym) tasks.push({ q: aliasExonym, country })
 
-    const responses = await Promise.all(queries.map((qq) => fetchUpstream(qq, limit, country, lang)))
+    const responses = await Promise.all(tasks.map((t) => fetchUpstream(t.q, limit, t.country, lang)))
     if (responses.every((r) => r === null)) {
       return new Response(JSON.stringify({ error: 'Upstream geo lookup failed' }), {
         status: 502,

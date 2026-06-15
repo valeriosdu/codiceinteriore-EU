@@ -16,6 +16,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +27,6 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
-const PUBLIC_SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://codiceinteriore.it";
 
 const neutralResponse = () =>
   new Response(JSON.stringify({ ok: true }), {
@@ -72,6 +72,9 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const rawEmail = typeof body.email === "string" ? body.email : "";
     const email = rawEmail.trim().toLowerCase();
+    // Il mercato arriva dal frontend (il form vive su un dominio specifico):
+    // determina il dominio del link di recovery. getMarket valida e ripiega su it.
+    const market = getMarket(typeof body.market === "string" ? body.market : null);
 
     if (!email || !email.includes("@") || email.length > 254) {
       // Always return neutral; don't validate-leak.
@@ -86,7 +89,7 @@ serve(async (req) => {
 
     if (authUserId) {
       const { error } = await admin.auth.resetPasswordForEmail(email, {
-        redirectTo: `${PUBLIC_SITE_URL}/activate?intent=signin`,
+        redirectTo: `${market.siteUrl}/activate?intent=signin`,
       });
       if (error) {
         console.error("[request-account-recovery] resetPasswordForEmail error:", error);

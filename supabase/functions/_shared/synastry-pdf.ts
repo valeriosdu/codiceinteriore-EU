@@ -19,7 +19,7 @@ import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang } from "./prompts/lang.ts";
 import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
 
-export const SYNASTRY_PDF_VERSION = "synastry-v9-i18n";
+export const SYNASTRY_PDF_VERSION = "synastry-v10-i18n";
 export const SYNASTRY_PDF_VERSION_TAG = `CI-SYNASTRY-PDF/${SYNASTRY_PDF_VERSION}`;
 
 export interface SynastryApertura {
@@ -223,7 +223,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
   drawBackground(coverPage);
 
   try {
-    const logoImg = await doc.embedPng(decodeLogoPng());
+    const logoImg = await doc.embedPng(decodeLogoPng(market.id));
     const logoWidth = 92;
     const logoHeight = logoWidth * (logoImg.height / logoImg.width);
     coverPage.drawImage(logoImg, {
@@ -871,12 +871,12 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     btnY,
     btnW,
     btnH,
-    "https://www.codiceinteriore.it/report#transits-upsell",
+    `${market.siteUrl}/report#transits-upsell`,
   );
 
   drawCenteredText(
     closingPage,
-    "codiceinteriore.it/report",
+    `${domain}/report`,
     btnY - 22,
     9,
     timesRomanItalic,

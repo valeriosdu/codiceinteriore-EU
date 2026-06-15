@@ -17,10 +17,11 @@ export interface EmailTheme {
 
 export function getEmailTheme(marketId?: string | null): EmailTheme {
   const market = getMarket(marketId as MarketId | null | undefined)
+  const logoFile = market.id === 'es' ? 'logo-es.png' : 'logo.png'
   return {
     siteName: market.siteName,
     baseUrl: market.siteUrl,
-    logoUrl: `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/logo.png`,
+    logoUrl: `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/${logoFile}`,
   }
 }
 

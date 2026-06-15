@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getFunnelStage, getStoredSessionId } from "@/context/QuizContext";
 import { Button } from "@/components/ui/button";
 import { LogIn, User } from "lucide-react";
-import logo from "@/assets/logo.webp";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -65,7 +64,7 @@ const Header = ({ backButton }: HeaderProps) => {
           handleLogoClick();
         }}
       >
-        <img src={logo} alt={market.siteName} className="h-8 cursor-pointer" />
+        <img src={market.logo} alt={market.siteName} className="h-8 cursor-pointer" />
       </a>
       <div className="ml-auto">
         {user ? (

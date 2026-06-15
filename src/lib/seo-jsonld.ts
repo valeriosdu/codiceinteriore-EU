@@ -12,10 +12,7 @@ const CURRENCY = MARKET.currency;
 const SITE_NAME = MARKET.siteName;
 const M = getMessages(MARKET.language);
 
-const DEFAULT_PRODUCT_IMAGES = [
-  "/og/codice-interiore-1x1.webp",
-  "https://storage.googleapis.com/gpt-engineer-file-uploads/aVZLfEnbxJa0xgnu23ciVWX02mn2/social-images/social-1775810599830-hf_20260410_084149_80649ee2-59cc-4089-b616-cd3a7ef4c012.webp",
-];
+const DEFAULT_PRODUCT_IMAGES = [MARKET.ogImage];
 
 const toAbsoluteImage = (raw: string) =>
   raw.startsWith("http") ? raw : `${SITE_URL}${raw.startsWith("/") ? raw : `/${raw}`}`;

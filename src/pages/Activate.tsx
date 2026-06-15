@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
 import { isLovablePreview, DEMO_EMAIL } from "@/lib/preview-mode";
 import { useI18n } from "@/i18n/I18nProvider";
+import { MARKET } from "@/markets";
 
 const Activate = () => {
   const navigate = useNavigate();
@@ -275,7 +276,7 @@ const Activate = () => {
       // Routed through request-account-recovery so paid customers without an
       // auth user (orphan checkouts) get an invite immediately, instead of
       // waiting for the 24h cron.
-      await supabase.functions.invoke("request-account-recovery", { body: { email } });
+      await supabase.functions.invoke("request-account-recovery", { body: { email, market: MARKET.id } });
       setLoading(false);
       toast(a.toasts.checkEmailRecovery);
       setMode("signin");

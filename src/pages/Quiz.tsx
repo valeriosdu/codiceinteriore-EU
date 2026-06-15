@@ -266,7 +266,7 @@ const Quiz = () => {
       <div className="container max-w-md mx-auto flex-1 flex flex-col py-2 sm:py-4 min-h-0">
         <ProgressBar current={step} total={TOTAL_STEPS} label={helperTextFor(stepKey) || undefined} />
 
-        <div className="flex-1 flex items-center py-3 sm:py-8 min-h-0 overflow-y-auto">
+        <div className="flex-1 flex items-center py-3 sm:py-8 min-h-0 overflow-y-auto overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepKey}

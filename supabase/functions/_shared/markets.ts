@@ -212,3 +212,31 @@ export function getPayPalCreds(market: BackendMarketConfig): {
     webhookId: Deno.env.get(market.paypal.webhookIdEnv) || null,
   };
 }
+
+// Slug del brand derivato dal siteName: "Codice Interiore" -> "codice-interiore",
+// "Carta Interior" -> "carta-interior". Un nuovo mercato lo ottiene gratis dal
+// proprio siteName, senza tabelle di mappatura per-mercato.
+export function brandSlug(market: BackendMarketConfig): string {
+  return market.siteName
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Sostantivi di tipo-documento usati nei nomi file PDF. Sono per-LINGUA (non
+// per-mercato: piu mercati condividono una lingua). Il Record<Language> forza
+// a compile-time l'aggiunta della voce quando si introduce una nuova lingua.
+const DOC_NOUN: Record<Language, { couple: string; transits: string }> = {
+  it: { couple: "coppia", transits: "transiti" },
+  es: { couple: "pareja", transits: "transitos" },
+};
+
+export function docNoun(
+  lang: string | null | undefined,
+  kind: "couple" | "transits",
+): string {
+  const l: Language = lang && lang in DOC_NOUN ? (lang as Language) : "it";
+  return DOC_NOUN[l][kind];
+}

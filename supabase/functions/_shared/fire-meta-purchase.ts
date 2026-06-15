@@ -15,6 +15,7 @@
 // the webhook handler, same pattern as Brevo sync and generate-report.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { getMarket } from "./markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -81,6 +82,10 @@ export function firePurchaseEventBackground(args: FireMetaPurchaseArgs) {
 async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
   const eventId = buildEventId(args.quizSessionId, args.purchaseType);
 
+  // Mercato di default `it`; sovrascritto dalla riga sessione sotto. Determina
+  // event_source_url e country quando il chiamante non li passa esplicitamente.
+  let market = getMarket(null);
+
   const userData: Record<string, unknown> = {};
   if (args.email) userData.em = args.email;
   if (args.firstName) userData.fn = args.firstName;
@@ -88,16 +93,16 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
   if (args.phone) userData.ph = args.phone;
   if (args.zip) userData.zp = args.zip;
   userData.external_id = args.quizSessionId;
-  userData.country = args.country?.trim() || "it";
 
   if (SUPABASE_SERVICE_ROLE_KEY) {
     try {
       const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const { data: qs } = await sb
         .from("quiz_sessions")
-        .select("birth_date, user_name")
+        .select("birth_date, user_name, market")
         .eq("id", args.quizSessionId)
         .maybeSingle();
+      if (qs?.market) market = getMarket(qs.market as string);
       if (qs?.birth_date) {
         const bd = qs.birth_date as { day: number; month: number; year: number };
         userData.db = `${bd.year}${String(bd.month).padStart(2, "0")}${String(bd.day).padStart(2, "0")}`;
@@ -107,6 +112,8 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
       console.warn("[fire-meta-purchase] quiz session lookup failed:", err instanceof Error ? err.message : String(err));
     }
   }
+
+  userData.country = args.country?.trim() || market.countryCode.toLowerCase();
 
   const customData = {
     value: args.value,
@@ -118,7 +125,7 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
   const body = {
     event_name: "Purchase",
     event_id: eventId,
-    event_source_url: args.sourceUrl || "https://www.codiceinteriore.it/success",
+    event_source_url: args.sourceUrl || `${market.siteUrl}/success`,
     user_data: userData,
     custom_data: customData,
     skip_request_ip: true,

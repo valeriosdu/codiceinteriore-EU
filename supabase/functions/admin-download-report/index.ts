@@ -13,6 +13,7 @@ import {
   TRANSIT_PDF_VERSION,
   type InterpretedTransits,
 } from "../_shared/transit-pdf.ts";
+import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -182,7 +183,7 @@ Deno.serve(async (req) => {
       const tLang = (session as { language?: string })?.language === "es" ? "es" : "it";
       const tMarket = (session as { market?: string })?.market === "es" ? "es" : "it";
       const safeName = safeSlug(userName, "transiti");
-      const filename = `${tMarket === "es" ? "carta-interior" : "codice-interiore"}-${tLang === "es" ? "transitos" : "transiti"}-${safeName}.pdf`;
+      const filename = `${brandSlug(getMarket((session as { market?: string })?.market))}-${docNoun((session as { language?: string })?.language, "transits")}-${safeName}.pdf`;
 
       // Admin-scoped storage path so we don't collide with user-scoped path.
       const storagePath = `admin/transit-${sessionId}-${cycle.id}-${TRANSIT_PDF_VERSION}-${tLang}.pdf`;
@@ -276,7 +277,7 @@ Deno.serve(async (req) => {
     const legacyPath = `admin/${sessionId}.pdf`;
 
     const safeName = safeSlug(session.user_name, "report");
-    const filename = `${pdfMarket === "es" ? "carta-interior" : "codice-interiore"}-${safeName}.pdf`;
+    const filename = `${brandSlug(getMarket((session as { market?: string }).market))}-${safeName}.pdf`;
 
     if (!force) {
       const { data: existingPdf } = await supabase.storage

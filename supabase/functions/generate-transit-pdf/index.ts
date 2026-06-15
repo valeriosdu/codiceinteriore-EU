@@ -5,6 +5,7 @@ import {
   TRANSIT_PDF_VERSION,
   type InterpretedTransits,
 } from "../_shared/transit-pdf.ts";
+import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,22 +15,22 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function safeFilename(userName: string | null) {
+function safeFilename(userName: string | null, market: string | null, lang: string | null) {
   const base = (userName || "transiti")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9-_]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .toLowerCase() || "transiti";
-  return `codice-interiore-transiti-${base}.pdf`;
+  return `${brandSlug(getMarket(market))}-${docNoun(lang, "transits")}-${base}.pdf`;
 }
 
-function pdfDownloadResponse(pdfBytes: Uint8Array, userName: string | null) {
+function pdfDownloadResponse(pdfBytes: Uint8Array, filename: string) {
   return new Response(pdfBytes, {
     headers: {
       ...corsHeaders,
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${safeFilename(userName)}"`,
+      "Content-Disposition": `inline; filename="${filename}"`,
       "Cache-Control": "no-store",
       "X-PDF-Version": TRANSIT_PDF_VERSION,
     },
@@ -148,7 +149,7 @@ Deno.serve(async (req) => {
 
     const pdfLang = (session as any)?.language === "es" ? "es" : "it";
     const pdfMarket = (session as any)?.market === "es" ? "es" : "it";
-    const filename = safeFilename(session?.user_name || null);
+    const filename = safeFilename(session?.user_name || null, (session as any)?.market, (session as any)?.language);
     const storagePath = `${userId}/${quizSessionId}/transit-${cycle.id}-${TRANSIT_PDF_VERSION}-${pdfLang}.pdf`;
 
     if (!force) {
@@ -172,7 +173,7 @@ Deno.serve(async (req) => {
               cached: true,
             });
           }
-          return pdfDownloadResponse(bytes, session?.user_name || null);
+          return pdfDownloadResponse(bytes, filename);
         }
         console.warn("[generate-transit-pdf] cached PDF version mismatch — regenerating");
       }
@@ -212,7 +213,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return pdfDownloadResponse(pdfBytes, session?.user_name || null);
+    return pdfDownloadResponse(pdfBytes, filename);
   } catch (err) {
     console.error("[generate-transit-pdf] error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";

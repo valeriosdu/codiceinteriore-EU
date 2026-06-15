@@ -17,7 +17,7 @@ import { TRANSIT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump whenever the transit PDF layout/fonts change so cached files
 // from older versions are invalidated automatically.
-export const TRANSIT_PDF_VERSION = "v8-i18n";
+export const TRANSIT_PDF_VERSION = "v9-i18n";
 export const TRANSIT_PDF_VERSION_TAG = `CI-TRANSIT-PDF/${TRANSIT_PDF_VERSION}`;
 
 const PAGE_WIDTH = 595.28; // A4
@@ -396,7 +396,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   drawBackground(coverPage);
 
   try {
-    const logoImg = await doc.embedPng(decodeLogoPng());
+    const logoImg = await doc.embedPng(decodeLogoPng(market.id));
     const logoWidth = 92;
     const logoHeight = logoWidth * (logoImg.height / logoImg.width);
     coverPage.drawImage(logoImg, {

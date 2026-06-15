@@ -1,4 +1,5 @@
 import type { MarketConfig } from './types';
+import logo from '@/assets/logo.es.webp';
 
 // Dati legali e prezzi definitivi da confermare con l'owner prima del lancio
 // (entità giuridica spagnola non ancora definita).
@@ -9,6 +10,8 @@ export const ES_MARKET: MarketConfig = {
   siteUrl: 'https://www.cartainterior.com',
   hostnames: ['cartainterior.com', 'www.cartainterior.com'],
   siteName: 'Carta Interior',
+  logo,
+  ogImage: '/og/carta-interior-1x1.webp',
   contactEmail: 'info@cartainterior.com',
   currency: 'EUR',
   countryCode: 'ES',

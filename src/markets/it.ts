@@ -1,4 +1,5 @@
 import type { MarketConfig } from './types';
+import logo from '@/assets/logo.webp';
 
 export const IT_MARKET: MarketConfig = {
   id: 'it',
@@ -7,6 +8,8 @@ export const IT_MARKET: MarketConfig = {
   siteUrl: 'https://www.codiceinteriore.it',
   hostnames: ['codiceinteriore.it', 'www.codiceinteriore.it'],
   siteName: 'Codice Interiore',
+  logo,
+  ogImage: '/og/codice-interiore-1x1.webp',
   contactEmail: 'info@codiceinteriore.it',
   currency: 'EUR',
   countryCode: 'IT',

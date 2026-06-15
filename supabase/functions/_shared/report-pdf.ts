@@ -17,7 +17,7 @@ import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 // so old/broken files (e.g. missing chart, missing characters) do not
 // keep getting served. v13: layout multi-mercato (lingua nei contenuti, brand
 // e dominio dal market). La lingua è anche nel path di cache.
-export const PDF_VERSION = "v13-i18n";
+export const PDF_VERSION = "v14-i18n";
 export const PDF_VERSION_TAG = `CI-PDF/${PDF_VERSION}`;
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
@@ -640,7 +640,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
   drawBackground(coverPage);
 
   try {
-    const logoImg = await doc.embedPng(decodeLogoPng());
+    const logoImg = await doc.embedPng(decodeLogoPng(market.id));
     const logoWidth = 92;
     const logoHeight = logoWidth * (logoImg.height / logoImg.width);
     coverPage.drawImage(logoImg, {

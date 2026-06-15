@@ -14,6 +14,7 @@ import {
   PDF_CHART_CONFIG,
   PDF_CHART_DISPLAY_SETTINGS,
 } from "../_shared/report-pdf.ts";
+import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
 const BI_WHEEL_URL = "https://api.freeastroapi.com/api/v1/natal/chart/synastry";
@@ -112,8 +113,14 @@ function safeSlug(s: string | null | undefined): string {
     .toLowerCase() || "persona";
 }
 
-function pdfResponse(bytes: Uint8Array, aName: string, bName: string): Response {
-  const filename = `codice-interiore-coppia-${safeSlug(aName)}-${safeSlug(bName)}.pdf`;
+function pdfResponse(
+  bytes: Uint8Array,
+  aName: string,
+  bName: string,
+  market: string | null,
+  lang: string | null,
+): Response {
+  const filename = `${brandSlug(getMarket(market))}-${docNoun(lang, "couple")}-${safeSlug(aName)}-${safeSlug(bName)}.pdf`;
   return new Response(bytes, {
     headers: {
       ...corsHeaders,
@@ -230,7 +237,13 @@ Deno.serve(async (req: Request) => {
       market: (session as any).market === "es" ? "es" : "it",
     });
 
-    return pdfResponse(bytes, session.person_a_name ?? "", session.person_b_name ?? "");
+    return pdfResponse(
+      bytes,
+      session.person_a_name ?? "",
+      session.person_b_name ?? "",
+      (session as any).market,
+      (session as any).language,
+    );
   } catch (err) {
     console.error("[generate-synastry-report-pdf] error:", err);
     return json({ error: String(err) }, 500);

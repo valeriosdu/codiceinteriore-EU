@@ -3,8 +3,9 @@ import { MARKET } from "@/markets";
 
 const SITE_URL = MARKET.siteUrl;
 const OG_LOCALE = MARKET.locale.replace("-", "_");
-const DEFAULT_OG_IMAGE =
-  "https://storage.googleapis.com/gpt-engineer-file-uploads/aVZLfEnbxJa0xgnu23ciVWX02mn2/social-images/social-1775810599830-hf_20260410_084149_80649ee2-59cc-4089-b616-cd3a7ef4c012.webp";
+const DEFAULT_OG_IMAGE = MARKET.ogImage.startsWith("http")
+  ? MARKET.ogImage
+  : `${SITE_URL}${MARKET.ogImage.startsWith("/") ? MARKET.ogImage : `/${MARKET.ogImage}`}`;
 
 interface SEOProps {
   title: string;
