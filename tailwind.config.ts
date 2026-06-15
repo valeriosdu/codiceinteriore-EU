@@ -18,6 +18,21 @@ export default {
         display: ['"Playfair Display"', 'Georgia', 'serif'],
         body: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
       },
+      // +1px su ogni gradino rispetto ai default Tailwind: testo piu leggibile
+      // per il pubblico 40+, lasciando intatte le spaziature (p-/m-/gap-).
+      fontSize: {
+        xs: ["0.8125rem", { lineHeight: "1rem" }], // 13px
+        sm: ["0.9375rem", { lineHeight: "1.25rem" }], // 15px
+        base: ["1.0625rem", { lineHeight: "1.5rem" }], // 17px
+        lg: ["1.1875rem", { lineHeight: "1.75rem" }], // 19px
+        xl: ["1.3125rem", { lineHeight: "1.75rem" }], // 21px
+        "2xl": ["1.5625rem", { lineHeight: "2rem" }], // 25px
+        "3xl": ["1.9375rem", { lineHeight: "2.25rem" }], // 31px
+        "4xl": ["2.3125rem", { lineHeight: "2.5rem" }], // 37px
+        "5xl": ["3.0625rem", { lineHeight: "1" }], // 49px
+        "6xl": ["3.8125rem", { lineHeight: "1" }], // 61px
+        "7xl": ["4.5625rem", { lineHeight: "1" }], // 73px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
