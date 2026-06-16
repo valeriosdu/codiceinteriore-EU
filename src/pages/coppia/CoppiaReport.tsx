@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useSynastry } from '@/context/SynastryContext';
 import { ArchetypeBadge } from '@/components/coppia/ArchetypeBadge';
@@ -37,6 +37,7 @@ function mapScoresIt(raw: any) {
 
 export default function CoppiaReport() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { data } = useSynastry();
   const { m, market } = useI18n();
   const cr = m.coppia.report;
@@ -46,9 +47,12 @@ export default function CoppiaReport() {
     document.title = m.coppia.titles.report(market.siteName);
     if (!data.fullReport) {
       // Se manca il report (es. accesso diretto al URL), torna al processing
-      navigate('/coppia/report-processing', { replace: true });
+      // preservando il session_id cosi' report-processing puo' risolvere la sessione
+      // e ricaricare il report invece di morire in "sessione non trovata".
+      const sid = params.get('session_id');
+      navigate(sid ? `/coppia/report-processing?session_id=${encodeURIComponent(sid)}` : '/coppia/report-processing', { replace: true });
     }
-  }, [data.fullReport, navigate]);
+  }, [data.fullReport, navigate, params]);
 
   if (!data.fullReport) return null;
 

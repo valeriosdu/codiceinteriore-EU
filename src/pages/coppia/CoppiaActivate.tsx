@@ -40,15 +40,14 @@ export default function CoppiaActivate() {
 
     clearSynastryStorage();
 
+    // Rivendica il checkout e collega il profilo. Andiamo SEMPRE a report-processing
+    // (che porta il session_id): e' l'unico punto che risolve il synastry_session_id
+    // cross-device e popola il context con full_report prima di mostrare /coppia/report.
+    // La scorciatoia a /coppia/report perdeva il session_id e su un browser diverso da
+    // quello d'acquisto rimbalzava in "sessione non trovata".
     if (sessionId) {
       try {
-        const { data: syncData } = await supabase.functions.invoke('sync-checkout-session', {
-          body: { sessionId },
-        });
-        if (syncData?.isSynastry && syncData?.reportReady) {
-          navigate('/coppia/report', { replace: true });
-          return;
-        }
+        await supabase.functions.invoke('sync-checkout-session', { body: { sessionId } });
       } catch (e) {
         console.warn('[CoppiaActivate] sync-checkout-session failed:', e);
       }

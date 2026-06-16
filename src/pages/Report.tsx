@@ -203,7 +203,7 @@ const Report = () => {
   });
   const [portalLoading, setPortalLoading] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const { sessions: synSessions } = useSynastryReport(profileId, userEmail);
+  const { loading: synLoading, sessions: synSessions } = useSynastryReport(profileId, userEmail);
   const visibleSectionIds = (() => {
     const ids = transitState.hasAccess
       ? [...sectionIds, { id: "transits", label: r.nav.transits }]
@@ -785,8 +785,46 @@ const Report = () => {
   }
 
   if (!content) {
-    // Authenticated user with no report yet → still generating, send to processing screen.
     if (user) {
+      // Aspetta che la lookup sinastria sia conclusa prima di decidere dove
+      // mandare un utente senza report natale (evita il rimbalzo prematuro).
+      if (synLoading) {
+        return (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        );
+      }
+      // Cliente solo-coppia (ha pagato la sinastria, non il natale): mostra qui il
+      // report di coppia invece di rimbalzarlo al processing natale, che non ha.
+      if (synSessions.length > 0) {
+        return (
+          <div className="min-h-screen bg-background flex flex-col">
+            <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
+              <div className="container max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+                <img src={market.logo} alt={market.siteName} className="h-8" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleLogout()}
+                  className="text-muted-foreground hover:text-foreground gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {r.header.logout}
+                </Button>
+              </div>
+            </header>
+            <main className="flex-1 container max-w-3xl mx-auto px-4 py-10 space-y-6">
+              <div className="text-center space-y-2 pb-2">
+                <h1 className="font-display text-3xl font-semibold text-foreground">{r.nav.synastry}</h1>
+              </div>
+              <SynastryReportCard sessions={synSessions} />
+            </main>
+            <Footer />
+          </div>
+        );
+      }
+      // Nessun report → ancora in generazione, vai alla schermata di processing.
       navigate("/report-processing", { replace: true });
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">

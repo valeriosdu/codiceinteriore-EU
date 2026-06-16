@@ -46,10 +46,14 @@ export default function CoppiaReportProcessing() {
         return;
       }
 
-      // Step 2: poll until full_report is ready
+      // Step 2: poll until full_report is ready. Primo controllo immediato: se il report
+      // e' gia' pronto (caso tipico dell'arrivo dall'email) inoltriamo subito a /coppia/report
+      // senza 3s di spinner inutile.
       const started = Date.now();
+      let first = true;
       while (Date.now() - started < TIMEOUT_MS) {
-        await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+        if (!first) await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+        first = false;
         const s = (await fetchSynastrySessionPublic(synastrySessionId)) as any;
         if (!s) continue;
 
