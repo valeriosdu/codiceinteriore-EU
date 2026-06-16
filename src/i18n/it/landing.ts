@@ -5,27 +5,30 @@ const landing = {
       'Lettura del tuo tema natale, scritta in italiano e personalizzata sui dati di nascita. Prima parte gratuita, senza registrazione.',
   },
   hero: {
-    title: 'Il tuo Tema Natale, spiegato in modo chiaro',
+    titlePre: 'Il tuo',
+    titleEm: 'Tema Natale',
+    titlePost: ' spiegato in modo chiaro',
     subtitle:
-      'Scopri cosa emerge dalla tua struttura emotiva e relazionale a partire dai tuoi dati di nascita. Gratis e senza registrazione.',
+      'Scopri cosa emerge dalla tua struttura interiore a partire dai tuoi dati di nascita. Gratis e senza registrazione.',
     cta: 'Inizia il quiz',
     microcopy: 'Quiz di 2 minuti · Nessuna conoscenza necessaria',
-  },
-  problems: {
-    kicker: 'Ti capita mai?',
-    items: [
-      'Ti leghi a persone poco disponibili',
-      'Confondi intensità e connessione',
-      'Sai cosa succede, ma lo ripeti',
-      'Alterni inseguimento a distanza',
-    ],
+    socialProof: 'Oltre 10.000 persone hanno già scoperto il loro tema natale',
   },
   discover: {
-    title: 'Cosa scoprirai',
-    body: 'Riceverai una prima lettura del tuo tema natale: come tendi a legarti, cosa si attiva quando senti distanza o ambiguità, e quali dinamiche relazionali tendono a ripetersi.',
+    heading: 'Cosa puoi scoprire',
+    items: [
+      'Come funzioni davvero, sotto la superficie',
+      'Dove sei chiamato/a a crescere in questa fase',
+      'Quali dinamiche tendono a ripetersi nella tua vita',
+      'Cosa ti muove nel profondo',
+    ],
+  },
+  quote: {
+    plate: 'Tav. II',
+    text: 'Il cielo del giorno in cui sei nata racconta qualcosa che non hai mai smesso di portare con te',
   },
   howItWorks: {
-    title: 'Come funziona',
+    heading: 'Come funziona',
     steps: [
       'Inserisci i tuoi dati di nascita',
       'Rispondi a poche domande brevi',

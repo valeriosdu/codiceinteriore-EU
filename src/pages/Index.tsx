@@ -16,15 +16,19 @@ import {
   productJsonLd,
 } from "@/lib/seo-jsonld";
 import { useI18n } from "@/i18n/I18nProvider";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5 },
-  }),
-};
+import {
+  ChapterHeading,
+  ChartWheel,
+  ClassicaStyles,
+  Colophon,
+  FONT_BODY,
+  FONT_DISPLAY,
+  INK,
+  OpeningFlourish,
+  PaperGrain,
+  PlateCaption,
+  RULE,
+} from "@/components/classica";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -32,7 +36,10 @@ const Index = () => {
   const { m } = useI18n();
   const l = m.landing;
   const [checking, setChecking] = useState(true);
-  const startQuiz = () => navigate("/quiz");
+  // Homepage = landing di discovery generica: passa ?discover=1 così il quiz
+  // antepone la domanda di intent (l'angolo non è implicito come nelle landing
+  // angle-targeted). L'angolo relazioni vive su /lp/classica.
+  const startQuiz = () => navigate("/quiz?discover=1");
 
   useEffect(() => {
     trackEvent("landing_viewed", {}, { once: true });
@@ -121,128 +128,228 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background overflow-hidden">
       <SEO
         title={l.seo.title}
         description={l.seo.description}
         path="/"
         jsonLd={[productJsonLd(), faqJsonLd(DEFAULT_FAQS)]}
       />
-      <Header />
+      <ClassicaStyles />
 
-      {/* Hero */}
-      <section className="container py-16 md:py-24 max-w-2xl mx-auto text-center space-y-8">
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="font-display text-4xl md:text-5xl font-semibold text-foreground leading-tight text-balance"
-        >
-          {l.hero.title}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.5 }}
-          className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto"
-        >
-          {l.hero.subtitle}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="space-y-3"
-        >
-          <Button variant="premium" size="hero" onClick={startQuiz}>
-            {l.hero.cta}
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-          <p className="text-xs text-muted-foreground">{l.hero.microcopy}</p>
-        </motion.div>
-      </section>
+      <PaperGrain />
 
-      {/* Problem recognition */}
-      <section className="container max-w-2xl mx-auto py-12">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="bg-surface rounded-2xl p-8 md:p-10 space-y-5"
-        >
-          <motion.p variants={fadeUp} custom={0} className="text-sm font-medium text-primary uppercase tracking-wider">
-            {l.problems.kicker}
-          </motion.p>
-          {l.problems.items.map((text, i) => (
-            <motion.div key={i} variants={fadeUp} custom={i + 1} className="flex items-start gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-              <p className="text-foreground/85 leading-relaxed">{text}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+      <div className="relative z-10">
+        <Header />
 
-      {/* What you'll get */}
-      <section className="container max-w-2xl mx-auto py-12 text-center space-y-4">
-        <motion.h2
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="font-display text-2xl md:text-3xl font-semibold text-foreground"
-        >
-          {l.discover.title}
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-muted-foreground leading-relaxed max-w-lg mx-auto"
-        >
-          {l.discover.body}
-        </motion.p>
-      </section>
+        <main style={{ fontFamily: FONT_BODY }}>
+          {/* Page-opening flourish */}
+          <OpeningFlourish />
 
-      {/* How it works */}
-      <section className="container max-w-2xl mx-auto py-12">
-        <motion.h2
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="font-display text-2xl md:text-3xl font-semibold text-foreground text-center mb-10"
-        >
-          {l.howItWorks.title}
-        </motion.h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {l.howItWorks.steps.map((title, i) => ({ step: String(i + 1), title })).map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 16 }}
+          {/* HERO ─── chart wheel cropped at right edge, slowly rotating */}
+          <section className="relative">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute select-none
+                         top-1/2 -translate-y-1/2
+                         right-0 translate-x-[28%] sm:translate-x-[24%] md:translate-x-[18%] lg:translate-x-[14%]
+                         w-[78vw] sm:w-[62vw] md:w-[52vw] lg:w-[44vw] max-w-[680px]"
+              style={{ opacity: 0.16 }}
+            >
+              <div className="ci-wheel-rotate">
+                <ChartWheel className="w-full h-auto" />
+              </div>
+            </div>
+
+            <div className="container max-w-5xl mx-auto px-6 pt-14 pb-24 md:pt-20 md:pb-32 relative">
+              <div className="max-w-[34rem]">
+                <motion.h1
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.95, delay: 0.05, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="text-[42px] sm:text-[54px] md:text-[64px] lg:text-[70px] font-normal text-foreground leading-[1.05] tracking-[-0.012em]"
+                  style={{ fontFamily: FONT_DISPLAY }}
+                >
+                  {l.hero.titlePre}{" "}
+                  <em className="font-medium" style={{ color: INK }}>
+                    {l.hero.titleEm}
+                  </em>
+                  ,
+                  <br className="hidden sm:block" />
+                  <span className="font-normal">{l.hero.titlePost}</span>
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.28, duration: 0.75 }}
+                  className="ci-dropcap mt-9 text-[19px] md:text-[20px] leading-[1.7] text-foreground/80 max-w-[28rem]"
+                  style={{ fontFamily: FONT_BODY }}
+                >
+                  {l.hero.subtitle}
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45, duration: 0.65 }}
+                  className="mt-10 flex flex-col items-start gap-3"
+                >
+                  <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
+                    {l.hero.cta}
+                    <ArrowRight className="ml-1.5 h-5 w-5" />
+                  </Button>
+                  <p
+                    className="text-[17px] md:text-[19px] tracking-wide text-muted-foreground"
+                    style={{ fontFamily: FONT_BODY }}
+                  >
+                    {l.hero.microcopy}
+                  </p>
+                  <p
+                    className="text-[16px] md:text-[18px] italic opacity-70 mt-1"
+                    style={{ fontFamily: FONT_DISPLAY, color: INK }}
+                  >
+                    {l.hero.socialProof}
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          </section>
+
+          {/* COSA PUOI SCOPRIRE ─── editorial enumeration */}
+          <section className="container max-w-3xl mx-auto px-6 py-20 md:py-28 relative">
+            <ChapterHeading numeral="I." title={l.discover.heading} />
+
+            <ol className="space-y-7 max-w-xl mx-auto" style={{ fontFamily: FONT_BODY }}>
+              {l.discover.items.map((text, i) => {
+                const numerals = ["i.", "ii.", "iii.", "iv."];
+                return (
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.75, delay: i * 0.08, ease: [0.2, 0.8, 0.2, 1] }}
+                    className="flex items-baseline gap-5 text-[19px] md:text-[20px] leading-[1.55]"
+                  >
+                    <span
+                      className="italic font-medium shrink-0 w-10 text-right"
+                      style={{ color: INK, fontFamily: FONT_DISPLAY, fontSize: "1.1em" }}
+                    >
+                      {numerals[i]}
+                    </span>
+                    <span className="text-foreground/85">{text}</span>
+                  </motion.li>
+                );
+              })}
+            </ol>
+          </section>
+
+          {/* QUOTE ─── plate caption styling */}
+          <section className="container max-w-3xl mx-auto px-6 py-16 md:py-24 relative">
+            <motion.figure
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 1.2 }}
+              className="text-center max-w-2xl mx-auto"
+            >
+              <div className="mb-9">
+                <PlateCaption label={l.quote.plate} />
+              </div>
+
+              <blockquote
+                className="text-[24px] md:text-[30px] lg:text-[32px] leading-[1.4] italic font-normal tracking-[-0.005em] text-foreground/90"
+                style={{ fontFamily: FONT_DISPLAY }}
+              >
+                <span className="opacity-40 mr-0.5" style={{ color: INK }}>
+                  &ldquo;
+                </span>
+                {l.quote.text}
+                <span className="opacity-40 ml-0.5" style={{ color: INK }}>
+                  &rdquo;
+                </span>
+              </blockquote>
+
+              <div className="flex items-center justify-center gap-4 mt-10">
+                <span className="h-px w-24 md:w-32" style={{ background: RULE }} />
+                <svg width="6" height="6" viewBox="0 0 6 6" aria-hidden="true" style={{ color: INK }}>
+                  <circle cx="3" cy="3" r="1.4" fill="currentColor" opacity="0.6" />
+                </svg>
+                <span className="h-px w-24 md:w-32" style={{ background: RULE }} />
+              </div>
+            </motion.figure>
+          </section>
+
+          {/* COME FUNZIONA ─── three-step engraved figure */}
+          <section className="container max-w-4xl mx-auto px-6 py-20 md:py-28 relative">
+            <ChapterHeading numeral="II." title={l.howItWorks.heading} />
+
+            <div className="grid gap-12 md:gap-10 md:grid-cols-3 max-w-3xl mx-auto">
+              {l.howItWorks.steps
+                .map((title, i) => ({ numeral: ["I.", "II.", "III."][i], title }))
+                .map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.85, delay: i * 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="text-center md:text-left space-y-4"
+                >
+                  <span
+                    className="block text-[34px] italic font-normal leading-none"
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      color: INK,
+                    }}
+                  >
+                    {item.numeral}
+                  </span>
+                  <span className="block h-px w-12 mx-auto md:mx-0" style={{ background: RULE }} />
+                  <p
+                    className="text-[18px] md:text-[19px] leading-[1.55] text-foreground/85 font-normal"
+                    style={{ fontFamily: FONT_BODY }}
+                  >
+                    {item.title}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* FINAL CTA ─── colophon */}
+          <section className="container max-w-3xl mx-auto px-6 pt-12 pb-24 md:pt-16 md:pb-32 text-center">
+            <Colophon />
+
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="text-center space-y-3 p-6"
+              transition={{ duration: 0.95 }}
+              className="text-[20px] md:text-[22px] italic leading-[1.6] text-foreground/85 max-w-md mx-auto"
+              style={{ fontFamily: FONT_DISPLAY }}
             >
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-display font-semibold text-sm">
-                {item.step}
-              </span>
-              <p className="text-foreground font-medium">{item.title}</p>
+              {l.finalCta.body}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.95, delay: 0.12 }}
+              className="mt-10"
+            >
+              <Button variant="premium" size="hero" onClick={startQuiz}>
+                {l.finalCta.cta}
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
             </motion.div>
-          ))}
-        </div>
-      </section>
+          </section>
+        </main>
 
-      {/* Final CTA */}
-      <section className="container max-w-2xl mx-auto py-16 text-center space-y-6">
-        <p className="text-muted-foreground leading-relaxed">
-          {l.finalCta.body}
-        </p>
-        <Button variant="premium" size="hero" onClick={startQuiz}>
-          {l.finalCta.cta}
-          <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
-      </section>
-
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };

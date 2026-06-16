@@ -10,9 +10,9 @@ const landingClassica = {
   hero: {
     titlePre: 'Il tuo',
     titleEm: 'Tema Natale',
-    titlePost: ' spiegato in modo chiaro',
+    titlePost: ' e il modo in cui ami',
     subtitle:
-      'Scopri cosa emerge dalla tua struttura interiore a partire dai tuoi dati di nascita. Gratis e senza registrazione.',
+      'Scopri cosa emerge dalla tua struttura emotiva e relazionale a partire dai tuoi dati di nascita. Gratis e senza registrazione.',
     cta: 'Inizia il quiz',
     microcopy: 'Quiz di 2 minuti · Nessuna conoscenza necessaria',
     socialProof: 'Oltre 10.000 persone hanno già scoperto il loro tema natale',
@@ -20,15 +20,15 @@ const landingClassica = {
   discover: {
     heading: 'Cosa puoi scoprire',
     items: [
-      'Come funzioni nelle relazioni e nei legami',
-      'Dove sei chiamato/a a crescere in questa fase',
-      'Quali dinamiche tendono a ripetersi nella tua vita',
-      'Cosa ti muove nel profondo',
+      'Perché tendi a legarti a chi è poco disponibile',
+      'Perché a volte confondi intensità e connessione',
+      'Quali schemi si ripetono nei tuoi legami',
+      'Cosa si attiva in te tra inseguimento e distanza',
     ],
   },
   quote: {
     plate: 'Tav. II',
-    text: 'Il cielo del giorno in cui sei nata racconta qualcosa che non hai mai smesso di portare con te',
+    text: 'Il modo in cui ami era già scritto nel cielo del giorno in cui sei nata',
   },
   howItWorks: {
     heading: 'Come funziona',

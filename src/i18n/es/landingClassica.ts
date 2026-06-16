@@ -12,9 +12,9 @@ const landingClassica: Messages['landingClassica'] = {
   hero: {
     titlePre: 'Tu',
     titleEm: 'Carta Natal',
-    titlePost: ' explicada de forma clara',
+    titlePost: ' y el modo en que amas',
     subtitle:
-      'Descubre qué emerge de tu estructura interior a partir de tus datos de nacimiento. Gratis y sin registro.',
+      'Descubre qué emerge de tu estructura emocional y relacional a partir de tus datos de nacimiento. Gratis y sin registro.',
     cta: 'Empezar el cuestionario',
     microcopy: 'Cuestionario de 2 minutos · No necesitas conocimientos previos',
     socialProof: 'Más de 10.000 personas ya han descubierto su carta natal',
@@ -22,15 +22,15 @@ const landingClassica: Messages['landingClassica'] = {
   discover: {
     heading: 'Qué puedes descubrir',
     items: [
-      'Cómo funcionas en las relaciones y los vínculos',
-      'Dónde estás llamado/a a crecer en esta etapa',
-      'Qué dinámicas tienden a repetirse en tu vida',
-      'Qué te mueve en lo profundo',
+      'Por qué tiendes a vincularte con quien está poco disponible',
+      'Por qué a veces confundes intensidad y conexión',
+      'Qué patrones se repiten en tus vínculos',
+      'Qué se activa en ti entre la persecución y la distancia',
     ],
   },
   quote: {
     plate: 'Lám. II',
-    text: 'El cielo del día en que naciste cuenta algo que nunca has dejado de llevar contigo',
+    text: 'El modo en que amas ya estaba escrito en el cielo del día en que naciste',
   },
   howItWorks: {
     heading: 'Cómo funciona',

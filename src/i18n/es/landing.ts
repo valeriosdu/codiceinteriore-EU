@@ -7,27 +7,30 @@ const landing: Messages['landing'] = {
       'Lectura de tu carta natal, escrita en español y personalizada según tus datos de nacimiento. Primera parte gratuita, sin registro.',
   },
   hero: {
-    title: 'Tu Carta Natal, explicada de forma clara',
+    titlePre: 'Tu',
+    titleEm: 'Carta Natal',
+    titlePost: ' explicada de forma clara',
     subtitle:
-      'Descubre qué emerge de tu estructura emocional y relacional a partir de tus datos de nacimiento. Gratis y sin registro.',
+      'Descubre qué emerge de tu estructura interior a partir de tus datos de nacimiento. Gratis y sin registro.',
     cta: 'Empezar el cuestionario',
     microcopy: 'Cuestionario de 2 minutos · No necesitas conocimientos previos',
-  },
-  problems: {
-    kicker: '¿Te pasa alguna vez?',
-    items: [
-      'Te vinculas a personas poco disponibles',
-      'Confundes intensidad y conexión',
-      'Sabes lo que ocurre, pero lo repites',
-      'Alternas la persecución con la distancia',
-    ],
+    socialProof: 'Más de 10.000 personas ya han descubierto su carta natal',
   },
   discover: {
-    title: 'Qué descubrirás',
-    body: 'Recibirás una primera lectura de tu carta natal: cómo tiendes a vincularte, qué se activa cuando sientes distancia o ambigüedad, y qué dinámicas de pareja tienden a repetirse.',
+    heading: 'Qué puedes descubrir',
+    items: [
+      'Cómo funcionas de verdad, bajo la superficie',
+      'Dónde estás llamado/a a crecer en esta etapa',
+      'Qué dinámicas tienden a repetirse en tu vida',
+      'Qué te mueve en lo profundo',
+    ],
+  },
+  quote: {
+    plate: 'Lám. II',
+    text: 'El cielo del día en que naciste cuenta algo que nunca has dejado de llevar contigo',
   },
   howItWorks: {
-    title: 'Cómo funciona',
+    heading: 'Cómo funciona',
     steps: [
       'Introduce tus datos de nacimiento',
       'Responde a unas pocas preguntas breves',

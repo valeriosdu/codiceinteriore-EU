@@ -42,9 +42,10 @@ type StepKey =
   | 'place'
   | 'focus'
   | 'name';
-// Default self-flow (classica angle). The discovery landing (/lp/classica)
-// prepends 'intent' via ?discover=1. Angle-targeted Meta landings (e.g. /)
-// keep this flow without the intent question — the angle is implied by URL.
+// Default self-flow (attachment+focus, the "classica"/relazioni angle). The
+// generic discovery landing (the homepage /) prepends 'intent' via ?discover=1.
+// Angle-targeted landings (e.g. /lp/classica = relazioni) keep this flow without
+// the intent question — the angle is implied by the URL.
 const FULL_STEPS: StepKey[] = ['attachment', 'date', 'time', 'place', 'focus', 'name'];
 // Attivazione angle (/lp/attivazione, ?funnel=attivazione). Replaces classica's
 // attachment+focus with two angle-specific questions: sintomo (opening) and
