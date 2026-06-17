@@ -4,7 +4,7 @@ import * as React from 'npm:react@18.3.1'
 export interface TemplateEntry {
   component: React.ComponentType<any>
   subject: string | ((data: Record<string, any>) => string)
-  to?: string
+  to?: string | ((data: Record<string, any>) => string | undefined)
   replyTo?: string | ((data: Record<string, any>) => string | undefined)
   displayName?: string
   previewData?: Record<string, any>

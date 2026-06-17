@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
   // Load the submission
   const { data: submission, error } = await supabase
     .from("contact_submissions")
-    .select("id, name, email, reason, message")
+    .select("id, name, email, reason, message, market")
     .eq("id", submissionId)
     .maybeSingle();
 
@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
           email: submission.email,
           reason: submission.reason ?? undefined,
           message: submission.message,
+          market: submission.market ?? "it",
         },
       }),
     });

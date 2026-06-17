@@ -72,6 +72,7 @@ const Contatti = () => {
           email: data.email,
           message: data.message,
           reason: data.reason || null,
+          market: market.id,
         });
 
       if (insertError) throw insertError;
@@ -86,6 +87,7 @@ const Contatti = () => {
             email: data.email,
             reason: data.reason,
             message: data.message,
+            market: market.id,
           },
         },
       });

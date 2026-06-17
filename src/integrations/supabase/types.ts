@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_customer_merges: {
@@ -416,6 +391,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          market: string
           message: string
           name: string
           reason: string | null
@@ -424,6 +400,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          market?: string
           message: string
           name: string
           reason?: string | null
@@ -432,6 +409,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          market?: string
           message?: string
           name?: string
           reason?: string | null
@@ -1631,9 +1609,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

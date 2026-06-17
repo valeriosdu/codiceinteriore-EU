@@ -122,8 +122,11 @@ Deno.serve(async (req) => {
 
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
-  // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  // to always send to a fixed address (e.g., the per-market site owner inbox,
+  // resolved from templateData.market).
+  const templateTo =
+    typeof template.to === 'function' ? template.to(templateData) : template.to
+  const effectiveRecipient = templateTo || recipientEmail
 
   if (!effectiveRecipient) {
     return new Response(
