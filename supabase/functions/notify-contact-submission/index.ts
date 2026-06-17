@@ -22,15 +22,6 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  // The Supabase gateway requires a real JWT to authorize calls to functions
-  // with verify_jwt = true. Under the new signing-keys system, both
-  // SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY env vars expose the
-  // short-format API key (~41-46 chars), which the gateway rejects with
-  // UNAUTHORIZED_INVALID_JWT_FORMAT. The publishable JWT is public-safe
-  // (already shipped in client.ts) so we hardcode it here for inter-function
-  // auth.
-  const PUBLISHABLE_JWT =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwaG1yanV2aGN6aWltdXhvaG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzI3NDgsImV4cCI6MjA5MTM0ODc0OH0.XvxstZWj7olqIDwJjZWjNaSQPuLrzftlSthno_NvNAY";
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error("[notify-contact-submission] Missing env vars");
@@ -96,11 +87,10 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // send-transactional-email validates this Bearer in-code (accepts
-        // the service-role secret key or a legacy JWT with service_role claim).
-        // The publishable/anon JWT is rejected with 401 Unauthorized.
+        // send-transactional-email is verify_jwt=false and validates this
+        // Bearer in-code (must equal SUPABASE_SERVICE_ROLE_KEY). No apikey
+        // header is needed — same pattern as _shared/send-email.ts.
         Authorization: `Bearer ${supabaseServiceKey}`,
-        apikey: PUBLISHABLE_JWT,
       },
       body: JSON.stringify({
         templateName: "contact-notification",
