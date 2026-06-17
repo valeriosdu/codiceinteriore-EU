@@ -63,3 +63,29 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.admin-download-synastry-report]
     verify_jwt = false
+  [functions.admin-customers-list]
+    verify_jwt = false
+  [functions.admin-customer-detail]
+    verify_jwt = false
+  [functions.admin-delete-report]
+    verify_jwt = false
+  [functions.admin-update-quiz-session]
+    verify_jwt = false
+  [functions.admin-create-quiz-session]
+    verify_jwt = false
+  [functions.admin-create-transit-cycle]
+    verify_jwt = false
+  [functions.admin-delete-transit-cycle]
+    verify_jwt = false
+  [functions.admin-create-synastry-session]
+    verify_jwt = false
+  [functions.admin-regenerate-synastry-report]
+    verify_jwt = false
+  [functions.admin-delete-synastry-report]
+    verify_jwt = false
+  [functions.admin-extend-entitlement]
+    verify_jwt = false
+  [functions.admin-update-user-auth]
+    verify_jwt = false
+  [functions.admin-ai-metrics]
+    verify_jwt = false
