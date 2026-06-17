@@ -97,8 +97,14 @@ Deno.serve(async (req) => {
     }
 
     // ---- Sweep A: Stripe reconciliation (admin-only) ----
+    // This cron now fires every 3 min (to retry failed reports quickly), but the
+    // Stripe reconciliation only needs to catch the rare webhook miss — running
+    // it every tick would scan up to ~500 checkout sessions far too often. Gate
+    // it to roughly every 9 min (the first tick of each 9-min slice) while the
+    // report-retry Sweep B below keeps running on every tick.
+    const runStripeSweep = new Date().getUTCMinutes() % 9 < 3;
     const reconciliation: Array<{ sessionId: string; status: string; reason?: string }> = [];
-    if (isAdmin && STRIPE_SECRET_KEY) {
+    if (isAdmin && STRIPE_SECRET_KEY && runStripeSweep) {
       try {
         const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
 
@@ -171,8 +177,11 @@ Deno.serve(async (req) => {
     // created more than this long ago is presumed to have lost its background
     // worker (Deno EdgeRuntime.waitUntil dies silently on shutdown). We reset it
     // to 'failed' so generate-report's CAS lock (which excludes report_processing)
-    // can re-claim it on the next invocation.
-    const STUCK_THRESHOLD_MS = 10 * 60 * 1000;
+    // can re-claim it on the next invocation. 4 min sits comfortably above the
+    // slowest real generation observed (~150s), so a healthy in-flight run is
+    // never killed, while a dead worker is reclaimed far sooner than the old
+    // 10-min wait.
+    const STUCK_THRESHOLD_MS = 4 * 60 * 1000;
     const nowMs = Date.now();
 
     const candidates = (rows || []).filter((row: any) => {

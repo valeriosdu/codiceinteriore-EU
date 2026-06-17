@@ -17,7 +17,7 @@ import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 // so old/broken files (e.g. missing chart, missing characters) do not
 // keep getting served. v13: layout multi-mercato (lingua nei contenuti, brand
 // e dominio dal market). La lingua è anche nel path di cache.
-export const PDF_VERSION = "v14-i18n";
+export const PDF_VERSION = "v15-i18n";
 export const PDF_VERSION_TAG = `CI-PDF/${PDF_VERSION}`;
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
@@ -531,7 +531,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
       drawCenteredText(page, cta.caption, btnY - 22, 9, timesRomanItalic, mutedText);
     }
 
-    const feedbackText = sanitizePdfText("Facci sapere cosa ne pensi del tuo report →");
+    const feedbackText = sanitizePdfText(S.feedbackCta);
     const feedbackSize = 10;
     const feedbackY = btnY - 56;
     const feedbackWidth = timesRomanItalic.widthOfTextAtSize(feedbackText, feedbackSize);
@@ -570,7 +570,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
 
     // ---- Intro block
     page.drawRectangle({ x: MARGIN_LEFT, y: PAGE_HEIGHT - 110, width: 48, height: 0.6, color: terracotta });
-    page.drawText(sanitizePdfText("Come leggere questa lettura"), {
+    page.drawText(sanitizePdfText(S.introTitle), {
       x: MARGIN_LEFT,
       y: PAGE_HEIGHT - 142,
       size: 20,
@@ -597,7 +597,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
     bodyY -= 38;
 
     // ---- Index block
-    page.drawText(sanitizePdfText("Indice"), {
+    page.drawText(sanitizePdfText(S.indexTitle), {
       x: MARGIN_LEFT,
       y: bodyY,
       size: 20,
@@ -811,7 +811,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
     addContentPage();
 
     const sectionNumber = String(sectionIndex + 1).padStart(2, "0");
-    currentPage.drawText(`SEZIONE ${sectionNumber}`, {
+    currentPage.drawText(`${S.sectionPrefix} ${sectionNumber}`, {
       x: MARGIN_LEFT,
       y,
       size: 8.5,

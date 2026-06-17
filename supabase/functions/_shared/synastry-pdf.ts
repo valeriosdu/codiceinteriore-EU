@@ -18,8 +18,9 @@ import { playfairItalic, playfairSemiBold } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang } from "./prompts/lang.ts";
 import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
+import { getArchetypeLabel } from "./synastry-archetypes.ts";
 
-export const SYNASTRY_PDF_VERSION = "synastry-v10-i18n";
+export const SYNASTRY_PDF_VERSION = "synastry-v11-i18n";
 export const SYNASTRY_PDF_VERSION_TAG = `CI-SYNASTRY-PDF/${SYNASTRY_PDF_VERSION}`;
 
 export interface SynastryApertura {
@@ -59,7 +60,11 @@ export interface SynastryPdfInput {
   personBBirthDate?: any;
   personBBirthTime?: any;
   personBBirthPlace?: string | null;
-  archetypeLabel: string | null;
+  // Archetipo: passare l'ID (es. "soulmates") così il label viene risolto
+  // per lingua dentro il builder, come fa il frontend. `archetypeLabel` resta
+  // come fallback per righe storiche senza ID.
+  archetypeId?: string | null;
+  archetypeLabel?: string | null;
   scoreOverall: number | null;
   scores: Record<string, number> | null;
   biWheelPng?: Uint8Array | null;
@@ -110,6 +115,7 @@ function formatBirthDetail(
   birthDate: any,
   birthTime: any,
   birthPlace: string | null | undefined,
+  timePrefix: string,
 ): string {
   const parts: string[] = [];
   if (birthPlace) parts.push(sanitizePdfText(birthPlace));
@@ -121,7 +127,7 @@ function formatBirthDetail(
     const { hour, minute } = birthTime;
     if (hour != null && minute != null)
       parts.push(
-        `ore ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+        `${timePrefix}${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
       );
   }
   return parts.join("  ·  ");
@@ -134,6 +140,9 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
   const brandUpper = market.siteName.toUpperCase();
   const domain = new URL(market.siteUrl).hostname.replace(/^www\./, "");
   const SECTIONS = SECTION_KEYS.map((key) => ({ key, title: S.sectionTitles[key] ?? key }));
+  const archetypeLabel = input.archetypeId
+    ? getArchetypeLabel(input.archetypeId, lang)
+    : (input.archetypeLabel ?? null);
 
   const doc = await PDFDocument.create();
   doc.setTitle(
@@ -290,11 +299,13 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     input.personABirthDate,
     input.personABirthTime,
     input.personABirthPlace,
+    S.timePrefix,
   );
   const personBDetail = formatBirthDetail(
     input.personBBirthDate,
     input.personBBirthTime,
     input.personBBirthPlace,
+    S.timePrefix,
   );
   if (personADetail) {
     drawCenteredText(
@@ -507,10 +518,10 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
       );
 
       let belowBlock = circleY - circleR - 22;
-      if (input.archetypeLabel) {
+      if (archetypeLabel) {
         drawCenteredText(
           scoresPage,
-          sanitizePdfText("ARCHETIPO"),
+          sanitizePdfText(S.archetypeKicker),
           circleY - circleR - 42,
           8,
           timesRoman,
@@ -518,7 +529,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
         );
         drawCenteredText(
           scoresPage,
-          sanitizePdfText(input.archetypeLabel),
+          sanitizePdfText(archetypeLabel),
           circleY - circleR - 60,
           14,
           timesRomanItalic,
@@ -539,7 +550,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     }
 
     if (input.scores) {
-      scoresPage.drawText(sanitizePdfText("I sei domini della relazione"), {
+      scoresPage.drawText(sanitizePdfText(S.domainsTitle), {
         x: MARGIN_LEFT,
         y: nextY,
         size: 13,
@@ -810,7 +821,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     height: 0.6,
     color: terracotta,
   });
-  closingPage.drawText(sanitizePdfText("Come continuare"), {
+  closingPage.drawText(sanitizePdfText(S.closingTitle), {
     x: MARGIN_LEFT,
     y: PAGE_HEIGHT - 158,
     size: 24,
@@ -818,11 +829,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     color: darkText,
   });
 
-  const closingParagraphs = [
-    "Questa sinastria descrive il potenziale stabile della vostra relazione: le fondamenta su cui la coppia si muove nel tempo. Ma il modo in cui questo potenziale si manifesta dipende anche dal periodo che ciascuno di voi sta vivendo.",
-    "I transiti planetari attivano aree diverse del tema natale in momenti diversi. In alcuni periodi potreste sentire piu intensamente le tensioni descritte qui, in altri le affinita. Nessuna dinamica e fissa: la relazione si muove.",
-    "Per avere una visione completa del momento che state vivendo adesso, puoi esplorare i transiti personali di ciascun partner.",
-  ];
+  const closingParagraphs = S.closingParagraphs;
 
   let closingY = PAGE_HEIGHT - 200;
   for (const para of closingParagraphs) {
@@ -855,7 +862,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     borderWidth: 0,
   });
 
-  const ctaLabel = sanitizePdfText("Scopri i tuoi transiti personali");
+  const ctaLabel = sanitizePdfText(S.closingCtaLabel);
   const ctaLabelSize = 12.5;
   const ctaLabelWidth = bodyFontBold.widthOfTextAtSize(ctaLabel, ctaLabelSize);
   closingPage.drawText(ctaLabel, {

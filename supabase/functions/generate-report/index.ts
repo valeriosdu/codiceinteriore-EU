@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
-import { recordAiMetric } from "../_shared/ai-metrics.ts";
+import { recordAiMetric, type RecordAiMetricArgs } from "../_shared/ai-metrics.ts";
 import {
   resolvePromptLang,
   outputLanguageDirective,
@@ -1067,18 +1067,34 @@ Genera il report completo personalizzato.`;
           tool_choice: { type: "function", function: { name: "return_report" } },
         };
 
-        const MAX_ATTEMPTS = 2;
+        const MAX_ATTEMPTS = 3;
         // Safety net only — well above the observed ~150s gateway-truncation
         // band, so we never abort a generation that's still on track. Catches
         // genuine hangs (no response) before the edge function's own ceiling.
         const FETCH_TIMEOUT_MS = 180_000;
-        const RETRY_BACKOFF_MS = 1_500;
+        // Exponential backoff before each retry (attempt 2 ≈ 2s, attempt 3 ≈ 5s)
+        // plus jitter, so a transient 503 "model overloaded" burst is absorbed
+        // inside this invocation instead of waiting for the 10-min watchdog.
+        const RETRY_BACKOFF_MS = [0, 2_000, 5_000];
+        // Stop retrying once the loop has burned this much wall-clock. The edge
+        // runtime reclaims the background task around its ceiling; a retry that
+        // starts too late would be killed mid-write, losing the 'failed' status
+        // the watchdog relies on to re-claim. Hand off to recover-pending-reports.
+        const RETRY_BUDGET_MS = 150_000;
+        const loopStartedAt = Date.now();
         let lastError = "";
         let lastAttempt = 0;
 
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
           if (attempt > 0) {
-            await new Promise((resolve) => setTimeout(resolve, RETRY_BACKOFF_MS));
+            if (Date.now() - loopStartedAt > RETRY_BUDGET_MS) {
+              console.warn(
+                `[generate-report] Retry budget (${RETRY_BUDGET_MS}ms) exhausted after ${Date.now() - loopStartedAt}ms; handing off to watchdog`,
+              );
+              break;
+            }
+            const base = RETRY_BACKOFF_MS[attempt] ?? RETRY_BACKOFF_MS[RETRY_BACKOFF_MS.length - 1];
+            await new Promise((resolve) => setTimeout(resolve, base + Math.floor(Math.random() * 500)));
           }
           lastAttempt = attempt + 1;
           const t0 = Date.now();
@@ -1108,7 +1124,7 @@ Genera il report completo personalizzato.`;
               console.warn(
                 `[generate-report] Attempt ${attempt + 1}: client abort after ${FETCH_TIMEOUT_MS}ms`,
               );
-              recordAiMetric(supabaseAdmin, {
+              await flushAiMetric(supabaseAdmin, {
                 ...metricBase,
                 durationMs: Date.now() - t0,
                 success: false,
@@ -1126,7 +1142,7 @@ Genera il report completo personalizzato.`;
           if (!response.ok) {
             const errText = await response.text();
             console.error(`AI gateway error (attempt ${attempt + 1}):`, response.status, errText);
-            recordAiMetric(supabaseAdmin, {
+            await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
@@ -1151,7 +1167,7 @@ Genera il report completo personalizzato.`;
             console.warn(
               `Attempt ${attempt + 1}/${MAX_ATTEMPTS}: empty response body from AI gateway after ${Date.now() - t0}ms (http ${response.status})`,
             );
-            recordAiMetric(supabaseAdmin, {
+            await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
@@ -1170,7 +1186,7 @@ Genera il report completo personalizzato.`;
               `Attempt ${attempt + 1}: failed to parse response JSON. Raw (first 500 chars):`,
               rawText.substring(0, 500),
             );
-            recordAiMetric(supabaseAdmin, {
+            await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
@@ -1195,7 +1211,7 @@ Genera il report completo personalizzato.`;
               `Attempt ${attempt + 1}: no tool call in response (finish_reason=${finishReason}, has_usage=${hasUsage}):`,
               JSON.stringify(result).substring(0, 500),
             );
-            recordAiMetric(supabaseAdmin, {
+            await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
@@ -1215,7 +1231,7 @@ Genera il report completo personalizzato.`;
               `Attempt ${attempt + 1}: failed to parse tool_call arguments. Raw (first 500 chars):`,
               toolCall.function.arguments.substring(0, 500),
             );
-            recordAiMetric(supabaseAdmin, {
+            await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
@@ -1322,6 +1338,34 @@ Genera il report completo personalizzato.`;
     });
   }
 });
+
+// Awaited sibling of recordAiMetric (fire-and-forget): used on the retryable
+// failure branches so the row is flushed before the loop sleeps/continues.
+// Without this, a 2nd/3rd attempt's metric can be lost when the background
+// worker is reclaimed, which is why retries were invisible in the table.
+// Kept local to avoid a _shared change that would force redeploying every
+// ai-metrics importer.
+async function flushAiMetric(supabase: any, args: RecordAiMetricArgs): Promise<void> {
+  try {
+    const { error } = await supabase.from("ai_generation_metrics").insert({
+      function_name: args.functionName,
+      model: args.model ?? null,
+      quiz_session_id: args.quizSessionId ?? null,
+      transit_cycle_id: args.transitCycleId ?? null,
+      attempt: args.attempt,
+      duration_ms: Math.max(0, Math.round(args.durationMs)),
+      success: args.success,
+      http_status: args.httpStatus ?? null,
+      error_code: args.errorCode ?? null,
+      prompt_tokens: args.usage?.prompt_tokens ?? null,
+      completion_tokens: args.usage?.completion_tokens ?? null,
+      total_tokens: args.usage?.total_tokens ?? null,
+    });
+    if (error) console.warn("[generate-report] metric flush failed:", error);
+  } catch (err) {
+    console.warn("[generate-report] metric flush threw:", err);
+  }
+}
 
 function safeParseJson(raw: string): unknown {
   try {

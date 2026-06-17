@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: session, error } = await supabase
       .from("synastry_sessions")
-      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype_label, score_overall, scores, full_report, language, market")
+      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype, archetype_label, score_overall, scores, full_report, language, market")
       .eq("id", synastrySessionId)
       .maybeSingle();
 
@@ -129,6 +129,7 @@ Deno.serve(async (req: Request) => {
       personBBirthDate: session.person_b_birth_date,
       personBBirthTime: session.person_b_birth_time,
       personBBirthPlace: session.person_b_birth_place,
+      archetypeId: session.archetype,
       archetypeLabel: session.archetype_label,
       scoreOverall: session.score_overall,
       scores: session.scores,

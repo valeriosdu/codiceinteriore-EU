@@ -55,6 +55,10 @@ export const REPORT_PDF_STRINGS: Record<PromptLang, {
   coverTitle: string;
   coverSubtitle: string;
   coverDisclaimer: string;
+  introTitle: string;
+  indexTitle: string;
+  sectionPrefix: string;
+  feedbackCta: string;
   closingTitle: string;
   closingParagraphs: string[];
   closingCtaLabel: string;
@@ -68,6 +72,10 @@ export const REPORT_PDF_STRINGS: Record<PromptLang, {
     coverSubtitle: "del tema natale",
     coverDisclaimer:
       "Questa lettura non è un oroscopo predittivo, ma una mappa interpretativa costruita a partire dal tuo tema natale. Leggila come uno strumento di osservazione: alcune parti potranno risultare immediate, altre emergeranno con più chiarezza nel tempo.",
+    introTitle: "Come leggere questa lettura",
+    indexTitle: "Indice",
+    sectionPrefix: "SEZIONE",
+    feedbackCta: "Facci sapere cosa ne pensi del tuo report ->",
     closingTitle: "Come continuare",
     closingParagraphs: [
       "Questa lettura può essere riletta in momenti diversi. Alcune parti parlano della tua struttura di base: non cambiano da un giorno all'altro, ma possono diventare più chiare quando nella vita reale si ripresentano certe dinamiche, scelte o tensioni interiori.",
@@ -86,6 +94,10 @@ export const REPORT_PDF_STRINGS: Record<PromptLang, {
     coverSubtitle: "de la carta natal",
     coverDisclaimer:
       "Esta lectura no es un horóscopo predictivo, sino un mapa interpretativo construido a partir de tu carta natal. Léela como una herramienta de observación: algunas partes te resultarán inmediatas, otras emergerán con más claridad con el tiempo.",
+    introTitle: "Cómo leer esta lectura",
+    indexTitle: "Índice",
+    sectionPrefix: "SECCIÓN",
+    feedbackCta: "Cuéntanos qué te parece tu informe ->",
     closingTitle: "Cómo continuar",
     closingParagraphs: [
       "Esta lectura puede releerse en momentos distintos. Algunas partes hablan de tu estructura de base: no cambian de un día para otro, pero pueden volverse más claras cuando en la vida real reaparecen ciertas dinámicas, decisiones o tensiones interiores.",
@@ -108,6 +120,8 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
   introTitle: string;
   introText: string;
   indexTitle: string;
+  sectionPrefix: string;
+  weekFallback: (n: number) => string;
   index: { summary: string; reading: string; periods: string; dialogue: string };
   headers: {
     mainThemes: string; monthReading: string; monthPeriods: string; intro: string;
@@ -129,6 +143,8 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     introText:
       "Questa lettura è una fotografia del cielo di questo mese in relazione al tuo tema natale. Non descrive cosa succederà in modo rigido, ma indica quali aree della tua carta sono più attive ora: relazioni, emozioni, decisioni, blocchi, transizioni interiori. Leggila come uno strumento di osservazione del presente, non come un'agenda.",
     indexTitle: "Indice",
+    sectionPrefix: "SEZIONE",
+    weekFallback: (n) => `Settimana ${n}`,
     index: { summary: "Temi principali", reading: "Lettura del mese", periods: "Periodi del mese", dialogue: "Continua il dialogo" },
     headers: {
       mainThemes: "Temi principali", monthReading: "Lettura del mese", monthPeriods: "Periodi del mese",
@@ -155,6 +171,8 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     introText:
       "Esta lectura es una foto del cielo de este mes en relación con tu carta natal. No describe qué va a pasar de forma rígida, sino que indica qué áreas de tu carta están más activas ahora: relaciones, emociones, decisiones, bloqueos, transiciones interiores. Léela como una herramienta de observación del presente, no como una agenda.",
     indexTitle: "Índice",
+    sectionPrefix: "SECCIÓN",
+    weekFallback: (n) => `Semana ${n}`,
     index: { summary: "Temas principales", reading: "Lectura del mes", periods: "Periodos del mes", dialogue: "Continúa el diálogo" },
     headers: {
       mainThemes: "Temas principales", monthReading: "Lectura del mes", monthPeriods: "Periodos del mes",
@@ -189,8 +207,14 @@ export const SYNASTRY_PDF_STRINGS: Record<PromptLang, {
   overallLabel: string;
   scaleLabel: string;
   scoreLabels: { intimacy: string; romance: string; communication: string; stability: string; growth: string; tension: string };
+  archetypeKicker: string;
+  domainsTitle: string;
+  timePrefix: string;
   aperturaTitle: string;
   aperturaLabels: { cosa_siete: string; dove_brillate: string; dove_inciampate: string; dove_andate: string };
+  closingTitle: string;
+  closingParagraphs: string[];
+  closingCtaLabel: string;
 }> = {
   it: {
     metaTitle: "Sinastria di coppia",
@@ -221,11 +245,21 @@ export const SYNASTRY_PDF_STRINGS: Record<PromptLang, {
       intimacy: "Sintonia emotiva", romance: "Attrazione", communication: "Comunicazione",
       stability: "Stabilita", growth: "Crescita", tension: "Tensione",
     },
+    archetypeKicker: "ARCHETIPO",
+    domainsTitle: "I sei domini della relazione",
+    timePrefix: "ore ",
     aperturaTitle: "Sguardo d'insieme",
     aperturaLabels: {
       cosa_siete: "Cosa siete", dove_brillate: "Dove brillate",
       dove_inciampate: "Dove inciampate", dove_andate: "Dove andate",
     },
+    closingTitle: "Come continuare",
+    closingParagraphs: [
+      "Questa sinastria descrive il potenziale stabile della vostra relazione: le fondamenta su cui la coppia si muove nel tempo. Ma il modo in cui questo potenziale si manifesta dipende anche dal periodo che ciascuno di voi sta vivendo.",
+      "I transiti planetari attivano aree diverse del tema natale in momenti diversi. In alcuni periodi potreste sentire piu intensamente le tensioni descritte qui, in altri le affinita. Nessuna dinamica e fissa: la relazione si muove.",
+      "Per avere una visione completa del momento che state vivendo adesso, puoi esplorare i transiti personali di ciascun partner.",
+    ],
+    closingCtaLabel: "Scopri i tuoi transiti personali",
   },
   es: {
     metaTitle: "Sinastría de pareja",
@@ -256,10 +290,20 @@ export const SYNASTRY_PDF_STRINGS: Record<PromptLang, {
       intimacy: "Sintonía emocional", romance: "Atracción", communication: "Comunicación",
       stability: "Estabilidad", growth: "Crecimiento", tension: "Tensión",
     },
+    archetypeKicker: "ARQUETIPO",
+    domainsTitle: "Los seis dominios de la relación",
+    timePrefix: "",
     aperturaTitle: "Una mirada de conjunto",
     aperturaLabels: {
       cosa_siete: "Qué sois", dove_brillate: "Dónde brilláis",
       dove_inciampate: "Dónde tropezáis", dove_andate: "Hacia dónde vais",
     },
+    closingTitle: "Cómo continuar",
+    closingParagraphs: [
+      "Esta sinastría describe el potencial estable de vuestra relación: los cimientos sobre los que la pareja se mueve en el tiempo. Pero la forma en que ese potencial se manifiesta depende también del periodo que cada uno de vosotros está viviendo.",
+      "Los tránsitos planetarios activan áreas distintas de la carta natal en momentos diferentes. En algunos periodos podríais sentir con más intensidad las tensiones descritas aquí, en otros las afinidades. Ninguna dinámica es fija: la relación se mueve.",
+      "Para tener una visión completa del momento que estáis viviendo ahora, puedes explorar los tránsitos personales de cada miembro de la pareja.",
+    ],
+    closingCtaLabel: "Descubre tus tránsitos personales",
   },
 };

@@ -17,7 +17,7 @@ import { TRANSIT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump whenever the transit PDF layout/fonts change so cached files
 // from older versions are invalidated automatically.
-export const TRANSIT_PDF_VERSION = "v9-i18n";
+export const TRANSIT_PDF_VERSION = "v10-i18n";
 export const TRANSIT_PDF_VERSION_TAG = `CI-TRANSIT-PDF/${TRANSIT_PDF_VERSION}`;
 
 const PAGE_WIDTH = 595.28; // A4
@@ -302,7 +302,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
     if (currentPage) drawFooter(currentPage);
     addContentPage();
 
-    currentPage.drawText(`SEZIONE ${num}`, {
+    currentPage.drawText(`${S.sectionPrefix} ${num}`, {
       x: MARGIN_LEFT, y, size: 8.5, font: timesRoman, color: terracotta,
     });
     y -= 26;
@@ -317,7 +317,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   }
 
   function drawPeriodBox(period: TransitPeriod, idx: number) {
-    const labelRaw = period.label || `Settimana ${idx + 1}`;
+    const labelRaw = period.label || S.weekFallback(idx + 1);
     const label = `${labelRaw}${period.date_range ? `  -  ${period.date_range}` : ""}`;
     const headline = period.headline || "";
     const focus = period.focus || "";
