@@ -654,6 +654,26 @@ export async function reconcilePaidStripeSession(
     return { status: "paid_astrology_pack" };
   }
 
+  // Fetch the quiz session up-front. The report-claim email below needs its
+  // language/market, and the claim block further down reuses it. Declaring it
+  // here — before its first use — avoids a temporal-dead-zone ReferenceError
+  // ("Cannot access 'quizSession' before initialization") that previously threw
+  // for every profile-present base/premium webhook, AFTER the row was marked
+  // paid+claimed but BEFORE the entitlement was created and generate-report was
+  // invoked — leaving paying customers with no report and no safety-net retry.
+  const { data: quizSession, error: quizError } = await supabaseAdmin
+    .from("quiz_sessions")
+    .select("id, user_name, birth_place, birth_timezone, full_report, language, market")
+    .eq("id", quizSessionId)
+    .maybeSingle();
+
+  if (quizError || !quizSession?.id) {
+    console.error(
+      `[stripe-reconcile] quiz session not found: ${quizSessionId} for stripe session ${session.id}`,
+    );
+    return { status: "paid_no_quiz_session" };
+  }
+
   // Send "report-claim" email — this is the safety net so every paying
   // customer always gets a link back to /activate, even if they close the
   // browser before completing signup. Idempotency key derived from the
@@ -751,19 +771,8 @@ export async function reconcilePaidStripeSession(
   }
 
   // 3) Profile exists — complete the claim + trigger generation.
-  const { data: quizSession, error: quizError } = await supabaseAdmin
-    .from("quiz_sessions")
-    .select("id, user_name, birth_place, birth_timezone, full_report, language, market")
-    .eq("id", quizSessionId)
-    .maybeSingle();
-
-  if (quizError || !quizSession?.id) {
-    console.error(
-      `[stripe-reconcile] quiz session not found: ${quizSessionId} for stripe session ${session.id}`,
-    );
-    return { status: "paid_no_quiz_session" };
-  }
-
+  // quizSession (and its not-found guard) were resolved up-front, before the
+  // report-claim email block above.
   const label =
     [quizSession.user_name, quizSession.birth_place].filter(Boolean).join(" · ") ||
     "Lettura personale";
