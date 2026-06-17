@@ -177,11 +177,11 @@ Deno.serve(async (req) => {
     // created more than this long ago is presumed to have lost its background
     // worker (Deno EdgeRuntime.waitUntil dies silently on shutdown). We reset it
     // to 'failed' so generate-report's CAS lock (which excludes report_processing)
-    // can re-claim it on the next invocation. 4 min sits comfortably above the
-    // slowest real generation observed (~150s), so a healthy in-flight run is
-    // never killed, while a dead worker is reclaimed far sooner than the old
-    // 10-min wait.
-    const STUCK_THRESHOLD_MS = 4 * 60 * 1000;
+    // can re-claim it on the next invocation. 6 min sits above the 300s per-call
+    // fetch timeout (DeepSeek+reasoning can take ~270s for a full report), so a
+    // healthy in-flight run is never reclaimed, while a dead worker is still
+    // caught far sooner than the old 10-min wait.
+    const STUCK_THRESHOLD_MS = 6 * 60 * 1000;
     const nowMs = Date.now();
 
     const candidates = (rows || []).filter((row: any) => {

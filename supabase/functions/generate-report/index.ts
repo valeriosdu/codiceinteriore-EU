@@ -10,6 +10,12 @@ import {
   aspectName,
 } from "../_shared/prompts/lang.ts";
 import { getMarket } from "../_shared/markets.ts";
+import {
+  LLM_CHAT_COMPLETIONS_URL,
+  LONG_REPORT_MODEL,
+  getLlmApiKey,
+  llmHeaders,
+} from "../_shared/llm.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -820,8 +826,7 @@ Deno.serve(async (req) => {
 
     const generationTask = (async () => {
       try {
-        const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-        if (!GEMINI_API_KEY) throw new Error("AI not configured");
+        if (!getLlmApiKey()) throw new Error("AI not configured (OPENROUTER_API_KEY missing)");
 
         const planetsDescription = Array.isArray(natalChart.planets)
           ? natalChart.planets
@@ -1042,36 +1047,37 @@ Genera il report completo personalizzato.`;
           : ["identity", "emotions", "relationships", "work", "patterns_blocks", "advice", "poem"];
 
         const aiRequestBody = {
-          model: "gemini-3.5-flash",
-          reasoning_effort: "high",
-          max_tokens: 16384,
+          model: LONG_REPORT_MODEL,
+          reasoning: { effort: "medium" },
+          max_tokens: 32768,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "return_report",
-                description: "Return the full personalized report.",
-                parameters: {
-                  type: "object",
-                  properties: reportSchemaProperties,
-                  required: reportSchemaRequired,
-                  additionalProperties: false,
-                },
+          // Structured output via response_format/json_schema (not forced
+          // tool-calling): DeepSeek V4 Pro reliably honors json_schema but does
+          // NOT reliably emit a forced tool call on a full-size report. The
+          // schema is identical to the old tool's parameters.
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "return_report",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: reportSchemaProperties,
+                required: reportSchemaRequired,
+                additionalProperties: false,
               },
             },
-          ],
-          tool_choice: { type: "function", function: { name: "return_report" } },
+          },
         };
 
         const MAX_ATTEMPTS = 3;
-        // Safety net only — well above the observed ~150s gateway-truncation
-        // band, so we never abort a generation that's still on track. Catches
-        // genuine hangs (no response) before the edge function's own ceiling.
-        const FETCH_TIMEOUT_MS = 180_000;
+        // Safety net only — above the slowest observed DeepSeek+reasoning full
+        // report (~270s at effort=high; medium is faster), so we never abort a
+        // run that's still on track. Catches genuine hangs before the edge ceiling.
+        const FETCH_TIMEOUT_MS = 300_000;
         // Exponential backoff before each retry (attempt 2 ≈ 2s, attempt 3 ≈ 5s)
         // plus jitter, so a transient 503 "model overloaded" burst is absorbed
         // inside this invocation instead of waiting for the 10-min watchdog.
@@ -1109,12 +1115,9 @@ Genera il report completo personalizzato.`;
           const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
           let response: Response;
           try {
-            response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+            response = await fetch(LLM_CHAT_COMPLETIONS_URL, {
               method: "POST",
-              headers: {
-                Authorization: `Bearer ${GEMINI_API_KEY}`,
-                "Content-Type": "application/json",
-              },
+              headers: llmHeaders(),
               body: JSON.stringify(aiRequestBody),
               signal: controller.signal,
             });
@@ -1197,18 +1200,17 @@ Genera il report completo personalizzato.`;
             continue;
           }
 
-          const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+          const content = result.choices?.[0]?.message?.content;
 
-          if (!toolCall?.function?.arguments) {
+          if (!content || typeof content !== "string" || !content.trim()) {
             // Encode finish_reason + has_usage in error_code so the metrics
-            // table tells us why the tool call was missing without a schema
-            // migration. "none:no_usage" = gateway truncation; "length" =
-            // model hit max_tokens; "stop" = model finished without calling.
+            // table tells us why content was missing without a schema migration.
+            // "length" = model hit max_tokens; "stop:no_usage" = gateway truncation.
             const finishReason: string = result?.choices?.[0]?.finish_reason ?? "none";
             const hasUsage = !!result?.usage;
-            const errorCode = `missing_tool_call:${finishReason}${hasUsage ? "" : ":no_usage"}`;
+            const errorCode = `missing_content:${finishReason}${hasUsage ? "" : ":no_usage"}`;
             console.error(
-              `Attempt ${attempt + 1}: no tool call in response (finish_reason=${finishReason}, has_usage=${hasUsage}):`,
+              `Attempt ${attempt + 1}: no content in response (finish_reason=${finishReason}, has_usage=${hasUsage}):`,
               JSON.stringify(result).substring(0, 500),
             );
             await flushAiMetric(supabaseAdmin, {
@@ -1219,27 +1221,27 @@ Genera il report completo personalizzato.`;
               errorCode,
               usage: result?.usage,
             });
-            lastError = "AI returned unexpected format";
+            lastError = "AI returned no content";
             continue;
           }
 
           let parsed;
           try {
-            parsed = safeParseJson(toolCall.function.arguments);
+            parsed = safeParseJson(content);
           } catch (e) {
             console.error(
-              `Attempt ${attempt + 1}: failed to parse tool_call arguments. Raw (first 500 chars):`,
-              toolCall.function.arguments.substring(0, 500),
+              `Attempt ${attempt + 1}: failed to parse JSON content. Raw (first 500 chars):`,
+              content.substring(0, 500),
             );
             await flushAiMetric(supabaseAdmin, {
               ...metricBase,
               durationMs: Date.now() - t0,
               success: false,
               httpStatus: response.status,
-              errorCode: "tool_args_parse_error",
+              errorCode: "content_parse_error",
               usage: result?.usage,
             });
-            lastError = `Failed to parse tool arguments: ${e}`;
+            lastError = `Failed to parse AI content: ${e}`;
             continue;
           }
 

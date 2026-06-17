@@ -21,6 +21,12 @@ import {
 } from "../_shared/synastry-system-prompt.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { resolvePromptLang, outputLanguageDirective } from "../_shared/prompts/lang.ts";
+import {
+  LLM_CHAT_COMPLETIONS_URL,
+  LONG_REPORT_MODEL,
+  getLlmApiKey,
+  llmHeaders,
+} from "../_shared/llm.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -36,11 +42,11 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
+// LLM provider (OpenRouter) — key/model/endpoint live in _shared/llm.ts.
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") ?? "";
 
 const MAX_ATTEMPTS = 2;
-const FETCH_TIMEOUT_MS = 180_000;
+const FETCH_TIMEOUT_MS = 300_000;
 const RETRY_BACKOFF_MS = 1500;
 
 interface SynastryRow {
@@ -97,8 +103,9 @@ async function verifyAuthOrPayment(
 
 function parseToolCallArgs(json: any): any | null {
   const choice = json?.choices?.[0];
-  const toolCall = choice?.message?.tool_calls?.[0];
-  const args = toolCall?.function?.arguments;
+  // response_format/json_schema returns the object as message.content; keep the
+  // tool_calls path as a fallback for safety.
+  const args = choice?.message?.content ?? choice?.message?.tool_calls?.[0]?.function?.arguments;
   if (typeof args === "string") {
     try {
       return JSON.parse(args);
@@ -170,18 +177,23 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
   const systemPrompt = outputLanguageDirective(lang) + buildSynastrySystemPrompt(brief);
   const userPrompt = buildSynastryUserPrompt(brief);
 
+  if (!getLlmApiKey()) throw new Error("AI not configured (OPENROUTER_API_KEY missing)");
+
   const aiRequestBody = {
-    model: "gemini-3.5-flash",
-    reasoning_effort: "high",
+    model: LONG_REPORT_MODEL,
+    reasoning: { effort: "medium" },
     max_tokens: 16384,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    tools: [SYNASTRY_REPORT_TOOL],
-    tool_choice: {
-      type: "function",
-      function: { name: "return_synastry_report" },
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: SYNASTRY_REPORT_TOOL.function.name,
+        strict: true,
+        schema: SYNASTRY_REPORT_TOOL.function.parameters,
+      },
     },
   };
 
@@ -208,13 +220,10 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     let response: Response;
     try {
       response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        LLM_CHAT_COMPLETIONS_URL,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${GEMINI_API_KEY}`,
-            "Content-Type": "application/json",
-          },
+          headers: llmHeaders(),
           body: JSON.stringify(aiRequestBody),
           signal: controller.signal,
         },

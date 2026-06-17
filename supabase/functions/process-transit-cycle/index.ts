@@ -2,6 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
+import {
+  LLM_CHAT_COMPLETIONS_URL,
+  LONG_REPORT_MODEL,
+  getLlmApiKey,
+  llmHeaders,
+} from "../_shared/llm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +20,7 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUP
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
+// LLM provider (OpenRouter) — key/model/endpoint live in _shared/llm.ts.
 const ASTROLOGY_BASE_URL = "https://api.freeastroapi.com";
 const TRANSITS_ENDPOINT = "/api/v1/transits/calculate";
 // 10 snapshots × 3.3 days places the last snapshot at day 29.7, so a
@@ -1221,7 +1227,7 @@ const buildTransitLlmInput = (
   };
 
   return {
-    model: "gemini-3.5-flash",
+    model: LONG_REPORT_MODEL,
     natal_input: {
       attachmentResponse: quiz?.attachment_response || "",
       focusArea: quiz?.focus_area || "",
@@ -1345,10 +1351,10 @@ async function interpretTransits(
   transitCycleId: string,
   lang: PromptLang = "it",
 ) {
-  if (!GEMINI_API_KEY) throw new Error("AI not configured");
+  if (!getLlmApiKey()) throw new Error("AI not configured (OPENROUTER_API_KEY missing)");
 
   const aiRequestBody = {
-    model: "gemini-3.5-flash",
+    model: LONG_REPORT_MODEL,
     max_tokens: 32768,
     messages: [
       { role: "system", content: outputLanguageDirective(lang) + TRANSIT_INTERPRETATION_PROMPT },
@@ -1357,13 +1363,12 @@ async function interpretTransits(
         content: `NATAL INPUT:\n${JSON.stringify(llmInput.natal_input)}\n\nTRANSIT INPUT:\n${JSON.stringify(llmInput.transit_input)}`,
       },
     ],
-    tools: [
-      {
-        type: "function",
-        function: {
-          name: "return_transit_reading",
-          description: "Monthly transit reading in Italian. See prompt for full content rules.",
-          parameters: {
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "return_transit_reading",
+        strict: true,
+        schema: {
             type: "object",
             properties: {
               summary: {
@@ -1380,6 +1385,7 @@ async function interpretTransits(
                   },
                 },
                 required: ["main_themes", "overall_reading"],
+                additionalProperties: false,
               },
               periods: {
                 type: "array",
@@ -1406,6 +1412,7 @@ async function interpretTransits(
                     },
                   },
                   required: ["label", "date_range", "headline", "focus", "used", "ignored"],
+                  additionalProperties: false,
                 },
               },
               closing: {
@@ -1415,14 +1422,14 @@ async function interpretTransits(
                   text: { type: "string", description: "Chiusura pratica IT, MINIMO 130 parole." },
                 },
                 required: ["title", "text"],
+                additionalProperties: false,
               },
             },
             required: ["summary", "periods", "closing"],
+            additionalProperties: false,
           },
         },
       },
-    ],
-    tool_choice: { type: "function", function: { name: "return_transit_reading" } },
   };
 
   const MAX_ATTEMPTS = 2;
@@ -1436,9 +1443,9 @@ async function interpretTransits(
       transitCycleId,
       attempt: attempt + 1,
     };
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const response = await fetch(LLM_CHAT_COMPLETIONS_URL, {
       method: "POST",
-      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
+      headers: llmHeaders(),
       body: JSON.stringify(aiRequestBody),
     });
 
