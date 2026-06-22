@@ -1058,8 +1058,8 @@ direct, intimate, one-to-one. Avoid generic-astrology-textbook phrasing
 OUTPUT FORMAT
 ========================
 
-Return the output through the return_transit_reading function call.
-The JSON schema is enforced by the tool. Field-level minimum word counts
+Return a single JSON object that matches the return_transit_reading schema
+(enforced by response_format=json_schema). Field-level minimum word counts
 are part of that schema and MUST be respected — falling short will fail
 validation and force a costly retry. Stay above the minimums consistently
 (targets give some headroom):
@@ -1355,6 +1355,7 @@ async function interpretTransits(
 
   const aiRequestBody = {
     model: LONG_REPORT_MODEL,
+    reasoning: { effort: "medium" },
     max_tokens: 32768,
     messages: [
       { role: "system", content: outputLanguageDirective(lang) + TRANSIT_INTERPRETATION_PROMPT },
@@ -1432,8 +1433,24 @@ async function interpretTransits(
       },
   };
 
-  const MAX_ATTEMPTS = 2;
+  const MAX_ATTEMPTS = 3;
   let lastError = "";
+
+  // On a quality failure (too-short output / unparseable args) feed the exact
+  // shortfall back as a follow-up turn so the next attempt expands that field,
+  // instead of re-sending the identical request and hoping the model clears the
+  // minimum by luck. Targets the schema ask, not the lower validator floor, so
+  // the retry lands with margin.
+  const pushCorrection = (detail: string) => {
+    aiRequestBody.messages.push({
+      role: "user",
+      content:
+        `Il tentativo precedente è stato RIFIUTATO: ${detail}. ` +
+        `Rigenera l'INTERO oggetto JSON valido rispettando TUTTI i minimi di lunghezza dello schema: ` +
+        `summary.overall_reading ≥ 320 parole, OGNI periods[].focus ≥ 280 parole, closing.text ≥ 130 parole. ` +
+        `Espandi i campi troppo corti con contenuto sostanziale e specifico (più angolazioni dello stesso transito), senza riempitivo né ripetizioni.`,
+    });
+  };
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const t0 = Date.now();
@@ -1519,6 +1536,7 @@ async function interpretTransits(
         `[interpretTransits] attempt ${attempt + 1}: missing tool_call. Raw (first 240): ${JSON.stringify(completion).slice(0, 240)}`,
       );
       await appendFailure(supabaseAdmin, transitCycleId, "interpretation", attempt + 1, lastError);
+      pushCorrection(lastError);
       continue;
     }
 
@@ -1539,6 +1557,7 @@ async function interpretTransits(
         `[interpretTransits] attempt ${attempt + 1}: tool args parse failed; raw (first 240): ${String(argsString).slice(0, 240)}`,
       );
       await appendFailure(supabaseAdmin, transitCycleId, "interpretation", attempt + 1, lastError);
+      pushCorrection(lastError);
       continue;
     }
 
@@ -1564,6 +1583,7 @@ async function interpretTransits(
       lastError = e instanceof Error ? e.message : String(e);
       console.warn(`[interpretTransits] attempt ${attempt + 1}: validation failed: ${lastError}`);
       await appendFailure(supabaseAdmin, transitCycleId, "interpretation", attempt + 1, lastError);
+      pushCorrection(lastError);
       continue;
     }
   }
