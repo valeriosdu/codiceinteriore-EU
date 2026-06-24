@@ -896,7 +896,7 @@ Deno.serve(async (req) => {
 Write in natural ${langName} only. The tone must be human, lucid, emotionally precise, sober, grounded, and credible. Do not sound mystical, inflated, generic, new-age, or like horoscope content. Do not flatter. Do not make deterministic predictions. Do not use astrology as decoration. Use astrology as a tool for synthesis, meaning, and psychological clarity.
 
 PRIMARY GOAL
-Generate a long-form premium natal reading that feels deeply personal, coherent from beginning to end, psychologically sharp, emotionally accurate, non-generic, rich enough to feel like a real paid reading, and approximately 10–15 pages in normal web/PDF formatting.
+Generate a long-form premium natal reading that feels deeply personal, coherent from beginning to end, psychologically sharp, emotionally accurate, non-generic, rich enough to feel like a real paid reading, and approximately 9 pages in normal web/PDF formatting.
 
 The reading must help the reader understand who they are structurally, how their emotional world works, how they love and protect themselves, what patterns and blocks tend to repeat, how their inner structure shows up in work and direction, and what practical movement is possible.
 
