@@ -5,7 +5,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
-import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
+import { resolvePromptLang, outputLanguageDirective, OUTPUT_LANGUAGE_NAME, type PromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,9 +113,14 @@ const CHART_DISPLAY_SETTINGS = {
 };
 
 // Single source of truth for teaser-stage relationship insights.
-const SYSTEM_PROMPT = `You are a psychologically sophisticated astrologer focused on relational dynamics.
+// Built per output language: the structural prompt stays in English, only the
+// output-language references resolve to the market's language (no hard-coded
+// "Italian" that contradicts the directive — see outputLanguageDirective).
+const buildClassicaPrompt = (lang: PromptLang): string => {
+  const langName = OUTPUT_LANGUAGE_NAME[lang];
+  return `You are a psychologically sophisticated astrologer focused on relational dynamics.
 
-Write in natural Italian. The tone must be human, sober, lucid, emotionally precise, and credible.
+Write in natural ${langName}. The tone must be human, sober, lucid, emotionally precise, and credible.
 Do not sound mystical, generic, predictive, literary, or like horoscope content.
 
 OBJECTIVE
@@ -243,8 +248,8 @@ OUTPUT REQUIREMENTS
 Produce exactly 3 insights.
 
 Each insight must contain:
-- "title": max 8 words, in Italian
-- "body": 2–3 sentences, max 50 words, in Italian
+- "title": max 8 words, in ${langName}
+- "body": 2–3 sentences, max 50 words, in ${langName}
 
 CONTENT REQUIREMENTS
 - Each insight must cover a different angle
@@ -258,14 +263,17 @@ TITLE RULES
 Titles must be concrete, immediate, and recognizable. Not abstract or poetic.
 
 Respond ONLY with the required tool call.`;
+};
 
 // Teaser system prompt for the "attivazione" angle: people who feel stuck —
 // not in love but in *movement*. The 3 insights cover activation, the form
 // of the block, and rhythm. Intake answers (symptom, narrative) are emotional
 // calibration only — never quoted, never used as content.
-const ATTIVAZIONE_SYSTEM_PROMPT = `You are a psychologically sophisticated astrologer focused on patterns of activation: what makes a person move forward, what blocks them, and the rhythm at which their structure actually expresses.
+const buildAttivazionePrompt = (lang: PromptLang): string => {
+  const langName = OUTPUT_LANGUAGE_NAME[lang];
+  return `You are a psychologically sophisticated astrologer focused on patterns of activation: what makes a person move forward, what blocks them, and the rhythm at which their structure actually expresses.
 
-Write in natural Italian. The tone must be human, sober, lucid, emotionally precise, and credible.
+Write in natural ${langName}. The tone must be human, sober, lucid, emotionally precise, and credible.
 Do not sound mystical, generic, predictive, literary, or like horoscope content.
 Do not sound like a coach, a manifestation guru, or a motivational speaker.
 
@@ -345,7 +353,7 @@ Avoid also: zodiac clichés, generic self-help, flattery, prediction, determinis
 Prefer: short, immediate, recognizable language.
 
 LANGUAGE NATURALNESS — CRITICAL
-The Italian must read as natural conversational Italian, NOT as translated-from-English or constructed prose. The reader is a smart 30-year-old reading on their phone. Each sentence should be understood in one breath, without re-reading.
+The output must read as natural conversational ${langName}, NOT as translated-from-English or constructed prose. The reader is a smart 30-year-old reading on their phone. Each sentence should be understood in one breath, without re-reading.
 
 AVOID:
 - abstract noun phrases like "la forma del…", "il principio di…", "la dimensione di…", "la cadenza specifica di…", "la struttura interna di…". These sound academic or AI-generated.
@@ -398,8 +406,8 @@ OUTPUT REQUIREMENTS
 Produce exactly 3 insights, in the order BLOCCO → RITMO → ATTIVAZIONE.
 
 Each insight must contain:
-- "title": max 8 words, in Italian
-- "body": 2–3 sentences, max 50 words, in Italian
+- "title": max 8 words, in ${langName}
+- "body": 2–3 sentences, max 50 words, in ${langName}
 
 CONTENT REQUIREMENTS
 - Each insight covers its specific angle, not the others
@@ -410,15 +418,16 @@ TITLE RULES
 Concrete, immediate, recognizable. Not abstract or poetic.
 
 Respond ONLY with the required tool call.`;
+};
 
-const SYSTEM_PROMPT_BY_FUNNEL: Record<string, string> = {
-  classica: SYSTEM_PROMPT,
-  attivazione: ATTIVAZIONE_SYSTEM_PROMPT,
+const SYSTEM_PROMPT_BY_FUNNEL: Record<string, (lang: PromptLang) => string> = {
+  classica: buildClassicaPrompt,
+  attivazione: buildAttivazionePrompt,
 };
 
 function systemPromptFor(slug: string | null | undefined, lang: PromptLang = "it"): string {
-  const base = SYSTEM_PROMPT_BY_FUNNEL[slug || "classica"] ?? SYSTEM_PROMPT_BY_FUNNEL.classica;
-  return outputLanguageDirective(lang) + base;
+  const build = SYSTEM_PROMPT_BY_FUNNEL[slug || "classica"] ?? SYSTEM_PROMPT_BY_FUNNEL.classica;
+  return outputLanguageDirective(lang) + build(lang);
 }
 
 function buildUserPrompt(
