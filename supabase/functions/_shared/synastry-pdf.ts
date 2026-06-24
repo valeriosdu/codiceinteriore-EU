@@ -20,7 +20,7 @@ import { type PromptLang } from "./prompts/lang.ts";
 import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
 import { getArchetypeLabel } from "./synastry-archetypes.ts";
 
-export const SYNASTRY_PDF_VERSION = "synastry-v11-i18n";
+export const SYNASTRY_PDF_VERSION = "synastry-v12-i18n";
 export const SYNASTRY_PDF_VERSION_TAG = `CI-SYNASTRY-PDF/${SYNASTRY_PDF_VERSION}`;
 
 export interface SynastryApertura {

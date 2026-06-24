@@ -22,13 +22,21 @@ import { trackEvent } from "@/lib/analytics";
 import { getFunnelContent } from "@/funnels/registry";
 import { useI18n } from "@/i18n/I18nProvider";
 
-// Happy path is 5–10s, so keep the first-attempt window short. On timeout we
-// auto-retry (re-invoking process-session-insights) up to MAX_RECOVERY_ATTEMPTS
-// times before showing a manual-retry screen.
+// Happy path is 2–5s, so keep the first-attempt window short. On timeout we
+// auto-retry (re-invoking process-session-insights). We never dead-end into an
+// error screen: for ~2 min we retry quickly (MAX_RECOVERY_ATTEMPTS cycles of
+// ~15s poll + 2s pause), then keep retrying at a slower cadence while showing
+// reassuring "complex chart" copy, so the page self-heals if the server job
+// eventually completes.
 const POLL_TIMEOUT_MS = 15000;
 const POLL_INTERVAL_MS = 4000;
 const RETRY_PAUSE_MS = 2000;
-const MAX_RECOVERY_ATTEMPTS = 2;
+const MAX_RECOVERY_ATTEMPTS = 6;
+// After this many recovery cycles (~75s in), escalate to the strongest
+// reassurance copy ("your chart is particularly rich, a couple more minutes").
+const COMPLEX_HINT_AFTER_ATTEMPTS = 3;
+// Once past the fast window, slow the retry cadence instead of giving up.
+const SLOW_RETRY_PAUSE_MS = 20000;
 
 const TeaserResult = () => {
   const navigate = useNavigate();
@@ -43,7 +51,6 @@ const TeaserResult = () => {
   const [sessionReady, setSessionReady] = useState(false);
   const [pollFailed, setPollFailed] = useState(false);
   const [recoveryAttempt, setRecoveryAttempt] = useState(0);
-  const [hardFailed, setHardFailed] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<"base" | "premium" | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewType, setReviewType] = useState<"base" | "premium" | null>(null);
@@ -78,14 +85,14 @@ const TeaserResult = () => {
 
   useEffect(() => {
     if (!pollFailed || sessionReady) return;
-    if (recoveryAttempt >= MAX_RECOVERY_ATTEMPTS) {
-      setHardFailed(true);
-      return;
-    }
+    // Never show an error screen. Retry quickly within the first ~2 min, then
+    // keep retrying at a slower cadence (page stays on the reassuring copy and
+    // self-heals if the background job completes later).
+    const pause = recoveryAttempt >= MAX_RECOVERY_ATTEMPTS ? SLOW_RETRY_PAUSE_MS : RETRY_PAUSE_MS;
     const retry = setTimeout(() => {
       setPollFailed(false);
       setRecoveryAttempt((attempt) => attempt + 1);
-    }, RETRY_PAUSE_MS);
+    }, pause);
     return () => clearTimeout(retry);
   }, [pollFailed, sessionReady, recoveryAttempt]);
 
@@ -299,31 +306,15 @@ const TeaserResult = () => {
     }
   };
 
-  if (hardFailed) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="font-display text-2xl font-semibold text-foreground">
-          {t.failed.title}
-        </h1>
-        <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          {t.failed.body}
-        </p>
-        <Button
-          variant="default"
-          onClick={() => {
-            setHardFailed(false);
-            setPollFailed(false);
-            setRecoveryAttempt(0);
-          }}
-        >
-          {t.failed.retry}
-        </Button>
-      </div>
-    );
-  }
-
   if (!sessionReady) {
-    const slowMessage = pollFailed || recoveryAttempt > 0;
+    // Staged, reassuring copy — never an error. Escalates from normal → slow →
+    // "complex chart" the longer generation takes; the page keeps retrying.
+    const loadingMessage =
+      recoveryAttempt >= COMPLEX_HINT_AFTER_ATTEMPTS
+        ? t.loading.complex
+        : pollFailed || recoveryAttempt > 0
+          ? t.loading.slow
+          : t.loading.normal;
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -331,7 +322,7 @@ const TeaserResult = () => {
           {t.loading.title}
         </h1>
         <p className="text-sm text-foreground/70 max-w-xs leading-relaxed">
-          {slowMessage ? t.loading.slow : t.loading.normal}
+          {loadingMessage}
         </p>
       </div>
     );

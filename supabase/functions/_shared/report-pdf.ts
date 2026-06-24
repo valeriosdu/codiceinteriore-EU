@@ -7,7 +7,7 @@ import { PDFDocument, PDFArray, PDFName, PDFString, rgb, StandardFonts } from "h
 // @ts-ignore npm specifier
 import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import { decodeLogoPng } from "./logo.ts";
-import { playfairItalic, playfairSemiBold } from "./fonts.ts";
+import { playfairItalic, playfairSemiBold, sourceSansRegular } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang } from "./prompts/lang.ts";
 import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
@@ -17,7 +17,10 @@ import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 // so old/broken files (e.g. missing chart, missing characters) do not
 // keep getting served. v13: layout multi-mercato (lingua nei contenuti, brand
 // e dominio dal market). La lingua è anche nel path di cache.
-export const PDF_VERSION = "v15-i18n";
+// v16: la chart nel PDF è rasterizzata localmente dall'SVG (resvg) invece di
+// chiedere un PNG al provider, che andava in 504 sullo styling completo →
+// PDF senza chart. Vedi rasterizeChartSvg.
+export const PDF_VERSION = "v16-i18n";
 export const PDF_VERSION_TAG = `CI-PDF/${PDF_VERSION}`;
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
@@ -206,6 +209,62 @@ export function decodeStoredChartPng(value: unknown): Uint8Array | null {
     return out;
   } catch (err) {
     console.warn("[chart] decodeStoredChartPng failed:", err);
+    return null;
+  }
+}
+
+// resvg-wasm is loaded lazily via dynamic import and initialized once per
+// isolate. It is fully isolated: any failure (import, wasm init, render) is
+// swallowed so PDF generation never breaks because of it — the caller falls
+// back to the live provider PNG. We rasterize the styled SVG we already store
+// because the provider's PNG renderer times out (504) on our full styling.
+// deno-lint-ignore no-explicit-any
+let resvgModule: Promise<any> | null = null;
+// deno-lint-ignore no-explicit-any
+function loadResvg(): Promise<any> {
+  if (!resvgModule) {
+    resvgModule = (async () => {
+      const mod = await import("https://esm.sh/@resvg/resvg-wasm@2.6.2");
+      await mod.initWasm(
+        fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm"),
+      ).catch((err: unknown) => {
+        // A second isolate-level init throws "Already initialized" — benign.
+        if (!String(err).includes("Already initialized")) throw err;
+      });
+      return mod;
+    })().catch((err) => {
+      resvgModule = null; // allow a retry on the next call
+      throw err;
+    });
+  }
+  return resvgModule;
+}
+
+// Rasterize the stored natal-chart SVG into PNG bytes. Returns null on any
+// failure so the caller can fall back to the live provider PNG.
+export async function rasterizeChartSvg(
+  svg: string | null | undefined,
+): Promise<Uint8Array | null> {
+  if (!svg || typeof svg !== "string" || !svg.includes("<svg")) return null;
+  try {
+    const mod = await loadResvg();
+    const fontBuf = await sourceSansRegular().catch(() => null);
+    const resvg = new mod.Resvg(svg, {
+      // SVG is 700px; render at 1000px for a crisp chart on the cover page
+      // (embedded at ~380pt). Background is left transparent so the wheel
+      // blends with the page exactly like the website.
+      fitTo: { mode: "width", value: 1000 },
+      font: {
+        loadSystemFonts: false,
+        defaultFontFamily: "Source Sans 3",
+        sansSerifFamily: "Source Sans 3",
+        fontBuffers: fontBuf ? [fontBuf] : [],
+      },
+    });
+    const png = resvg.render().asPng();
+    return png instanceof Uint8Array ? png : new Uint8Array(png);
+  } catch (err) {
+    console.warn("[chart] rasterizeChartSvg failed:", err);
     return null;
   }
 }

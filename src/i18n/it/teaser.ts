@@ -3,6 +3,7 @@ const teaser = {
     title: 'Stiamo completando la tua lettura iniziale',
     slow: 'Ci sta mettendo più del previsto. Resta su questa pagina: riproveremo automaticamente tra poco.',
     normal: "Stiamo verificando la carta natale e gli insight prima di mostrarti l'offerta.",
+    complex: 'La tua carta è particolarmente ricca: ci servono ancora un paio di minuti. Resta su questa pagina, ci siamo quasi.',
   },
   failed: {
     title: 'Non siamo riusciti a generare la lettura',

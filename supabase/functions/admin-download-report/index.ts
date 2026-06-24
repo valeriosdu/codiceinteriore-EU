@@ -5,6 +5,7 @@ import {
   generateReportPdf,
   isCurrentPdfVersion,
   PDF_VERSION,
+  rasterizeChartSvg,
   ReportContent,
 } from "../_shared/report-pdf.ts";
 import {
@@ -260,7 +261,7 @@ Deno.serve(async (req) => {
 
     const { data: session, error: sessErr } = await supabase
       .from("quiz_sessions")
-      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_png, funnel_slug, language, market")
+      .select("full_report, user_name, birth_place, birth_date, birth_time, birth_lat, birth_lng, birth_timezone, natal_chart_svg, natal_chart_png, funnel_slug, language, market")
       .eq("id", sessionId)
       .single();
 
@@ -299,17 +300,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    let chartPng: Uint8Array | null = await fetchNatalChartPng({
-      user_name: session.user_name,
-      birth_date: session.birth_date,
-      birth_time: (session as any).birth_time,
-      birth_place: session.birth_place,
-      birth_lat: (session as any).birth_lat,
-      birth_lng: (session as any).birth_lng,
-      birth_timezone: (session as any).birth_timezone,
-    });
-
-    let chartSource: "live" | "stored" | "none" = chartPng ? "live" : "none";
+    // Chart: rasterize the stored styled SVG locally (deterministic, matches
+    // the website). Fall back to the provider's live PNG, then any stored PNG.
+    let chartPng: Uint8Array | null = await rasterizeChartSvg((session as any).natal_chart_svg);
+    let chartSource: "svg" | "live" | "stored" | "none" = chartPng ? "svg" : "none";
+    if (!chartPng) {
+      chartPng = await fetchNatalChartPng({
+        user_name: session.user_name,
+        birth_date: session.birth_date,
+        birth_time: (session as any).birth_time,
+        birth_place: session.birth_place,
+        birth_lat: (session as any).birth_lat,
+        birth_lng: (session as any).birth_lng,
+        birth_timezone: (session as any).birth_timezone,
+      });
+      if (chartPng) chartSource = "live";
+    }
     if (!chartPng) {
       const stored = decodeStoredChartPng((session as any).natal_chart_png);
       if (stored) {

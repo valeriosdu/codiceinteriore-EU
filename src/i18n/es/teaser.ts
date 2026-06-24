@@ -5,6 +5,7 @@ const teaser: Messages['teaser'] = {
     title: 'Estamos completando tu lectura inicial',
     slow: 'Está tardando más de lo previsto. Quédate en esta página: lo reintentaremos automáticamente en breve.',
     normal: 'Estamos verificando la carta natal y las ideas antes de mostrarte la oferta.',
+    complex: 'Tu carta es especialmente rica: necesitamos un par de minutos más. Quédate en esta página, ya casi estamos.',
   },
   failed: {
     title: 'No hemos podido generar la lectura',

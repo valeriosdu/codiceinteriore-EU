@@ -13,6 +13,7 @@ import {
 import {
   PDF_CHART_CONFIG,
   PDF_CHART_DISPLAY_SETTINGS,
+  rasterizeChartSvg,
 } from "../_shared/report-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 
@@ -186,7 +187,7 @@ Deno.serve(async (req: Request) => {
     const { data: session, error } = await supabaseAdmin
       .from("synastry_sessions")
       .select(
-        "id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_a_birth_place, person_a_birth_lat, person_a_birth_lng, person_a_birth_timezone_iana, person_b_birth_date, person_b_birth_time, person_b_time_known, person_b_birth_place, person_b_birth_lat, person_b_birth_lng, person_b_birth_timezone_iana, archetype, archetype_label, score_overall, scores, full_report, language, market",
+        "id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_time_known, person_a_birth_place, person_a_birth_lat, person_a_birth_lng, person_a_birth_timezone_iana, person_b_birth_date, person_b_birth_time, person_b_time_known, person_b_birth_place, person_b_birth_lat, person_b_birth_lng, person_b_birth_timezone_iana, archetype, archetype_label, score_overall, scores, bi_wheel_svg, full_report, language, market",
       )
       .eq("id", synastrySessionId)
       .maybeSingle();
@@ -217,7 +218,13 @@ Deno.serve(async (req: Request) => {
       session.person_b_birth_lng,
       session.person_b_birth_timezone_iana,
     );
-    const biWheelPng = await fetchBiWheelPng(personAPayload, personBPayload);
+    // Bi-wheel: rasterize the stored SVG locally (the provider's PNG renderer
+    // times out on full styling, same as the natal chart). Fall back to the
+    // live PNG only if the SVG is missing.
+    let biWheelPng = await rasterizeChartSvg((session as any).bi_wheel_svg);
+    if (!biWheelPng) {
+      biWheelPng = await fetchBiWheelPng(personAPayload, personBPayload);
+    }
 
     const bytes = await generateSynastryPdf({
       reportContent: session.full_report as SynastryReportContent,

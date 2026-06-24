@@ -626,28 +626,44 @@ async function generateNatalChartSvg(session: QuizSession): Promise<string | nul
 
 const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
-// Gemini intermittently returns 503 (model overloaded) / 429 (rate limit).
-// Google recommends retrying these with backoff; flash-lite is fast (~3s) so a
-// couple of retries stay well within the client's teaser polling window.
+// Gemini intermittently returns 503 (model overloaded) / 429 (rate limit), and
+// on congested capacity a single call can hang for tens of seconds without ever
+// failing. We bound each attempt with a 10s timeout (AbortController) and retry
+// 503/429/5xx and aborts/network errors with backoff. Worst case ~3×10s + 3s
+// backoff ≈ 33s, instead of a single call blocking up to ~55s.
 async function geminiInsightsFetch(body: string): Promise<Response> {
   const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
   const MAX_ATTEMPTS = 3;
-  let response: Response;
-  for (let attempt = 1; ; attempt++) {
-    response = await fetch(GEMINI_CHAT_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${GEMINI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body,
-    });
-    if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt >= MAX_ATTEMPTS) {
-      return response;
+  const PER_ATTEMPT_TIMEOUT_MS = 10000;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), PER_ATTEMPT_TIMEOUT_MS);
+    try {
+      const response = await fetch(GEMINI_CHAT_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${GEMINI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body,
+        signal: ac.signal,
+      });
+      if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt >= MAX_ATTEMPTS) {
+        return response;
+      }
+      await response.text().catch(() => {}); // drain body so the connection frees up
+    } catch (err) {
+      // AbortError (timeout) or a network error — retryable like a 5xx.
+      lastError = err;
+      if (attempt >= MAX_ATTEMPTS) throw err;
+    } finally {
+      clearTimeout(timer);
     }
-    await response.text().catch(() => {}); // drain body so the connection frees up
     await new Promise((r) => setTimeout(r, attempt * 1000)); // backoff: 1s, then 2s
   }
+  // Unreachable in practice: the loop returns or throws on the last attempt.
+  throw lastError ?? new Error("insights_failed: exhausted retries");
 }
 
 async function generateInsights(
@@ -670,13 +686,14 @@ async function generateInsights(
     attempt: 1,
   };
 
-  // reasoning_effort "low": flash-lite stays ~3s but gets a little extra
-  // reasoning for the chart's aspect/orb selection. "high" is avoided — it
-  // pushes the request onto congested capacity and starts returning 503.
+  // reasoning_effort "none": thinking is disabled. Under reasoning, flash-lite's
+  // latency became highly variable (p50 climbed to ~9s, tail to 55s) on congested
+  // Google capacity; with thinking off latency drops back to ~2–3s and is far more
+  // stable. The aspect/orb selection stays driven by the detailed system prompt.
   const response = await geminiInsightsFetch(
     JSON.stringify({
       model,
-      reasoning_effort: "low",
+      reasoning_effort: "none",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

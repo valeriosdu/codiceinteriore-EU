@@ -9,6 +9,7 @@ import {
   SYNASTRY_PDF_VERSION,
   SynastryReportContent,
 } from "../_shared/synastry-pdf.ts";
+import { rasterizeChartSvg } from "../_shared/report-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 
 declare const Deno: {
@@ -87,7 +88,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: session, error } = await supabase
       .from("synastry_sessions")
-      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype, archetype_label, score_overall, scores, full_report, language, market")
+      .select("id, person_a_name, person_b_name, person_a_birth_date, person_a_birth_time, person_a_birth_place, person_b_birth_date, person_b_birth_time, person_b_birth_place, archetype, archetype_label, score_overall, scores, bi_wheel_svg, full_report, language, market")
       .eq("id", synastrySessionId)
       .maybeSingle();
 
@@ -119,6 +120,10 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Bi-wheel: rasterize the stored SVG locally. The admin download
+    // previously passed no bi-wheel at all, so the PDF had no chart.
+    const biWheelPng = await rasterizeChartSvg((session as { bi_wheel_svg?: string | null }).bi_wheel_svg);
+
     const bytes = await generateSynastryPdf({
       reportContent: session.full_report as SynastryReportContent,
       personAName: session.person_a_name,
@@ -133,6 +138,7 @@ Deno.serve(async (req: Request) => {
       archetypeLabel: session.archetype_label,
       scoreOverall: session.score_overall,
       scores: session.scores,
+      biWheelPng,
       lang: synLang,
       market: synMarket,
     });
