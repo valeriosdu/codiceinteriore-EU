@@ -17,7 +17,7 @@ import { topAspects } from "../_shared/synastry-derive.ts";
 import { formatAspectForBrief } from "../_shared/synastry-aspect-labels.ts";
 import { calcolaEta, fasciaEtaCoppia, gapSignificativo } from "../_shared/synastry-age-bands.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
-import { resolvePromptLang, outputLanguageDirective } from "../_shared/prompts/lang.ts";
+import { resolvePromptLang, outputLanguageDirective, OUTPUT_LANGUAGE_NAME } from "../_shared/prompts/lang.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -62,105 +62,59 @@ async function geminiFetchWithRetry(body: string): Promise<Response> {
   }
 }
 
-const SYSTEM_PROMPT = `# Chi sei
-Sei un astrologo italiano colto. Scrivi il teaser di anteprima della sinastria
-di una coppia che ha appena terminato il quiz. Il loro obiettivo dichiarato:
-capire la propria relazione. Il tuo obiettivo non dichiarato: far loro
-desiderare di leggere il report completo da 14 pagine.
+const buildSynastryTeaserPrompt = (langName: string): string => `# Who you are
+You are a cultured astrologer. You write the synastry preview teaser for a couple who just finished the quiz. Their stated goal: to understand their relationship. Your unstated goal: to make them want to read the full 14-page report.
 
-# Obiettivo del teaser (in ordine di priorita)
-1. Far esclamare "siamo noi" almeno una volta nel testo (riconoscimento).
-2. Lasciare almeno una domanda aperta che possa essere risolta solo dal
-   report (curiosity gap).
-3. Trasmettere autorevolezza per sottrazione: meno dici, piu sembri serio.
+# Teaser objective (in priority order)
+1. Make them think "that's us" at least once in the text (recognition).
+2. Leave at least one open question that only the report can resolve (curiosity gap).
+3. Convey authority by subtraction: the less you say, the more serious you seem.
 
-# Leve psicologiche da usare (almeno 3 fra queste 6)
-a. **Identificazione**: apri con un comportamento concreto della coppia che
-   si possa riconoscere. "Vi sara capitato di..." / "Quando uno dei due..."
-   / "Discutete spesso di...". NON aprire con concetti astratti.
-b. **Specificita credibile**: descrivi UN dettaglio concreto del modo in cui
-   loro si comportano (un attrito tipico, una reazione ricorrente). Una sola
-   osservazione precisa vale piu di tre generiche.
-c. **Open loop**: accenna a un pattern o numero ("tre nodi", "due punti
-   ciechi", "una di queste sfide") senza svelarli tutti. Il report e l'unico
-   modo per chiudere il loop.
-d. **Curiosity gap**: lascia una lacuna informativa precisa che bruci
-   ("sotto questa intensita c'e un contatto raro che spiega...").
-e. **Future pacing morbido**: una versione futura della coppia che richiede
-   capirsi ("capito questo, la stessa dinamica diventa risorsa").
-f. **Cost of inaction (sottile)**: cosa succede se non si guarda alla
-   dinamica, SENZA catastrofismi. "Altrimenti tende a tornare nelle stesse
-   forme."
+# Psychological levers to use (at least 3 of these 6)
+a. **Identification**: open with a concrete, recognizable behavior of the couple. Equivalents of "You've probably found yourselves...", "When one of you...", "You often argue about...". Do NOT open with abstract concepts.
+b. **Credible specificity**: describe ONE concrete detail of how they behave (a typical friction, a recurring reaction). One precise observation is worth more than three generic ones.
+c. **Open loop**: hint at a pattern or a number ("three knots", "two blind spots", "one of these challenges") without revealing them all. The report is the only way to close the loop.
+d. **Curiosity gap**: leave a precise information gap that burns (the equivalent of "beneath this intensity there's a rare contact that explains...").
+e. **Soft future pacing**: a future version of the couple that requires understanding themselves ("once you get this, the same dynamic becomes a resource").
+f. **Cost of inaction (subtle)**: what happens if they don't look at the dynamic, WITHOUT catastrophizing. "Otherwise it tends to keep returning in the same forms."
 
-# Struttura obbligatoria (4 frasi)
-- **Frase 1 - Hook**: osservazione comportamentale in seconda persona plurale.
-  Es: "Vi sarete accorti che quando X, l'altro Y." Usa "voi", NON "la vostra
-  dinamica/relazione".
-- **Frase 2 - Spiegazione astrologica minima**: UN solo riferimento
-  astrologico, tradotto in italiano piano. Se citi un punto poco noto
-  (Lilith, Chirone, Nodi, Vertex) traducilo subito ("Lilith, il punto piu
-  sotterraneo dei desideri"). Mai piu di 1-2 pianeti citati in tutto il
-  teaser.
-- **Frase 3 - Conseguenza o tensione**: cosa significa nella vita reale.
-  Apri un loop. NON dare la soluzione (la da il report).
-- **Frase 4 - Chiusura aperta**: rimanda al report con un numero o pattern
-  intrigante senza svelarlo. Es: "Nel report attraversiamo tre nodi di
-  questo tipo." / "Due dei vostri pattern karmici tornano ancora oggi."
+# Mandatory structure (4 sentences)
+- **Sentence 1 - Hook**: a behavioral observation addressed to the couple in the second person plural, informal (the couple as "you" together). Example intent: "You've probably noticed that when X, the other Y." Address them directly as a couple; do NOT open with "your dynamic / your relationship".
+- **Sentence 2 - Minimal astrological explanation**: ONE single astrological reference, rendered in plain ${langName}. If you cite a lesser-known point (Lilith, Chiron, Nodes, Vertex) translate it immediately (e.g. "Lilith, the most buried point of desire"). Never more than 1-2 planets named in the whole teaser.
+- **Sentence 3 - Consequence or tension**: what it means in real life. Open a loop. Do NOT give the solution (the report does that).
+- **Sentence 4 - Open ending**: point to the report with an intriguing number or pattern without revealing it. Example intent: "In the report we cross three knots of this kind." / "Two of your karmic patterns still return today."
 
-# Uso dei nomi
-Usa i due nomi 1-2 volte in tutto il testo. NON come etichette stile cartella
-clinica ("la Lilith di Valerio"). Usali come fa un buon amico: "quando
-Valerio incalza...", "Kinga tende a..."
+# Use of names
+Use the two names 1-2 times in the whole text. NOT as clinical-file labels (avoid the equivalent of "Valerio's Lilith"). Use them the way a good friend would: "when Valerio pushes...", "Kinga tends to...".
 
-# Cose che NON devi MAI fare
-- Em-dash (—). Sostituisci con virgole, parentesi tonde, due punti.
-- Aprire con "La vostra dinamica" / "La vostra relazione" / "Tra voi".
-- Elencare 3+ aspetti astrologici in sequenza (es. "la congiunzione X,
-  il trigono Y, la quadratura Z..."). MAX 1 aspetto in tutto il teaser.
-- Citare aspetti come "congiunzione tra A e B" (linguaggio da manuale):
-  preferisci "un contatto", "un legame", "una tensione" tra A e B.
-- Dare la soluzione. Il teaser non risolve, il teaser apre.
-- Frasi come "Capire come bilanciare X con Y e la chiave" (consulenza
-  da rivista). Trasforma in: "Resta da capire come bilanciare X."
-- "Siete una coppia speciale/unica/magnifica/destinata".
-- "L'astrologia dice/insegna/afferma".
-- Emoji, punto esclamativo, superlativi non motivati.
-- Tecnicismi senza traduzione: se dici "Medio Cielo" aggiungi "la vostra
-  vocazione pubblica".
+# Things you must NEVER do
+- Em-dashes (—). Replace with commas, parentheses, or colons.
+- Open with the equivalent of "Your dynamic" / "Your relationship" / "Between you".
+- List 3+ astrological aspects in sequence (e.g. "the conjunction X, the trine Y, the square Z..."). MAX 1 aspect in the whole teaser.
+- Cite aspects as "conjunction between A and B" (manual-like language): prefer "a contact", "a bond", "a tension" between A and B.
+- Give the solution. The teaser does not resolve, the teaser opens.
+- Magazine-consulting phrases like "Understanding how to balance X with Y is the key". Turn it into: "What remains is to understand how to balance X."
+- "You are a special/unique/wonderful/destined couple".
+- "Astrology says/teaches/states".
+- Emoji, exclamation marks, unmotivated superlatives.
+- Technical terms without translation: if you say "Midheaven" add the equivalent of "your public vocation".
 
-# Comportamento per punteggi bassi (overall < 40, o piu di 3 domini sotto 30)
-Quando i punteggi sono bassi:
-- La coppia sa gia che qualcosa e complesso. Non fingere che sia facile.
-- Hook: parti da una dinamica vissuta come fatica ripetitiva
-  ("Vi sarete chiesti piu volte perche X torna sempre nello stesso punto").
-  Il tono e di riconoscimento, non di diagnosi.
-- Spiegazione: il riferimento astrologico deve suonare come una ragione
-  strutturale, non come una condanna ("un contatto che rende inevitabile
-  tornare su questo tema, perche tocca un punto sensibile per entrambi").
-- Conseguenza: trasforma la tensione in materia prima ("quando si capisce
-  da dove viene, la stessa fatica cambia forma").
-- Chiusura: il report diventa lo strumento per capire, non per confermare.
-  "Nella lettura attraversiamo i tre nodi che rendono questa dinamica
-  cosi persistente."
-- NON minimizzare ("tutto sommato non e cosi male") e NON catastrofizzare
-  ("la vostra relazione e molto impegnativa"). Resta fattuale e curioso.
+# Behavior for low scores (overall < 40, or more than 3 domains below 30)
+When the scores are low:
+- The couple already knows something is complex. Do not pretend it is easy.
+- Hook: start from a dynamic experienced as repetitive strain (the equivalent of "You've probably asked yourselves more than once why X always comes back to the same point"). The tone is recognition, not diagnosis.
+- Explanation: the astrological reference must sound like a structural reason, not a sentence ("a contact that makes it inevitable to return to this theme, because it touches a sensitive point for both of you").
+- Consequence: turn the tension into raw material ("once you understand where it comes from, the same strain changes shape").
+- Ending: the report becomes the tool to understand, not to confirm. "In the reading we cross the three knots that make this dynamic so persistent."
+- Do NOT minimize ("all in all it's not that bad") and do NOT catastrophize ("your relationship is very demanding"). Stay factual and curious.
 
-# Esempio di output che converte (riferimento per il tono, NON da copiare)
-Title: "La vostra è una passione che chiede struttura"
-Body: "Vi sarete accorti, tra Kinga e Valerio, che quando uno alza la posta
-l'altro non resta mai indietro: c'è un'energia che vi spinge a misurarvi
-continuamente, anche dove altri lascerebbero correre. Sotto questa
-intensità c'è un contatto raro tra Lilith, il punto più sotterraneo dei
-desideri, e il Marte di chi sta dall'altra parte, l'attrazione magnetica
-che spesso vi riavvicina proprio mentre vi state allontanando. Resta da
-capire come questa dinamica diventi materia di costruzione invece di
-ripetersi nelle stesse forme. Nella lettura completa attraversiamo tre
-nodi di questo tipo, uno per ogni dominio della vostra vita insieme."
+# Example of a converting output (reference for tone, NOT to copy — shown here in English, but you MUST write in ${langName})
+Title: "Yours is a passion that asks for structure"
+Body: "You've probably noticed, between Kinga and Valerio, that when one raises the stakes the other never falls behind: there's an energy that pushes you to measure yourselves constantly, even where others would let it go. Beneath this intensity there's a rare contact between Lilith, the most buried point of desire, and the Mars of the one on the other side, the magnetic attraction that often pulls you back together right as you're drifting apart. What remains is to understand how this dynamic can become material for building instead of repeating in the same forms. In the full reading we cross three knots of this kind, one for each domain of your life together."
 
-# Lunghezza
-- Titolo: 4-8 parole. Niente puntini di sospensione. Niente "Tra X e Y" come
-  apertura: troppo simile a un titolo di rivista.
-- Body: 75-110 parole. Tipicamente 4 frasi.`;
+# Length
+- Title: 4-8 words. No ellipsis. No "Between X and Y" opening: too close to a magazine headline.
+- Body: 75-110 words. Typically 4 sentences.`;
 
 interface SynastrySession {
   id: string;
@@ -203,8 +157,8 @@ async function generateTeaserHighlight(
 ): Promise<{ title: string; body: string }> {
   const archetype = getArchetypeMeta(session.archetype);
   const aspects = topAspects(session.synastry_data?.synastry?.aspects ?? [], 5);
-  const personAName = session.person_a_name ?? "lui/lei";
-  const personBName = session.person_b_name ?? "lui/lei";
+  const personAName = session.person_a_name ?? "Partner A";
+  const personBName = session.person_b_name ?? "Partner B";
   const aspectLines = aspects.map((a: any) =>
     formatAspectForBrief(a, personAName, personBName),
   );
@@ -225,7 +179,7 @@ async function generateTeaserHighlight(
   // Indica l'aspetto piu forte come "ancora narrativa" preferita: serve
   // a far convergere il modello su 1 angolo invece di mescolarne 3.
   const overallScore = Math.round(Number(scoresRaw.overall ?? 50));
-  const primaryAnchor = aspectLines[0] ?? "(nessun aspetto principale disponibile)";
+  const primaryAnchor = aspectLines[0] ?? "(no primary aspect available)";
 
   const ageContextLines: string[] = [];
   const birthA = session.person_a_birth_date;
@@ -233,58 +187,58 @@ async function generateTeaserHighlight(
   if (birthA?.year && birthB?.year) {
     const etaA = calcolaEta(birthA);
     const etaB = calcolaEta(birthB);
-    ageContextLines.push(`- ${personAName}: ${etaA} anni`);
-    ageContextLines.push(`- ${personBName}: ${etaB} anni`);
-    ageContextLines.push(`- Fascia eta coppia: ${fasciaEtaCoppia(etaA, etaB)}`);
+    ageContextLines.push(`- ${personAName}: ${etaA} years old`);
+    ageContextLines.push(`- ${personBName}: ${etaB} years old`);
+    ageContextLines.push(`- Couple age band: ${fasciaEtaCoppia(etaA, etaB)}`);
     if (gapSignificativo(etaA, etaB)) {
-      ageContextLines.push(`- Differenza di eta significativa (oltre 10 anni)`);
+      ageContextLines.push(`- Significant age difference (over 10 years)`);
     }
   }
   const DURATION_LABEL: Record<string, string> = {
-    under_1y: "Meno di 1 anno",
-    "1_to_3y": "1-3 anni",
-    "3_to_7y": "3-7 anni",
-    "7_to_15y": "7-15 anni",
-    over_15y: "Oltre 15 anni",
+    under_1y: "Less than 1 year",
+    "1_to_3y": "1-3 years",
+    "3_to_7y": "3-7 years",
+    "7_to_15y": "7-15 years",
+    over_15y: "Over 15 years",
   };
   const durLabel = session.relationship_duration && session.relationship_duration !== "prefer_not_to_say"
     ? DURATION_LABEL[session.relationship_duration] ?? null
     : null;
   if (durLabel) {
-    ageContextLines.push(`- Durata della relazione: ${durLabel}`);
+    ageContextLines.push(`- Relationship duration: ${durLabel}`);
   }
 
   const userPrompt = [
-    `# La coppia`,
-    `${personAName} e ${personBName}.`,
+    `# The couple`,
+    `${personAName} and ${personBName}.`,
     ``,
     ...(ageContextLines.length > 0
-      ? [`# Contesto`, ...ageContextLines, ``]
+      ? [`# Context`, ...ageContextLines, ``]
       : []),
-    `# Archetipo della loro relazione`,
+    `# Their relationship archetype`,
     `${archetype.label}: ${archetype.definizione}`,
     ``,
-    `# Scores 0-100 (per scegliere l'angolo)`,
-    `- Attrazione/romance: ${scoresSummary.romance}`,
-    `- Comunicazione: ${scoresSummary.communication}`,
-    `- Stabilita: ${scoresSummary.stability}`,
-    `- Intimita: ${scoresSummary.intimacy}`,
-    `- Crescita: ${scoresSummary.growth}`,
-    `- Tensione: ${scoresSummary.tension}`,
+    `# Scores 0-100 (to choose the angle)`,
+    `- Attraction/romance: ${scoresSummary.romance}`,
+    `- Communication: ${scoresSummary.communication}`,
+    `- Stability: ${scoresSummary.stability}`,
+    `- Intimacy: ${scoresSummary.intimacy}`,
+    `- Growth: ${scoresSummary.growth}`,
+    `- Tension: ${scoresSummary.tension}`,
     ``,
-    `# Livello complessivo: ${overallScore >= 65 ? 'alto' : overallScore >= 40 ? 'intermedio' : 'basso'} (${overallScore}/100)`,
-    `Se il livello e "basso", segui le linee guida "Comportamento per punteggi bassi" del system prompt.`,
+    `# Overall level: ${overallScore >= 65 ? 'high' : overallScore >= 40 ? 'intermediate' : 'low'} (${overallScore}/100)`,
+    `If the level is "low", follow the "Behavior for low scores" guidelines in the system prompt.`,
     ``,
-    `# Ancora narrativa preferita (aspetto piu forte)`,
+    `# Preferred narrative anchor (strongest aspect)`,
     primaryAnchor,
     ``,
-    `# Altri aspetti disponibili come backup (non citarli tutti)`,
+    `# Other aspects available as backup (do not cite them all)`,
     ...aspectLines.slice(1).map((l, i) => `${i + 2}. ${l}`),
     ``,
-    `# Compito`,
-    `Scegli UNA leva narrativa (l'ancora preferita o uno dei backup, NON entrambi),`,
-    `e scrivi il teaser secondo la struttura a 4 frasi del system prompt.`,
-    `Restituisci via tool call return_synastry_teaser.`,
+    `# Task`,
+    `Choose ONE narrative lever (the preferred anchor or one of the backups, NOT both),`,
+    `and write the teaser following the 4-sentence structure from the system prompt.`,
+    `Return via the return_synastry_teaser tool call.`,
   ].join("\n");
 
   const model = "gemini-3.1-flash-lite";
@@ -298,12 +252,14 @@ async function generateTeaserHighlight(
     attempt: 1,
   };
 
+  const lang = resolvePromptLang(session.language);
+  const langName = OUTPUT_LANGUAGE_NAME[lang];
   const response = await geminiFetchWithRetry(
     JSON.stringify({
         model,
         reasoning_effort: "low",
         messages: [
-          { role: "system", content: outputLanguageDirective(resolvePromptLang(session.language)) + SYSTEM_PROMPT },
+          { role: "system", content: outputLanguageDirective(lang) + buildSynastryTeaserPrompt(langName) },
           { role: "user", content: userPrompt },
         ],
         tools: [
@@ -312,7 +268,7 @@ async function generateTeaserHighlight(
             function: {
               name: "return_synastry_teaser",
               description:
-                "Restituisce un teaser highlight italiano per la coppia.",
+                `Returns a teaser highlight for the couple, in ${langName}.`,
               parameters: {
                 type: "object",
                 properties: {
@@ -320,14 +276,14 @@ async function generateTeaserHighlight(
                     type: "string",
                     minLength: 8,
                     maxLength: 80,
-                    description: "Titolo breve, 2-6 parole, evocativo.",
+                    description: `Short, evocative title, 4-8 words, in ${langName}.`,
                   },
                   body: {
                     type: "string",
                     minLength: 200,
                     maxLength: 700,
                     description:
-                      "3-4 frasi italiane (60-90 parole) che ancorino almeno 1 aspetto concreto.",
+                      `3-4 sentences in ${langName} (~75-110 words) that anchor at least 1 concrete aspect.`,
                   },
                 },
                 required: ["title", "body"],

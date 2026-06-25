@@ -1,8 +1,9 @@
 // Lookup table per i 14 archetipi sinastria restituiti da freeastroapi /synastry.
-// Mappa ID inglese -> {label italiano, definizione breve italiana}.
-// I label tradotti (es) vivono in ARCHETYPE_LABELS, allineati al catalogo
-// frontend src/i18n/{it,es}/coppia.ts; la definizione resta italiana perché
-// alimenta solo il brief interno per Gemini, non il PDF.
+// getArchetypeMeta restituisce {label, definizione} in INGLESE (neutro): alimenta
+// SOLO il brief interno passato al modello, la cui lingua di output è imposta dalla
+// direttiva nel prompt. I label MOSTRATI all'utente (it/es) vivono in ARCHETYPE_LABELS,
+// allineati al catalogo frontend src/i18n/{it,es}/coppia.ts, e si leggono via
+// getArchetypeLabel(id, lang) — NON da qui.
 
 import type { PromptLang } from "./prompts/lang.ts";
 
@@ -29,74 +30,74 @@ export interface SynastryArchetypeMeta {
 
 const ARCHETYPES: Record<SynastryArchetypeId, SynastryArchetypeMeta> = {
   soulmates: {
-    label: "Anime affini",
+    label: "Soulmates",
     definizione:
-      "Rara combinazione di passione e durata profonda: forte intesa romantica sostenuta da una struttura stabile.",
+      "A rare combination of passion and deep endurance: a strong romantic bond sustained by a stable structure.",
   },
   kindred_spirits: {
-    label: "Spiriti affini",
+    label: "Kindred Spirits",
     definizione:
-      "Comprensione emotiva profonda con poca frizione: una sintonia che si percepisce naturale.",
+      "Deep emotional understanding with little friction: a rapport that feels natural.",
   },
   opposites_attract: {
-    label: "Opposti che si attraggono",
+    label: "Opposites Attract",
     definizione:
-      "Forte intensita romantica alimentata da differenze marcate: la tensione e parte dell'attrazione.",
+      "Strong romantic intensity fueled by marked differences: the tension is part of the attraction.",
   },
   karmic_lesson: {
-    label: "Lezione karmica",
+    label: "Karmic Lesson",
     definizione:
-      "Dinamica impegnativa nata per evolvere: chiede consapevolezza, restituisce trasformazione.",
+      "A demanding dynamic born to evolve: it asks for awareness, it returns transformation.",
   },
   steady_rock: {
-    label: "Roccia stabile",
+    label: "Steady Rock",
     definizione:
-      "Fondamenta solide e affidabilita: una coppia su cui costruire nel tempo.",
+      "Solid foundations and reliability: a couple to build on over time.",
   },
   intellectual_powerhouse: {
-    label: "Sintonia mentale potente",
+    label: "Intellectual Powerhouse",
     definizione:
-      "Connessione mentale eccezionale: idee, parole e curiosita scorrono con fluidita.",
+      "An exceptional mental connection: ideas, words and curiosity flow with ease.",
   },
   magnetic_attraction: {
-    label: "Attrazione magnetica",
+    label: "Magnetic Attraction",
     definizione:
-      "Chimica romantica e fisica dominante: l'attrazione e il filo principale.",
+      "Dominant romantic and physical chemistry: attraction is the main thread.",
   },
   long_term_anchor: {
-    label: "Ancora di lungo termine",
+    label: "Long-term Anchor",
     definizione:
-      "Una base solida su cui costruire il futuro: stabilita prima dell'effervescenza.",
+      "A solid base to build the future on: stability before effervescence.",
   },
   mental_synergy: {
-    label: "Sinergia mentale",
+    label: "Mental Synergy",
     definizione:
-      "Ottimo rapporto intellettuale: comunicazione e progettualita sono il vostro terreno comune.",
+      "An excellent intellectual rapport: communication and planning are your common ground.",
   },
   volatile_spark: {
-    label: "Scintilla volatile",
+    label: "Volatile Spark",
     definizione:
-      "Energia alta, dinamica intensa: trasformativa se accolta, faticosa se subita.",
+      "High energy, an intense dynamic: transformative if welcomed, draining if endured.",
   },
   catalyst_for_change: {
-    label: "Catalizzatore di cambiamento",
+    label: "Catalyst for Change",
     definizione:
-      "Stimolate l'espansione l'uno dell'altra: una coppia che fa muovere.",
+      "You stimulate each other's expansion: a couple that gets things moving.",
   },
   deep_bond: {
-    label: "Legame profondo",
+    label: "Deep Bond",
     definizione:
-      "Sicurezza emotiva profonda: una coppia in cui ci si sente visti senza spiegazioni.",
+      "Deep emotional security: a couple where you feel seen without explanations.",
   },
   balanced_connection: {
-    label: "Connessione equilibrata",
+    label: "Balanced Connection",
     definizione:
-      "Una miscela stabile di energie diverse: nessun tema domina, l'equilibrio e la chiave.",
+      "A stable blend of different energies: no single theme dominates, balance is the key.",
   },
   discordant_layout: {
-    label: "Configurazione dissonante",
+    label: "Discordant Layout",
     definizione:
-      "Significativa frizione che richiede uno sforzo consapevole: la coppia funziona quando entrambi lo scelgono.",
+      "Significant friction that requires conscious effort: the couple works when both choose it.",
   },
 };
 

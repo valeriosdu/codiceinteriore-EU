@@ -1,119 +1,121 @@
-// Helper per costruire la frase italiana compatta di un singolo aspetto
-// di sinastria. L'output viene poi inserito nel brief passato a Gemini.
-// Output target: "{pianeta A} {aspetto} {pianeta B} [tag1/tag2/...]: {micro-descrizione}"
+// Helper to build the compact one-line label of a single synastry aspect.
+// The output feeds the brief passed to the LLM. Labels are kept in ENGLISH
+// (neutral): the output language of the reading is set by outputLanguageDirective
+// in the prompt, so the model renders it/es from these English data labels.
+// Output shape: "{planet A} {aspect} {planet B} [tag1/tag2/...]: {micro-description}"
 
 export const PLANET_IT: Record<string, string> = {
-  sun: "Sole",
-  moon: "Luna",
-  mercury: "Mercurio",
-  venus: "Venere",
-  mars: "Marte",
-  jupiter: "Giove",
-  saturn: "Saturno",
-  uranus: "Urano",
-  neptune: "Nettuno",
-  pluto: "Plutone",
-  asc: "Ascendente",
-  mc: "Medio Cielo",
-  dsc: "Discendente",
-  ic: "Fondo Cielo",
-  true_node: "Nodo Nord",
-  mean_node: "Nodo Nord",
-  node: "Nodo Nord",
-  chiron: "Chirone",
+  sun: "Sun",
+  moon: "Moon",
+  mercury: "Mercury",
+  venus: "Venus",
+  mars: "Mars",
+  jupiter: "Jupiter",
+  saturn: "Saturn",
+  uranus: "Uranus",
+  neptune: "Neptune",
+  pluto: "Pluto",
+  asc: "Ascendant",
+  mc: "Midheaven",
+  dsc: "Descendant",
+  ic: "Imum Coeli",
+  true_node: "North Node",
+  mean_node: "North Node",
+  node: "North Node",
+  chiron: "Chiron",
   lilith: "Lilith",
   vertex: "Vertex",
 };
 
 export const ASPECT_IT: Record<string, string> = {
-  conjunction: "congiunzione a",
-  opposition: "opposizione a",
-  trine: "trigono a",
-  square: "quadrato a",
-  sextile: "sestile a",
-  quincunx: "quinconce a",
-  semisextile: "semisestile a",
-  semisquare: "semiquadrato a",
-  sesquisquare: "sesquiquadrato a",
+  conjunction: "conjunction to",
+  opposition: "opposition to",
+  trine: "trine to",
+  square: "square to",
+  sextile: "sextile to",
+  quincunx: "quincunx to",
+  semisextile: "semisextile to",
+  semisquare: "semisquare to",
+  sesquisquare: "sesquisquare to",
 };
 
 export const POLARITY_IT: Record<string, string> = {
-  supportive: "supportivo",
-  challenging: "sfidante",
-  mixed: "ambivalente",
+  supportive: "supportive",
+  challenging: "challenging",
+  mixed: "mixed",
 };
 
 export const STRENGTH_IT: Record<string, string> = {
-  very_strong: "molto_forte",
-  strong: "forte",
-  moderate: "moderato",
-  weak: "debole",
-  very_weak: "molto_debole",
+  very_strong: "very_strong",
+  strong: "strong",
+  moderate: "moderate",
+  weak: "weak",
+  very_weak: "very_weak",
 };
 
 const MICRO_DESC_BY_THEME: Record<string, string> = {
-  power: "tema di potere e intensita",
-  intensity: "carica trasformativa",
-  excitement: "scossa di novita",
-  freedom: "spinta verso lo spazio individuale",
-  structure: "tema di struttura e ruolo",
-  commitment: "vincolo, impegno, scelta",
-  wisdom: "scambio di saggezza",
-  adventure: "voglia di esplorare insieme",
-  spirituality: "vibrazione spirituale",
-  idealism: "ideali che si attraggono",
-  general_compatibility: "intesa di base",
-  emotional: "registro emotivo",
-  stability: "ancoraggio nel tempo",
-  general: "tessuto comune",
+  power: "a theme of power and intensity",
+  intensity: "a transformative charge",
+  excitement: "a jolt of novelty",
+  freedom: "a push toward individual space",
+  structure: "a theme of structure and roles",
+  commitment: "bond, commitment, choice",
+  wisdom: "an exchange of wisdom",
+  adventure: "a wish to explore together",
+  spirituality: "a spiritual undertone",
+  idealism: "ideals that attract each other",
+  general_compatibility: "a baseline rapport",
+  emotional: "an emotional register",
+  stability: "an anchoring over time",
+  general: "common ground",
 };
 
 const MICRO_DESC_BY_PAIR: Record<string, string> = {
-  "sun-moon": "matrimonio dell'anima",
-  "moon-sun": "matrimonio dell'anima",
-  "venus-mars": "chimica fisica e desiderio",
-  "mars-venus": "chimica fisica e desiderio",
-  "venus-saturn": "amore che chiede maturazione",
-  "saturn-venus": "amore che chiede maturazione",
-  "sun-saturn": "ruolo paterno o lezione di autorita",
-  "saturn-sun": "ruolo paterno o lezione di autorita",
-  "moon-saturn": "lezione emotiva, contenimento",
-  "saturn-moon": "lezione emotiva, contenimento",
-  "venus-pluto": "amore trasformativo",
-  "pluto-venus": "amore trasformativo",
-  "mars-pluto": "intensita di volonta e desiderio",
-  "pluto-mars": "intensita di volonta e desiderio",
-  "moon-pluto": "profondita emotiva senza filtri",
-  "pluto-moon": "profondita emotiva senza filtri",
-  "sun-pluto": "trasformazione dell'identita",
-  "pluto-sun": "trasformazione dell'identita",
-  "mercury-mercury": "lingua comune o dialogo che cerca traduzione",
-  "moon-moon": "ritmo emotivo condiviso o da accordare",
-  "venus-venus": "estetica e modi di amare a confronto",
-  "mars-mars": "stili di azione che si chiamano",
-  "sun-venus": "calore e affetto",
-  "venus-sun": "calore e affetto",
-  "moon-venus": "tenerezza e cura",
-  "venus-moon": "tenerezza e cura",
-  "mercury-venus": "parole d'amore",
-  "venus-mercury": "parole d'amore",
-  "sun-mars": "energia e iniziativa",
-  "mars-sun": "energia e iniziativa",
-  "jupiter-venus": "espansione gioiosa",
-  "venus-jupiter": "espansione gioiosa",
-  "saturn-saturn": "tema generazionale di struttura",
-  "node-sun": "incontro che porta destino",
-  "sun-node": "incontro che porta destino",
-  "node-moon": "famiglia karmica",
-  "moon-node": "famiglia karmica",
-  "node-venus": "amore che porta destino",
-  "venus-node": "amore che porta destino",
-  "chiron-venus": "ferita d'amore guarita insieme",
-  "venus-chiron": "ferita d'amore guarita insieme",
-  "lilith-mars": "ombra sessuale che si attiva",
-  "mars-lilith": "ombra sessuale che si attiva",
-  "vertex-venus": "incontro fatato",
-  "venus-vertex": "incontro fatato",
+  "sun-moon": "soul marriage",
+  "moon-sun": "soul marriage",
+  "venus-mars": "physical chemistry and desire",
+  "mars-venus": "physical chemistry and desire",
+  "venus-saturn": "love that asks for maturation",
+  "saturn-venus": "love that asks for maturation",
+  "sun-saturn": "a paternal role or a lesson in authority",
+  "saturn-sun": "a paternal role or a lesson in authority",
+  "moon-saturn": "an emotional lesson, containment",
+  "saturn-moon": "an emotional lesson, containment",
+  "venus-pluto": "transformative love",
+  "pluto-venus": "transformative love",
+  "mars-pluto": "intensity of will and desire",
+  "pluto-mars": "intensity of will and desire",
+  "moon-pluto": "unfiltered emotional depth",
+  "pluto-moon": "unfiltered emotional depth",
+  "sun-pluto": "transformation of identity",
+  "pluto-sun": "transformation of identity",
+  "mercury-mercury": "a shared language, or a dialogue that seeks translation",
+  "moon-moon": "a shared emotional rhythm, or one to be tuned",
+  "venus-venus": "aesthetics and ways of loving compared",
+  "mars-mars": "styles of action that call to each other",
+  "sun-venus": "warmth and affection",
+  "venus-sun": "warmth and affection",
+  "moon-venus": "tenderness and care",
+  "venus-moon": "tenderness and care",
+  "mercury-venus": "words of love",
+  "venus-mercury": "words of love",
+  "sun-mars": "energy and initiative",
+  "mars-sun": "energy and initiative",
+  "jupiter-venus": "joyful expansion",
+  "venus-jupiter": "joyful expansion",
+  "saturn-saturn": "a generational theme of structure",
+  "node-sun": "a meeting that carries destiny",
+  "sun-node": "a meeting that carries destiny",
+  "node-moon": "a karmic family",
+  "moon-node": "a karmic family",
+  "node-venus": "love that carries destiny",
+  "venus-node": "love that carries destiny",
+  "chiron-venus": "a wound in love healed together",
+  "venus-chiron": "a wound in love healed together",
+  "lilith-mars": "a sexual shadow that gets activated",
+  "mars-lilith": "a sexual shadow that gets activated",
+  "vertex-venus": "a fated encounter",
+  "venus-vertex": "a fated encounter",
 };
 
 function pickMicroDesc(p1: string, p2: string, themes: string[]): string {
@@ -124,7 +126,7 @@ function pickMicroDesc(p1: string, p2: string, themes: string[]): string {
   for (const t of themes) {
     if (MICRO_DESC_BY_THEME[t]) return MICRO_DESC_BY_THEME[t];
   }
-  return "contatto significativo";
+  return "a significant contact";
 }
 
 export interface AspectInput {
@@ -153,7 +155,7 @@ export function formatAspectForBrief(
   const tagPolarity = POLARITY_IT[asp.polarity ?? ""] ?? asp.polarity ?? "";
   const tagCategories = (asp.categories ?? []).join("+") || "general";
   const tagThemes = themes.length > 0 ? themes.join("+") : "general";
-  const tagApplying = asp.applying === true ? "applicativo" : asp.applying === false ? "separativo" : "";
+  const tagApplying = asp.applying === true ? "applying" : asp.applying === false ? "separating" : "";
   const tagConf =
     typeof asp.polarity_confidence === "number"
       ? `conf:${asp.polarity_confidence.toFixed(1)}`
@@ -165,5 +167,5 @@ export function formatAspectForBrief(
 
   const micro = pickMicroDesc(asp.a_point, asp.b_point, themes);
 
-  return `${planetA} di ${personANameShort} ${aspectIt} ${planetB} di ${personBNameShort} [${tags}]: ${micro}`;
+  return `${planetA} of ${personANameShort} ${aspectIt} ${planetB} of ${personBNameShort} [${tags}]: ${micro}`;
 }

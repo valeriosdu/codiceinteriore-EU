@@ -4,17 +4,17 @@
 
 import type { SynastryBrief } from "./synastry-brief.ts";
 
-const BLOCCO_1_PERSONA = `## Identity
+const blocco1Persona = (langName: string): string => `## Identity
 
-You are an expert Italian astrologer in the tradition of Stephen Arroyo and Sue Tompkins: deep but never catastrophic, always centered on the couple, never oracular. Write as if speaking to a real person who paid to understand their relationship, not to be entertained. Your authority comes from grounding in concrete planetary contacts, not from emphasis.
+You are an expert astrologer in the tradition of Stephen Arroyo and Sue Tompkins: deep but never catastrophic, always centered on the couple, never oracular. Write as if speaking to a real person who paid to understand their relationship, not to be entertained. Your authority comes from grounding in concrete planetary contacts, not from emphasis.
 
-Write in natural Italian only. The tone must be human, lucid, emotionally precise, sober, grounded, and credible. Do not sound mystical, inflated, generic, new-age, or like horoscope content. Do not flatter. Do not make deterministic predictions. Use astrology as a tool for synthesis, meaning, and psychological clarity about the relationship.`;
+Write in natural ${langName} only. The tone must be human, lucid, emotionally precise, sober, grounded, and credible. Do not sound mystical, inflated, generic, new-age, or like horoscope content. Do not flatter. Do not make deterministic predictions. Use astrology as a tool for synthesis, meaning, and psychological clarity about the relationship.`;
 
-const BLOCCO_GENERE = `## Gender inference and agreement
+const bloccoGenere = (langName: string): string => `## Gender inference and agreement
 
 Before writing anything, infer the most likely gender of each person from their first name (the first token of entries A and B in the brief). Apply this silently: never state, hint at, or explain the inference, and never mention gender, sexual orientation, or the assumption you made. The reader must only see natural, correct language, never a declaration about it.
 
-Use the inference solely to apply grammatically correct Italian agreement (adjectives, past participles, pronouns) when you refer to one of the two individually. Two women, two men, or a mixed couple are all valid: match the agreement to the two inferred genders (two feminine names lead to feminine agreement for both, two masculine names to masculine agreement for both). Keep "voi" and "entrambi/entrambe" as the default register; use individual gendered references when they add clarity, always with the inferred agreement.
+Use the inference solely to apply grammatically correct ${langName} agreement (adjectives, past participles, pronouns) when you refer to one of the two individually. Two women, two men, or a mixed couple are all valid: match the agreement to the two inferred genders (two feminine names lead to feminine agreement for both, two masculine names to masculine agreement for both). Keep "voi" and "entrambi/entrambe" as the default register; use individual gendered references when they add clarity, always with the inferred agreement.
 
 If a first name is ambiguous, unisex, or foreign and you cannot infer the gender with reasonable confidence, default to a man and a woman. Stay coherent throughout: never let the agreement for the same person shift partway through the report.
 
@@ -91,7 +91,7 @@ ${gapBlock}
 ${durataBlock}`.trim();
 }
 
-function blocco5OraNascita(brief: SynastryBrief): string {
+function blocco5OraNascita(brief: SynastryBrief, langName: string): string {
   const aMissing = !brief.note_contesto.ora_nascita_a_known;
   const bMissing = !brief.note_contesto.ora_nascita_b_known;
   if (!aMissing && !bMissing) return "";
@@ -102,12 +102,20 @@ function blocco5OraNascita(brief: SynastryBrief): string {
       ? brief.persone.a.split(",")[0]
       : brief.persone.b.split(",")[0];
 
+  // Per-language declaration: this sentence is emitted verbatim in the report,
+  // so it must already be in the output language (not translated by the model).
+  const declarations: Record<string, string> = {
+    Italian: `"Senza l'ora esatta di ${who}, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di ${who} non sono nel quadro."`,
+    Spanish: `"Sin la hora exacta de ${who}, esta lectura se centra en los contactos planetarios, que son la columna vertebral de la sinastría. Las casas y el ascendente de ${who} no están en el cuadro."`,
+  };
+  const declaration = declarations[langName] ?? declarations.Italian;
+
   return `## Unknown birth time
 
-The birth time of ${who} is not known. In ritratto_coppia, declare this honestly using this Italian sentence: "Senza l'ora esatta di ${who}, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di ${who} non sono nel quadro."
+The birth time of ${who} is not known. In ritratto_coppia, declare this honestly, in ${langName}, using this exact sentence: ${declaration}
 
 - Do NOT mention house overlays for the person with unknown birth time.
-- Do NOT use terms like "incompleto" or "parziale" that devalue the product.
+- Do NOT use terms equivalent to "incomplete" or "partial" that devalue the product.
 - Focus on planetary contacts, which remain fully valid.`;
 }
 
@@ -118,7 +126,7 @@ const BLOCCO_6_THREADING = `## Narrative threading and anti-repetition
 - Sections are distinct, never paraphrases. If a theme reappears, deepen it from a new angle. "sfide" does not restate "ritratto_coppia" in new words; "mondo_emotivo" does not repeat "attrazione_chimica"; "direzione" does not summarize — it converts insight into orientation.
 - Close direzione (section 7) by returning to the archetype with new light, after traversing challenges and stability.`;
 
-const BLOCCO_7_SCHEMA = `## Output
+const blocco7Schema = (langName: string): string => `## Output
 
 Use the tool call return_synastry_report. It has two parts: an apertura object and 7 section strings.
 
@@ -128,7 +136,7 @@ Before writing the 7 narrative sections, produce apertura: four dry sentences, o
 
 ### 7 narrative sections
 
-Each field must be a block of Italian text, approximately 400-450 words, in fluid and accessible prose (NOT bullet points). Write as if speaking to a real couple, not compiling a dossier. Total target: approximately 3,000 words across all 7 sections.
+Each field must be a block of ${langName} text, approximately 400-450 words, in fluid and accessible prose (NOT bullet points). Write as if speaking to a real couple, not compiling a dossier. Total target: approximately 3,000 words across all 7 sections.
 
 Section guidance — what matters psychologically for each:
 
@@ -142,7 +150,7 @@ Section guidance — what matters psychologically for each:
 
 ### Chiusura poetica (poesia_chiusura)
 
-After the 7 narrative sections, produce a closing poem in Italian. This is an exhale from the analytical reading: the couple stepping out of the report and back into their life. NOT a summary, NOT a teaser, NOT an inspirational quote.
+After the 7 narrative sections, produce a closing poem in ${langName}. This is an exhale from the analytical reading: the couple stepping out of the report and back into their life. NOT a summary, NOT a teaser, NOT an inspirational quote.
 
 - Length: 12 to 16 lines total, organized in 2 stanzas separated by a blank line.
 - Format: free verse. Use \n between lines within a stanza and \n\n between the two stanzas.
@@ -151,28 +159,29 @@ After the 7 narrative sections, produce a closing poem in Italian. This is an ex
 - Tone: same editorial line as the rest (Aesop, Kinfolk). Sober, never decorative or sentimental. No exclamation marks, no em-dashes, no metaphors from the BANNED list. Prefer organic-natural imagery (terrain, fabric, light, season, water, walking, fire, threshold).
 - Closing line: a line that lets the reader put the report down. Not a moral, not a recommendation. A landing.`;
 
-export function buildSynastrySystemPrompt(brief: SynastryBrief): string {
+export function buildSynastrySystemPrompt(brief: SynastryBrief, langName: string): string {
   return [
-    BLOCCO_1_PERSONA,
-    BLOCCO_GENERE,
+    blocco1Persona(langName),
+    bloccoGenere(langName),
     BLOCCO_2_STILE,
     BLOCCO_3_BLACKLIST,
     blocco4Eta(brief),
-    blocco5OraNascita(brief),
+    blocco5OraNascita(brief, langName),
     BLOCCO_6_THREADING,
-    BLOCCO_7_SCHEMA,
+    blocco7Schema(langName),
   ]
     .filter((s) => s.trim().length > 0)
     .join("\n\n");
 }
 
 /** Tool call schema for return_synastry_report with word count constraints. */
-export const SYNASTRY_REPORT_TOOL = {
+export function buildSynastryReportTool(langName: string) {
+  return {
   type: "function" as const,
   function: {
     name: "return_synastry_report",
     description:
-      "Restituisce il report sinastria in italiano: apertura (4 frasi-mappa) + 7 sezioni in prosa (~400-450 parole ciascuna).",
+      `Restituisce il report sinastria in ${langName}: apertura (4 frasi-mappa) + 7 sezioni in prosa (~400-450 parole ciascuna).`,
     parameters: {
       type: "object",
       properties: {
@@ -255,7 +264,7 @@ export const SYNASTRY_REPORT_TOOL = {
           minLength: 200,
           maxLength: 1500,
           description:
-            "Poesia di chiusura in italiano: 12-16 righe in versi liberi, 2 strofe separate da riga vuota (\\n\\n) e righe interne separate da \\n. Voce rivolta alla coppia (voi). Immagini concrete, niente pianeti / segni / aspetti, niente nome dell'archetipo letterale. Sobria, mai sentimentale, una *uscita* dal racconto.",
+            `Poesia di chiusura in ${langName}: 12-16 righe in versi liberi, 2 strofe separate da riga vuota (\\n\\n) e righe interne separate da \\n. Voce rivolta alla coppia (voi). Immagini concrete, niente pianeti / segni / aspetti, niente nome dell'archetipo letterale. Sobria, mai sentimentale, una *uscita* dal racconto.`,
         },
       },
       required: [
@@ -272,46 +281,47 @@ export const SYNASTRY_REPORT_TOOL = {
       additionalProperties: false,
     },
   },
-};
+  };
+}
 
-/** User prompt: the Italian brief serialized. */
-export function buildSynastryUserPrompt(brief: SynastryBrief): string {
+/** User prompt: the brief serialized. */
+export function buildSynastryUserPrompt(brief: SynastryBrief, langName: string): string {
   return [
-    "## Brief della coppia",
+    "## Couple brief",
     "",
-    "### Persone",
+    "### People",
     `A: ${brief.persone.a}`,
     `B: ${brief.persone.b}`,
     "",
-    "### Contesto",
-    `Eta: ${brief.note_contesto.eta_a} (A), ${brief.note_contesto.eta_b} (B); differenza ${brief.note_contesto.differenza_eta} anni; fascia ${brief.note_contesto.fascia_eta_coppia}${brief.note_contesto.gap_significativo ? " (gap significativo)" : ""}.`,
-    brief.note_contesto.durata_relazione ? `Durata relazione: ${brief.note_contesto.durata_relazione}.` : "",
-    `Ora nascita nota: A=${brief.note_contesto.ora_nascita_a_known}, B=${brief.note_contesto.ora_nascita_b_known}.`,
+    "### Context",
+    `Ages: ${brief.note_contesto.eta_a} (A), ${brief.note_contesto.eta_b} (B); difference ${brief.note_contesto.differenza_eta} years; band ${brief.note_contesto.fascia_eta_coppia}${brief.note_contesto.gap_significativo ? " (significant gap)" : ""}.`,
+    brief.note_contesto.durata_relazione ? `Relationship duration: ${brief.note_contesto.durata_relazione}.` : "",
+    `Birth time known: A=${brief.note_contesto.ora_nascita_a_known}, B=${brief.note_contesto.ora_nascita_b_known}.`,
     "",
-    "### Archetipo della coppia",
+    "### Couple archetype",
     `${brief.archetipo.nome} (${brief.archetipo.id}): ${brief.archetipo.definizione_breve}`,
     "",
     "### Scores 0-100",
-    `Sintonia emotiva: ${brief.scores.sintonia_emotiva}`,
-    `Attrazione: ${brief.scores.attrazione}`,
-    `Comunicazione: ${brief.scores.comunicazione}`,
-    `Stabilita: ${brief.scores.stabilita}`,
-    `Crescita: ${brief.scores.crescita}`,
-    `Tensione: ${brief.scores.tensione}`,
+    `Emotional attunement: ${brief.scores.sintonia_emotiva}`,
+    `Attraction: ${brief.scores.attrazione}`,
+    `Communication: ${brief.scores.comunicazione}`,
+    `Stability: ${brief.scores.stabilita}`,
+    `Growth: ${brief.scores.crescita}`,
+    `Tension: ${brief.scores.tensione}`,
     "",
-    "### Aspetti chiave (top 12, ordinati per forza)",
+    "### Key aspects (top 12, ordered by strength)",
     ...brief.aspetti_chiave.map((a, i) => `${i + 1}. ${a}`),
     "",
-    "### Case significative (top overlay)",
+    "### Significant houses (top overlays)",
     ...brief.case_significative.map((o, i) => `${i + 1}. ${o}`),
     "",
-    "### Punti di forza (oltre i top 12)",
+    "### Strengths (beyond the top 12)",
     ...brief.punti_forza.map((p, i) => `${i + 1}. ${p}`),
     "",
-    "### Sfide (oltre i top 12)",
+    "### Challenges (beyond the top 12)",
     ...brief.sfide.map((s, i) => `${i + 1}. ${s}`),
     "",
-    "Now write the report in Italian using the return_synastry_report tool call. First produce the apertura (4 dry sentences), then the 7 narrative sections (~400-450 words each). Remember: human tone, accessible, never like a manual. Vary the register within each section.",
+    `Now write the report in ${langName} using the return_synastry_report tool call. First produce the apertura (4 dry sentences), then the 7 narrative sections (~400-450 words each). Remember: human tone, accessible, never like a manual. Vary the register within each section.`,
   ]
     .filter((l) => l !== "")
     .join("\n");

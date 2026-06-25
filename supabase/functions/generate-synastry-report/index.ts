@@ -17,10 +17,10 @@ import { buildSynastryBrief, BirthData } from "../_shared/synastry-brief.ts";
 import {
   buildSynastrySystemPrompt,
   buildSynastryUserPrompt,
-  SYNASTRY_REPORT_TOOL,
+  buildSynastryReportTool,
 } from "../_shared/synastry-system-prompt.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
-import { resolvePromptLang, outputLanguageDirective } from "../_shared/prompts/lang.ts";
+import { resolvePromptLang, outputLanguageDirective, OUTPUT_LANGUAGE_NAME } from "../_shared/prompts/lang.ts";
 import {
   LLM_CHAT_COMPLETIONS_URL,
   LONG_REPORT_MODEL,
@@ -174,8 +174,10 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
   });
 
   const lang = resolvePromptLang(session.language);
-  const systemPrompt = outputLanguageDirective(lang) + buildSynastrySystemPrompt(brief);
-  const userPrompt = buildSynastryUserPrompt(brief);
+  const langName = OUTPUT_LANGUAGE_NAME[lang];
+  const systemPrompt = outputLanguageDirective(lang) + buildSynastrySystemPrompt(brief, langName);
+  const userPrompt = buildSynastryUserPrompt(brief, langName);
+  const synastryTool = buildSynastryReportTool(langName);
 
   if (!getLlmApiKey()) throw new Error("AI not configured (OPENROUTER_API_KEY missing)");
 
@@ -190,9 +192,9 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     response_format: {
       type: "json_schema",
       json_schema: {
-        name: SYNASTRY_REPORT_TOOL.function.name,
+        name: synastryTool.function.name,
         strict: true,
-        schema: SYNASTRY_REPORT_TOOL.function.parameters,
+        schema: synastryTool.function.parameters,
       },
     },
   };

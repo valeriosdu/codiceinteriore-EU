@@ -1,65 +1,66 @@
-// Helper per interpretare un house overlay sinastria.
-// Input: {planet, house} -> output frase italiana che descrive cosa significa
-// avere il pianeta dell'altro nella propria casa.
+// Helper to interpret a synastry house overlay.
+// Input: {planet, house} -> an ENGLISH sentence describing what it means to
+// have the other person's planet in your house. Labels are kept in English
+// (neutral): the reading's output language is set by the prompt directive.
 //
-// Le case sinastriche piu rilevanti sono 1, 4, 5, 7, 8, 10, 11, 12.
+// The most relevant synastry houses are 1, 4, 5, 7, 8, 10, 11, 12.
 
 import { PLANET_IT } from "./synastry-aspect-labels.ts";
 
 const HOUSE_THEMES: Record<number, string> = {
-  1: "presenza che modella come ti mostri al mondo",
-  2: "presenza che tocca cio che dai valore (denaro, autostima, corpo)",
-  3: "presenza nella tua comunicazione quotidiana",
-  4: "presenza nelle radici, nella casa, nella tua intimita piu profonda",
-  5: "presenza in cio che ti rende vivo: gioco, creativita, romance",
-  6: "presenza nella tua quotidianita, nelle abitudini, nel lavoro routinario",
-  7: "presenza nel ruolo di partner naturale: ti completa o ti specchia",
-  8: "presenza nella tua zona piu nascosta: sessualita, denaro condiviso, trasformazione",
-  9: "presenza in cio che cerchi (viaggi, fede, visione del mondo)",
-  10: "presenza nella tua vocazione, nel modo in cui ti realizzi pubblicamente",
-  11: "presenza nelle amicizie, nei sogni, nella comunita scelta",
-  12: "presenza nella tua zona di mistero: spiritualita, sogni, inconscio",
+  1: "a presence that shapes how you show yourself to the world",
+  2: "a presence that touches what you value (money, self-worth, body)",
+  3: "a presence in your everyday communication",
+  4: "a presence in your roots, your home, your deepest intimacy",
+  5: "a presence in what makes you feel alive: play, creativity, romance",
+  6: "a presence in your daily life, your habits, your routine work",
+  7: "a presence in the role of natural partner: it completes you or mirrors you",
+  8: "a presence in your most hidden zone: sexuality, shared money, transformation",
+  9: "a presence in what you seek (travel, faith, worldview)",
+  10: "a presence in your vocation, in how you fulfill yourself publicly",
+  11: "a presence in your friendships, your dreams, your chosen community",
+  12: "a presence in your zone of mystery: spirituality, dreams, the unconscious",
 };
 
 const PLANET_IMPACT: Record<string, string> = {
-  sun: "porta luce e calore",
-  moon: "porta emotivita e cura",
-  mercury: "porta scambio e parole",
-  venus: "porta affetto e bellezza",
-  mars: "porta movimento e desiderio",
-  jupiter: "porta espansione e fortuna",
-  saturn: "porta struttura e disciplina",
-  uranus: "porta scossa e cambiamento",
-  neptune: "porta sogno e idealizzazione",
-  pluto: "porta intensita e trasformazione",
-  asc: "porta una nuova versione di se",
-  mc: "porta vocazione",
-  true_node: "porta una direzione di crescita",
-  node: "porta una direzione di crescita",
-  chiron: "porta una ferita da guarire insieme",
-  lilith: "porta l'ombra e l'attrazione tabu",
-  vertex: "porta un incontro destinico",
+  sun: "brings light and warmth",
+  moon: "brings emotion and care",
+  mercury: "brings exchange and words",
+  venus: "brings affection and beauty",
+  mars: "brings movement and desire",
+  jupiter: "brings expansion and luck",
+  saturn: "brings structure and discipline",
+  uranus: "brings a jolt and change",
+  neptune: "brings dream and idealization",
+  pluto: "brings intensity and transformation",
+  asc: "brings a new version of the self",
+  mc: "brings vocation",
+  true_node: "brings a direction of growth",
+  node: "brings a direction of growth",
+  chiron: "brings a wound to heal together",
+  lilith: "brings the shadow and taboo attraction",
+  vertex: "brings a fated encounter",
 };
 
 export interface HouseOverlayInput {
   planet: string;
   house: number;
-  /** Chi ha il pianeta (es. nome persona A) */
+  /** Who has the planet (e.g. person A's name) */
   fromPersonName: string;
-  /** Chi possiede la casa (es. nome persona B) */
+  /** Who owns the house (e.g. person B's name) */
   toPersonName: string;
 }
 
 export function formatHouseOverlayForBrief(overlay: HouseOverlayInput): string {
   const planetIt = PLANET_IT[overlay.planet] ?? overlay.planet;
-  const impact = PLANET_IMPACT[overlay.planet] ?? "porta la sua energia";
-  const houseTheme = HOUSE_THEMES[overlay.house] ?? `nella casa ${overlay.house}`;
-  return `${planetIt} di ${overlay.fromPersonName} in casa ${overlay.house} di ${overlay.toPersonName}: ${impact} ${houseTheme}`;
+  const impact = PLANET_IMPACT[overlay.planet] ?? "brings its energy";
+  const houseTheme = HOUSE_THEMES[overlay.house] ?? `in house ${overlay.house}`;
+  return `${planetIt} of ${overlay.fromPersonName} in house ${overlay.house} of ${overlay.toPersonName}: ${impact}, ${houseTheme}`;
 }
 
 /**
- * Punteggio di "rilevanza narrativa" di un house overlay.
- * I pianeti personali in case angolari (1,4,7,10) e relazionali (5,7,8) contano di piu.
+ * Narrative-relevance score of a house overlay.
+ * Personal planets in angular houses (1,4,7,10) and relational houses (5,7,8) weigh more.
  */
 export function houseOverlayRelevance(planet: string, house: number): number {
   const personal = new Set(["sun", "moon", "mercury", "venus", "mars", "asc", "mc"]);

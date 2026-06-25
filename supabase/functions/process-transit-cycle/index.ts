@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
-import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
+import { resolvePromptLang, outputLanguageDirective, OUTPUT_LANGUAGE_NAME, type PromptLang } from "../_shared/prompts/lang.ts";
 import {
   LLM_CHAT_COMPLETIONS_URL,
   LONG_REPORT_MODEL,
@@ -692,7 +692,7 @@ async function fetchMonthlyTransits(cycle: TransitCycle) {
   };
 }
 
-const TRANSIT_INTERPRETATION_PROMPT = `You are an expert astrologer-writer producing a refined monthly transit reading in Italian.
+const buildTransitInterpretationPrompt = (langName: string): string => `You are an expert astrologer-writer producing a refined monthly transit reading in ${langName}.
 
 Tone: sobrio, psicologicamente credibile, specifico per questa persona.
 Avoid: toni mistici/profetici, lusinghe al lettore, predizioni deterministiche.
@@ -702,7 +702,7 @@ Astrology is a tool for synthesis, timing, and psychological clarity — not pro
 MAIN GOAL
 ========================
 
-Generate a premium monthly transit reading in Italian based on:
+Generate a premium monthly transit reading in ${langName} based on:
 
 1. A partially filtered natal chart input
 2. A transit snapshot dataset already filtered upstream
@@ -970,7 +970,7 @@ Label them exactly:
 - Periodo 4
 
 For each period:
-- indicate the real date range in Italian
+- indicate the real date range in ${langName}
 - describe the dominant climate
 - show whether the main themes are at the beginning, ongoing, intensifying, peaking, easing, or still active from the previous period
 
@@ -991,16 +991,16 @@ context for reading current transits, never an event to project forward).
 If something the reader might naturally wonder about sits outside the
 window — their birthday in a later month, a topic in focusArea that points
 to a date beyond the cycle, an upcoming season or anniversary — surface
-this plainly in Italian inside the reading (most naturally in closing.text
+this plainly in ${langName} inside the reading (most naturally in closing.text
 or in the closing sentence of summary.overall_reading) rather than
-pretending the transits cover it. Use phrasing like:
+pretending the transits cover it. Express this idea naturally in ${langName}
+(do NOT copy any example verbatim): the transits for that later period are not
+available yet; this reading covers up to [final date]; the next cycle will open
+on the following days.
 
-  "I transiti per quel periodo non sono ancora disponibili: questa
-   lettura copre fino al [data finale]. Il prossimo ciclo si aprirà sui
-   giorni successivi."
-
-Format [data finale] in Italian (es. "17 giugno") using the last entry of
-snapshot_dates. Never invent transit content beyond that date.
+Format [final date] in ${langName} (e.g. "17 giugno" in Italian, "17 de junio"
+in Spanish) using the last entry of snapshot_dates. Never invent transit
+content beyond that date.
 
 If nothing in the natal context, focusArea, or themes legitimately raises
 a beyond-window question, do not mention the boundary — silence is fine.
@@ -1011,7 +1011,7 @@ HOW TO WRITE EACH PERIOD
 
 Each period must be a real mini-reading, not a caption. Treat it like a
 short essay on the central dynamic of those days. Aim for roughly 300
-words of substantive Italian prose — not by padding, but by genuinely
+words of substantive ${langName} prose — not by padding, but by genuinely
 exploring multiple angles of the same situation.
 
 Cover these angles (not as a checklist — weave them together):
@@ -1042,12 +1042,12 @@ What NOT to do (these would inflate without adding depth):
 WRITING STYLE
 ========================
 
-Write entirely in Italian. You may name planets and aspects for credibility
+Write entirely in ${langName}. You may name planets and aspects for credibility
 (es. "Saturno in quadratura al Sole natale"), but translate immediately
 into human meaning. Don't turn the output into an aspect list, don't
 overload with jargon, don't explain astrology itself.
 
-Address the reader as "tu" throughout (Italian informal second-person
+Address the reader as "tu" throughout (${langName} informal second-person
 singular). Use "tu sei", "la tua Venere", "ti accorgi", "senti che", etc.
 NEVER refer to the reader in third person ("il lettore", "questa persona",
 "il soggetto", "chi legge", "il/la nativo/a") or as "voi". The reading is
@@ -1358,7 +1358,7 @@ async function interpretTransits(
     reasoning: { effort: "medium" },
     max_tokens: 32768,
     messages: [
-      { role: "system", content: outputLanguageDirective(lang) + TRANSIT_INTERPRETATION_PROMPT },
+      { role: "system", content: outputLanguageDirective(lang) + buildTransitInterpretationPrompt(OUTPUT_LANGUAGE_NAME[lang]) },
       {
         role: "user",
         content: `NATAL INPUT:\n${JSON.stringify(llmInput.natal_input)}\n\nTRANSIT INPUT:\n${JSON.stringify(llmInput.transit_input)}`,

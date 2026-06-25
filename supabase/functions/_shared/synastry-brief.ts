@@ -1,7 +1,7 @@
-// buildSynastryBrief: monta il brief italiano compatto che viene passato a
-// Gemini Pro per la generazione del report sinastria. Il brief NON contiene
-// raw JSON o testo inglese da Cards: solo dati strutturali + frasi italiane
-// pre-formattate dai lookup table.
+// buildSynastryBrief: assembles the compact brief passed to the model for the
+// synastry report. The brief holds structural data + short ENGLISH labels
+// pre-formatted from the lookup tables (neutral): the report's output language
+// is set by the prompt directive, not by these labels.
 
 import { calcolaEta, fasciaEtaCoppia, gapSignificativo, FasciaEta } from "./synastry-age-bands.ts";
 import { formatAspectForBrief, AspectInput, PLANET_IT } from "./synastry-aspect-labels.ts";
@@ -10,14 +10,14 @@ import { topAspects, topSupportive, topChallenging } from "./synastry-derive.ts"
 import { getArchetypeMeta } from "./synastry-archetypes.ts";
 
 const SIGN_IT: Record<string, string> = {
-  Ari: "Ariete", Tau: "Toro", Gem: "Gemelli", Can: "Cancro",
-  Leo: "Leone", Vir: "Vergine", Lib: "Bilancia", Sco: "Scorpione",
-  Sag: "Sagittario", Cap: "Capricorno", Aqu: "Acquario", Pis: "Pesci",
+  Ari: "Aries", Tau: "Taurus", Gem: "Gemini", Can: "Cancer",
+  Leo: "Leo", Vir: "Virgo", Lib: "Libra", Sco: "Scorpio",
+  Sag: "Sagittarius", Cap: "Capricorn", Aqu: "Aquarius", Pis: "Pisces",
 };
 
 const MONTH_IT = [
-  "gen", "feb", "mar", "apr", "mag", "giu",
-  "lug", "ago", "set", "ott", "nov", "dic",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
 export interface BirthData {
@@ -87,10 +87,10 @@ function personLine(p: BirthData, chart: any, eta: number): string {
   const asc = extractSignFromChart(chart, "asc");
 
   const segs = [
-    `${p.name}, ${eta} anni, ${shortDate(p.birthDate)}`,
+    `${p.name}, ${eta} years old, ${shortDate(p.birthDate)}`,
   ];
-  if (sun) segs.push(`Sole ${sun}`);
-  if (moon) segs.push(`Luna ${moon}`);
+  if (sun) segs.push(`Sun ${sun}`);
+  if (moon) segs.push(`Moon ${moon}`);
   if (asc && p.timeKnown) segs.push(`Asc ${asc}`);
   return segs.join(", ");
 }
