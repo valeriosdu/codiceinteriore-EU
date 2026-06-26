@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
+import { useMetaConversions } from "@/hooks/useMetaConversions";
 import { isLovablePreview, DEMO_EMAIL } from "@/lib/preview-mode";
 import { useI18n } from "@/i18n/I18nProvider";
 import { MARKET } from "@/markets";
@@ -16,7 +17,8 @@ const Activate = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { updateData } = useQuiz();
+  const { data, updateData } = useQuiz();
+  const { trackCompleteRegistration } = useMetaConversions();
   const { m } = useI18n();
   const a = m.activate;
 
@@ -48,6 +50,7 @@ const Activate = () => {
   const [authChecking, setAuthChecking] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const redirectStarted = useRef(false);
+  const registrationTrackedRef = useRef(false);
   const stripeSessionIdRef = useRef("");
   const quizSessionIdRef = useRef("");
   const purchaseTypeRef = useRef<"base" | "premium" | null>(null);
@@ -112,6 +115,36 @@ const Activate = () => {
       purchaseType?: "base" | "premium";
       reportReady?: boolean;
     };
+  };
+
+  // Meta CompleteRegistration: fire once per user (localStorage-guarded so a
+  // returning sign-in on the same device doesn't re-fire). Pulls nome/cognome/
+  // email from the Google OAuth profile when available for advanced matching.
+  const fireCompleteRegistration = async (userId: string) => {
+    if (registrationTrackedRef.current) return;
+    registrationTrackedRef.current = true;
+    try {
+      const storageKey = `ci_meta_creg_${userId}`;
+      if (localStorage.getItem(storageKey)) return;
+      const { data: authData } = await supabase.auth.getUser();
+      const u = authData.user;
+      if (!u) return;
+      const meta = (u.user_metadata || {}) as Record<string, string | undefined>;
+      const fullName = meta.full_name || meta.name || "";
+      const parts = fullName.trim().split(/\s+/).filter(Boolean);
+      const firstName = meta.given_name || parts[0] || data.userName || undefined;
+      const lastName = meta.family_name || (parts.length > 1 ? parts.slice(1).join(" ") : undefined);
+      trackCompleteRegistration({
+        email: u.email || email || undefined,
+        firstName,
+        lastName,
+        externalId: quizSessionIdRef.current || u.id,
+        birthDate: data.birthDate,
+      });
+      localStorage.setItem(storageKey, "1");
+    } catch (err) {
+      console.error("Meta CompleteRegistration tracking failed (non-blocking):", err);
+    }
   };
 
   const saveProfileAndRedirect = async (userId: string) => {
@@ -332,6 +365,7 @@ const Activate = () => {
     }
 
     if (data.session && data.user) {
+      void fireCompleteRegistration(data.user.id);
       await saveProfileAndRedirect(data.user.id);
     } else {
       toast(a.toasts.checkEmailConfirm);
@@ -396,6 +430,7 @@ const Activate = () => {
     };
 
     const finishRedirect = (userId: string) => {
+      void fireCompleteRegistration(userId);
       void saveProfileAndRedirect(userId).catch(() => {
         if (mounted) setAuthChecking(false);
       });

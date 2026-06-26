@@ -39,10 +39,16 @@ const Checkout = () => {
   const [checkoutLoading, setCheckoutLoading] = useState<"base" | "premium" | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewType, setReviewType] = useState<"base" | "premium" | null>(null);
-  const { trackAddToCart, trackInitiateCheckout } = useMetaConversions();
+  const { trackViewContent, trackAddToCart, trackInitiateCheckout } = useMetaConversions();
 
   useEffect(() => {
     trackEvent("paywall_viewed", { variant: "gift_checkout" }, { once: true });
+    trackViewContent({
+      firstName: data.userName || undefined,
+      sessionId: data.sessionId || undefined,
+      purchaseType: data.purchaseType || undefined,
+      birthDate: data.birthDate,
+    });
   }, []);
 
   useEffect(() => {

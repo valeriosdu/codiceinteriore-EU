@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz, getFunnelStage } from '@/context/QuizContext';
 import { supabase } from '@/integrations/supabase/client';
 import { createQuizSession, fetchQuizSessionPublic } from '@/lib/sessionAccess';
+import { useMetaConversions } from '@/hooks/useMetaConversions';
 import { useI18n } from '@/i18n/I18nProvider';
 
 // Hard ceiling for waiting in the browser. The background job continues
@@ -14,6 +15,7 @@ const POLL_INTERVAL_MS = 3000;
 const Processing = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
+  const { trackLead } = useMetaConversions();
   const { m, market } = useI18n();
   const messages = m.processing.messages;
   const waitingMessage = m.processing.waiting;
@@ -89,6 +91,14 @@ const Processing = () => {
 
         sessionIdRef.current = sessionId;
         updateData({ sessionId });
+
+        // Quiz completed → fresh natal session created: the natural Lead boundary.
+        // event_id = lead:<sessionId> dedups across remounts / Meta's 48h window.
+        trackLead({
+          firstName: data.userName || undefined,
+          sessionId,
+          birthDate: data.birthDate,
+        });
 
         // Step 1: Trigger SERVER-SIDE background chart + insight generation.
         // We don't await its completion — we poll the DB instead, so the job

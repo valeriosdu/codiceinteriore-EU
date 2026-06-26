@@ -7,6 +7,34 @@ function getCookie(name: string): string | undefined {
   return match?.[2];
 }
 
+const FBC_STORAGE_KEY = "ci_meta_fbc";
+
+/**
+ * Facebook click id (`fbc`) for advanced matching. Prefers the real `_fbc`
+ * cookie set by the Meta pixel; if it isn't there yet (the pixel is loaded
+ * deferred, so it can lag behind the first navigation), reconstruct it from the
+ * `fbclid` URL param and persist it so the click attribution survives across
+ * funnel pages even after the param is gone.
+ */
+function getStoredFbc(): string | undefined {
+  const cookie = getCookie("_fbc");
+  if (cookie) return cookie;
+  try {
+    const fbclid = new URLSearchParams(window.location.search).get("fbclid");
+    const stored = localStorage.getItem(FBC_STORAGE_KEY) || undefined;
+    if (fbclid) {
+      // Reuse a stored value built from the same fbclid to keep the timestamp stable.
+      if (stored && stored.endsWith(`.${fbclid}`)) return stored;
+      const built = `fb.1.${Date.now()}.${fbclid}`;
+      localStorage.setItem(FBC_STORAGE_KEY, built);
+      return built;
+    }
+    return stored;
+  } catch {
+    return undefined;
+  }
+}
+
 const SESSION_FALLBACK_KEY = "ci_meta_session_id";
 
 function getSessionFallbackId(): string {
@@ -45,6 +73,7 @@ interface BirthDate {
 interface TrackOptions {
   email?: string;
   firstName?: string;
+  lastName?: string;
   externalId?: string;
   purchaseType?: string;
   birthDate?: BirthDate | null;
@@ -77,13 +106,14 @@ async function trackEvent(eventName: string, options: TrackOptions = {}) {
       client_user_agent: navigator.userAgent,
     };
 
-    const fbc = getCookie("_fbc");
+    const fbc = getStoredFbc();
     const fbp = getCookie("_fbp");
     if (fbc) userData.fbc = fbc;
     if (fbp) userData.fbp = fbp;
 
     if (options.email) userData.em = options.email;
     if (options.firstName) userData.fn = options.firstName;
+    if (options.lastName) userData.ln = options.lastName;
     if (options.externalId) userData.external_id = options.externalId;
     if (options.birthDate) {
       const { year, month, day } = options.birthDate;
@@ -116,9 +146,35 @@ export function useMetaConversions() {
     trackEvent(eventName, options);
   }, []);
 
-  const trackViewContent = useCallback((contentName?: string) => {
+  const trackViewContent = useCallback((options?: { firstName?: string; sessionId?: string; purchaseType?: string; birthDate?: BirthDate | null }) => {
     trackOnce("ViewContent", {
-      customData: contentName ? { content_name: contentName } : undefined,
+      firstName: options?.firstName,
+      externalId: options?.sessionId,
+      purchaseType: options?.purchaseType,
+      birthDate: options?.birthDate,
+      customData: getOfferCustomData(options?.purchaseType ?? "base"),
+    });
+  }, [trackOnce]);
+
+  const trackLead = useCallback((options?: { email?: string; firstName?: string; lastName?: string; sessionId?: string; purchaseType?: string; birthDate?: BirthDate | null }) => {
+    trackOnce("Lead", {
+      email: options?.email,
+      firstName: options?.firstName,
+      lastName: options?.lastName,
+      externalId: options?.sessionId,
+      purchaseType: options?.purchaseType,
+      birthDate: options?.birthDate,
+      customData: getOfferCustomData(options?.purchaseType ?? "base"),
+    });
+  }, [trackOnce]);
+
+  const trackCompleteRegistration = useCallback((options?: { email?: string; firstName?: string; lastName?: string; externalId?: string; birthDate?: BirthDate | null }) => {
+    trackOnce("CompleteRegistration", {
+      email: options?.email,
+      firstName: options?.firstName,
+      lastName: options?.lastName,
+      externalId: options?.externalId,
+      birthDate: options?.birthDate,
     });
   }, [trackOnce]);
 
@@ -170,5 +226,5 @@ export function useMetaConversions() {
     });
   }, [trackOnce]);
 
-  return { trackViewContent, trackAddToCart, trackInitiateCheckout, trackAddPaymentInfo, trackPurchase };
+  return { trackViewContent, trackAddToCart, trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, trackLead, trackCompleteRegistration };
 }

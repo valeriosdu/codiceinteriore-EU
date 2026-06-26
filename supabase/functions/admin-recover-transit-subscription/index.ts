@@ -12,6 +12,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
+import { getSubscriptionPeriod } from "../_shared/stripe-basil.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -160,12 +161,7 @@ serve(async (req) => {
       });
     }
 
-    const periodStart = new Date(
-      ((subscription.current_period_start ?? subscription.created) as number) * 1000,
-    );
-    const periodEnd = new Date(
-      ((subscription.current_period_end ?? Math.floor(Date.now() / 1000) + 30 * 86400) as number) * 1000,
-    );
+    const { periodStart, periodEnd } = getSubscriptionPeriod(subscription);
     const priceId = subscription.items.data[0]?.price?.id || null;
     const syntheticSessionId = `sub_${subscriptionId}__${Math.floor(periodStart.getTime() / 1000)}`;
 

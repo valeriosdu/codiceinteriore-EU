@@ -20,6 +20,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
 import { getMarket } from "../_shared/markets.ts";
+import { getInvoiceSubscriptionId, getSubscriptionPeriod } from "../_shared/stripe-basil.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -307,8 +308,7 @@ async function handleCheckoutCompleted(
     return { skipped: "no_quiz_session" };
   }
 
-  const periodStart = new Date(((subscription.current_period_start ?? subscription.created) as number) * 1000);
-  const periodEnd = new Date(((subscription.current_period_end ?? Math.floor(Date.now() / 1000) + 30 * 86400) as number) * 1000);
+  const { periodStart, periodEnd } = getSubscriptionPeriod(subscription);
   const priceId = subscription.items.data[0]?.price?.id || null;
 
   // language/market viaggiano sulla riga: il ciclo transiti gira su cron
@@ -371,8 +371,7 @@ async function handleInvoicePaid(
   stripe: Stripe,
   invoice: Stripe.Invoice,
 ) {
-  const subscriptionId =
-    typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
+  const subscriptionId = getInvoiceSubscriptionId(invoice);
   if (!subscriptionId) return { skipped: "no_subscription_on_invoice" };
 
   // Skip the very first invoice — already handled by checkout.session.completed.
@@ -397,8 +396,7 @@ async function handleInvoicePaid(
     return { skipped: "no_ownership" };
   }
 
-  const periodStart = new Date(((subscription.current_period_start ?? Math.floor(Date.now() / 1000)) as number) * 1000);
-  const periodEnd = new Date(((subscription.current_period_end ?? Math.floor(Date.now() / 1000) + 30 * 86400) as number) * 1000);
+  const { periodStart, periodEnd } = getSubscriptionPeriod(subscription);
 
   await supabaseAdmin
     .from("transit_subscriptions")
@@ -430,12 +428,9 @@ async function handleSubscriptionUpdated(
   supabaseAdmin: ReturnType<typeof createClient>,
   subscription: Stripe.Subscription,
 ) {
-  const periodStart = subscription.current_period_start
-    ? new Date(subscription.current_period_start * 1000).toISOString()
-    : null;
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
-    : null;
+  const { periodStart: ps, periodEnd: pe } = getSubscriptionPeriod(subscription);
+  const periodStart = ps.toISOString();
+  const periodEnd = pe.toISOString();
   await supabaseAdmin
     .from("transit_subscriptions")
     .update({
