@@ -362,9 +362,9 @@ AVOID:
 - poetic abstractions that require re-reading
 
 PREFER:
-- verbs over abstract nouns. Write "Perché non parti" instead of "le condizioni del tuo non-partire". Write "Quello che ti blocca" instead of "la forma del tuo blocco".
-- everyday Italian phrasing the reader actually uses about themselves: "sono in ritardo", "non parte niente", "mi tiene fermo/a", "ti sblocchi", "ti accendi", "le cose si allineano per te".
-- recognition openings: "Non è pigrizia", "Non sei in ritardo", "Non manca un metodo", "Non è mancanza di volontà".
+- verbs over abstract nouns (e.g. "Why you don't get going" rather than "the conditions of your not-starting"; "What blocks you" rather than "the shape of your block").
+- everyday first-person phrasing the reader actually uses about themselves, in the output language (the equivalents of "I'm behind", "nothing gets going", "it keeps me stuck", "you get unstuck", "you light up", "things fall into place for you").
+- recognition openings: a short reassuring negation (the equivalent of "It's not laziness", "You're not behind", "There's no missing method", "It's not a lack of willpower").
 - short sentences. If a sentence has more than 25 words, break it.
 
 TEST before finalizing each insight: would a 30-year-old scrolling Instagram understand this in 2 seconds? If they need to re-read, simplify. The goal is recognition (the reader thinks "oh, è proprio così"), not admiration ("che bello scritto").
@@ -481,15 +481,15 @@ function buildUserPrompt(
 
   const contextSection =
     funnelSlug === "attivazione"
-      ? `CONTESTO QUIZ:\n- Nome: ${userName || "non fornito"}\n- Sintomo riportato: ${intake.symptom || "non fornito"}\n- Narrazione di sé: ${intake.narrative || "non fornita"}`
-      : `CONTESTO QUIZ:\n- Nome: ${userName || "non fornito"}\n- Reazione all'ambiguità: ${intake.attachment || "non fornita"}\n- Area di focus: ${intake.focus || "non fornita"}`;
+      ? `QUIZ CONTEXT:\n- Name: ${userName || "not provided"}\n- Reported symptom: ${intake.symptom || "not provided"}\n- Self-narrative: ${intake.narrative || "not provided"}`
+      : `QUIZ CONTEXT:\n- Name: ${userName || "not provided"}\n- Reaction to ambiguity: ${intake.attachment || "not provided"}\n- Focus area: ${intake.focus || "not provided"}`;
 
   const closingInstruction =
     funnelSlug === "attivazione"
-      ? `Genera 3 insight con questi 3 angoli precisi e in quest'ordine: 1) BLOCCO (la forma specifica del suo blocco), 2) RITMO (il ritmo profondo della sua struttura), 3) ATTIVAZIONE (il principio di attivazione). Tutto deriva dalla carta natale. Sintomo e narrazione sono solo segnale di taratura emotiva, mai citarli. NON dare il layer operativo (cosa il blocco protegge, le condizioni concrete di attivazione, la mappa del ritmo), quello è il valore del report completo.`
-      : `Genera 3 insight personalizzati sulle dinamiche relazionali di questa persona.`;
+      ? `Generate 3 insights with these 3 exact angles, in this order: 1) BLOCCO (the specific shape of their block), 2) RITMO (the deep rhythm of their structure), 3) ATTIVAZIONE (their principle of activation). Everything derives from the natal chart. The symptom and self-narrative are only emotional-calibration signals — never quote them. Do NOT give the operational layer (what the block protects, the concrete activation conditions, the rhythm map): that is the value of the full report.`
+      : `Generate 3 personalized insights about this person's relational dynamics.`;
 
-  return `Carta natale:\n\nPIANETI:\n${planetsDescription}\n\nCASE:\n${housesDescription}\n${anglesDescription ? `\nANGOLI:\n${anglesDescription}\n` : ""}\nASPETTI PRINCIPALI:\n${aspectsDescription}\n\n${contextSection}\n\n${closingInstruction}`;
+  return `Natal chart:\n\nPLANETS:\n${planetsDescription}\n\nHOUSES:\n${housesDescription}\n${anglesDescription ? `\nANGLES:\n${anglesDescription}\n` : ""}\nMAJOR ASPECTS:\n${aspectsDescription}\n\n${contextSection}\n\n${closingInstruction}`;
 }
 
 function getTimezoneString(value: unknown) {

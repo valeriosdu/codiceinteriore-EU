@@ -411,9 +411,9 @@ AVOID:
 - poetic abstractions that require re-reading
 
 PREFER:
-- verbs over abstract nouns. Write "Perché non parti" instead of "le condizioni del tuo non-partire". Write "Quello che ti blocca" instead of "la forma del tuo blocco".
-- everyday Italian phrasing the reader actually uses about themselves: "sono in ritardo", "non parte niente", "mi tiene fermo/a", "ti sblocchi", "ti accendi", "le cose si allineano per te".
-- recognition openings: "Non è pigrizia", "Non sei in ritardo", "Non manca un metodo", "Non è mancanza di volontà".
+- verbs over abstract nouns (e.g. "Why you don't get going" rather than "the conditions of your not-starting"; "What blocks you" rather than "the shape of your block").
+- everyday first-person phrasing the reader actually uses about themselves, in the output language (the equivalents of "I'm behind", "nothing gets going", "it keeps me stuck", "you get unstuck", "you light up", "things fall into place for you").
+- recognition openings: a short reassuring negation (the equivalent of "It's not laziness", "You're not behind", "There's no missing method", "It's not a lack of willpower").
 - short sentences. If a sentence has more than 25 words, break it.
 
 TEST each paragraph: would a smart 30-year-old reading on their phone understand it on first read? If they need to re-read, simplify. The goal is recognition (the reader thinks "oh, è proprio così"), not admiration ("che bello scritto").
@@ -916,8 +916,8 @@ E. Write. If a section overlaps another, change angle — same theme, different 
 
 INTAKE ANSWERS — IMPORTANT BEHAVIOR
 The session includes answers to two context questions:
-- "Reazione all'ambiguità": how the person reacts when a relationship becomes uncertain
-- "Area di focus": which life pattern resonates most right now
+- "Reaction to ambiguity": how the person reacts when a relationship becomes uncertain
+- "Focus area": which life pattern resonates most right now
 
 Treat these as EMOTIONAL CALIBRATION signals, NOT facts to report.
 
@@ -930,8 +930,8 @@ Absolute rules:
 - ALL content must derive from the natal chart
 - When a chart finding resonates with what the user named, describe the chart finding in your own astrological language — let recognition happen naturally, without naming the user's answer
 
-USE OF "AREA DI FOCUS" AS EMPHASIS DIAL
-"Area di focus" works as an emphasis dial across the report (use it only to weight sections, never as material to quote):
+USE OF "FOCUS AREA" AS EMPHASIS DIAL
+"Focus area" works as an emphasis dial across the report (use it only to weight sections, never as material to quote):
 - "Ritrovarmi nello stesso schema…" → SCHEMA-leaning: extra weight in "patterns_blocks" on the recurring loop, plus the schema axis of "relationships".
 - "Chiedere sempre la stessa cosa…" → DESIDERIO-leaning: extra weight in "relationships" on the specific shape of the desire and on what the defense protects.
 - "Rinunciare a parti importanti di me" → COSTO NASCOSTO-leaning: extra weight in "patterns_blocks" on what gets currently sacrificed, and in "relationships" on what part of the self the schema makes the reader rinunciare.
@@ -981,26 +981,26 @@ Silently verify:
 OUTPUT FORMAT
 Respond ONLY with the required tool call. The tool arguments must contain exactly these fields: identity, emotions, relationships, work, patterns_blocks, advice, poem. Each field is a plain ${langName} string with paragraphs separated by \\n\\n. No markdown, no bullet points inside the section text unless necessary, no extra fields.`;
 
-        const userPrompt = `Carta natale:
+        const userPrompt = `Natal chart:
 
-PIANETI:
+PLANETS:
 ${planetsDescription}
 
-CASE:
+HOUSES:
 ${housesDescription}
-${anglesDescription ? `\nANGOLI:\n${anglesDescription}\n` : ""}
-ASPETTI PRINCIPALI:
+${anglesDescription ? `\nANGLES:\n${anglesDescription}\n` : ""}
+MAJOR ASPECTS:
 ${aspectsDescription}
 ${salienceBlock ? `\n${salienceBlock}\n` : ""}
-CONTESTO:
-- Nome: ${userName || "non fornito"}
-- Età: ${userAge !== null ? `${userAge} anni` : "non disponibile"}
+CONTEXT:
+- Name: ${userName || "not provided"}
+- Age: ${userAge !== null ? `${userAge} years` : "not available"}
 ${isAttivazione
-  ? `- Sintomo riportato: ${quizAnswers.symptom || "non fornito"}\n- Narrazione di sé: ${quizAnswers.narrative || "non fornita"}`
-  : `- Reazione all'ambiguità: ${attachmentResponse || "non fornita"}\n- Area di focus: ${focusArea || "non fornita"}`}
-${teaserSummary ? `\nINSIGHT GIÀ FORNITI (non ripetere, espandi):\n${teaserSummary}` : ""}
+  ? `- Reported symptom: ${quizAnswers.symptom || "not provided"}\n- Self-narrative: ${quizAnswers.narrative || "not provided"}`
+  : `- Reaction to ambiguity: ${attachmentResponse || "not provided"}\n- Focus area: ${focusArea || "not provided"}`}
+${teaserSummary ? `\nINSIGHTS ALREADY PROVIDED (do not repeat, expand):\n${teaserSummary}` : ""}
 
-Genera il report completo personalizzato.`;
+Generate the complete personalized report.`;
 
         // Schema selection per funnel: classica returns 8 fields (existing),
         // attivazione returns 6 fields (identity, emotions_relationships,

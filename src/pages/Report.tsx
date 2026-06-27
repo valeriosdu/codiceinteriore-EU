@@ -402,7 +402,7 @@ const Report = () => {
         const { data: quizSession } = preferredQuizSessionId
           ? await supabase
               .from("quiz_sessions")
-              .select("full_report, user_name, processing_status, natal_chart_svg")
+              .select("full_report, user_name, processing_status, natal_chart_svg, funnel_slug")
               .eq("id", preferredQuizSessionId)
               .single()
           : { data: null };
@@ -414,6 +414,7 @@ const Report = () => {
             fullReport: quizSession.full_report as Record<string, string>,
             userName: quizSession.user_name || "",
             natalChartSvg: (quizSession as any).natal_chart_svg ?? null,
+            funnelSlug: (quizSession as any).funnel_slug || "classica",
           });
           setSelectedReportId(activeOption?.id || null);
           setSelectedQuizSessionId(preferredQuizSessionId);
@@ -545,7 +546,7 @@ const Report = () => {
     try {
       const { data: quizSession } = await supabase
         .from("quiz_sessions")
-        .select("full_report, user_name, processing_status, natal_chart_svg")
+        .select("full_report, user_name, processing_status, natal_chart_svg, funnel_slug")
         .eq("id", option.quizSessionId)
         .single();
 
@@ -562,6 +563,7 @@ const Report = () => {
         fullReport: quizSession.full_report as Record<string, string>,
         userName: quizSession.user_name || "",
         natalChartSvg: (quizSession as any).natal_chart_svg ?? null,
+        funnelSlug: (quizSession as any).funnel_slug || "classica",
       });
       setUserName(quizSession.user_name || "");
       setSelectedReportId(option.id);
