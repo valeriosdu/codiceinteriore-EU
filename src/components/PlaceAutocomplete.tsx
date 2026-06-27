@@ -18,6 +18,8 @@ interface PlaceAutocompleteProps {
   onTextChange: (text: string) => void;
   /** Called whenever the typed text diverges from the last confirmed selection. */
   onClear?: () => void;
+  /** Fired when the user presses Enter in the input (e.g. mobile keyboard "next"/"go"). */
+  onEnter?: () => void;
   placeholder?: string;
 }
 
@@ -60,7 +62,7 @@ const buildDisplayName = (s: GeoSuggestion) => {
 const suggestionKey = (s: GeoSuggestion) => `${s.name}-${s.lat}-${s.lng}`;
 
 const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteProps>(
-  ({ value, onChange, onTextChange, onClear, placeholder }, ref) => {
+  ({ value, onChange, onTextChange, onClear, onEnter, placeholder }, ref) => {
     const [suggestions, setSuggestions] = useState<GeoSuggestion[]>([]);
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -176,12 +178,19 @@ const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteP
       <div ref={wrapperRef} className="relative">
         <input
           type="text"
+          enterKeyHint="next"
           className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none"
           placeholder={placeholder}
           value={value}
           onChange={e => handleChange(e.target.value)}
           onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
           onBlur={handleBlur}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onEnter?.();
+            }
+          }}
           autoComplete="off"
         />
         {loading && (

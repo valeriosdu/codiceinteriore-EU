@@ -426,6 +426,7 @@ const Quiz = () => {
                           });
                         }
                       }}
+                      onEnter={() => { if (canContinue()) handleNext(); }}
                       placeholder={q.steps.place.placeholder}
                     />
                     {placeError ? (
@@ -470,10 +471,17 @@ const Quiz = () => {
                     <label className="text-xs text-muted-foreground">{q.steps.name.label}</label>
                     <input
                       type="text"
+                      enterKeyHint="go"
                       className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none"
                       placeholder={q.steps.name.placeholder}
                       value={userName}
                       onChange={e => setUserName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (canContinue()) handleNext();
+                        }
+                      }}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
