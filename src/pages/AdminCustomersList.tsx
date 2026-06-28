@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, MessageCircle, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { LayoutDashboard, LifeBuoy, LogOut, MessageCircle, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import CustomerSearchBar from "@/components/admin/CustomerSearchBar";
@@ -103,6 +103,12 @@ export default function AdminCustomersList() {
                 <a href="/admin/astrology-guide">
                   <MessageCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">Guida astrologica</span>
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                <a href="/admin/support">
+                  <LifeBuoy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Assistenza</span>
                 </a>
               </Button>
               <Button variant="ghost" size="sm" onClick={logout} className="gap-1.5">

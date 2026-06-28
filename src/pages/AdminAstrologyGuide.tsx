@@ -464,6 +464,12 @@ const AdminAstrologyGuide = () => {
                 <span className="hidden sm:inline">Clienti</span>
               </a>
             </Button>
+            <Button asChild variant="ghost" size="sm" className="gap-1.5">
+              <a href="/admin/support">
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">Assistenza</span>
+              </a>
+            </Button>
             <Button
               variant="outline"
               size="sm"

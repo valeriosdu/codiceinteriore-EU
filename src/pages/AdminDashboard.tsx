@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, ShieldCheck, RefreshCw, LogOut, ExternalLink, MessageCircle, ChevronDown, Activity, AlertCircle } from "lucide-react";
+import { Loader2, ShieldCheck, RefreshCw, LogOut, ExternalLink, MessageCircle, LifeBuoy, ChevronDown, Activity, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -626,6 +626,12 @@ const AdminDashboard = () => {
               <a href="/admin/astrology-guide">
                 <MessageCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Guida astrologica</span>
+              </a>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="gap-1.5">
+              <a href="/admin/support">
+                <LifeBuoy className="h-4 w-4" />
+                <span className="hidden sm:inline">Assistenza</span>
               </a>
             </Button>
             <Button variant="ghost" size="sm" onClick={load} disabled={loading} className="gap-1.5">

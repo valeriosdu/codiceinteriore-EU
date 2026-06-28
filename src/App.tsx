@@ -52,6 +52,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 const AdminAstrologyGuide = lazy(() => import("./pages/AdminAstrologyGuide.tsx"));
 const AdminCustomersList = lazy(() => import("./pages/AdminCustomersList.tsx"));
 const AdminCustomerDetail = lazy(() => import("./pages/AdminCustomerDetail.tsx"));
+const AdminSupport = lazy(() => import("./pages/AdminSupport.tsx"));
 // Dev-only preview routes. Tree-shaken out of production builds because
 // import.meta.env.DEV is replaced at build time.
 const DevAstrologyGuidePreview = import.meta.env.DEV
@@ -123,6 +124,7 @@ const App = () => (
             <Route path="/admin/astrology-guide" element={<AdminAstrologyGuide />} />
             <Route path="/admin/clienti" element={<AdminCustomersList />} />
             <Route path="/admin/clienti/:emailEncoded" element={<AdminCustomerDetail />} />
+            <Route path="/admin/support" element={<AdminSupport />} />
             {DevAstrologyGuidePreview && (
               <Route
                 path="/dev/astrology-guide"

@@ -91,3 +91,15 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.watchdog]
     verify_jwt = true
+  [functions.support-poll]
+    verify_jwt = true
+  [functions.support-draft]
+    verify_jwt = true
+  [functions.admin-support-list]
+    verify_jwt = false
+  [functions.admin-regenerate-draft]
+    verify_jwt = false
+  [functions.admin-link-customer]
+    verify_jwt = false
+  [functions.support-send]
+    verify_jwt = false

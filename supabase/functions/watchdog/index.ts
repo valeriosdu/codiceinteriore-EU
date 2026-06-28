@@ -23,11 +23,12 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") || "";
-// Internal ops alert — recipient + sender are tunable via secrets; defaults are
-// the IT brand's verified Brevo sender, which is fine for an owner-only email.
-const ALERT_EMAIL = Deno.env.get("WATCHDOG_ALERT_EMAIL") || "info@codiceinteriore.it";
+// Internal ops alert — recipient + sender tunable via secrets. The From MUST be
+// on the authenticated Brevo domain (single Carta Interior / Ecolife account →
+// cartainterior.com is the verified sender; codiceinteriore.it is rejected).
+const ALERT_EMAIL = Deno.env.get("WATCHDOG_ALERT_EMAIL") || "info@cartainterior.com";
 const ALERT_FROM = Deno.env.get("WATCHDOG_ALERT_FROM") ||
-  "Codice Interiore Watchdog <info@codiceinteriore.it>";
+  "Watchdog <info@cartainterior.com>";
 const HEARTBEAT_URL = Deno.env.get("WATCHDOG_HEARTBEAT_URL") || "";
 
 // ---- Thresholds (tune from the dryRun output / logs) -----------------------
@@ -139,7 +140,7 @@ function buildEmailHtml(fired: Fired[], report: Record<string, any>): string {
   </div>`;
 }
 
-async function sendAlert(fired: Fired[], report: Record<string, any>): Promise<{ sent: boolean; error?: string }> {
+async function sendAlert(fired: Fired[], report: Record<string, any>): Promise<{ sent: boolean; status?: number; body?: string; error?: string }> {
   if (!BREVO_API_KEY) return { sent: false, error: "BREVO_API_KEY not set" };
   const subject = `⚠️ [Watchdog] ${fired.length} issue(s): ${fired.map((f) => f.key).join(", ")}`;
   const res = await fetch(BREVO_SEND_URL, {
@@ -152,11 +153,22 @@ async function sendAlert(fired: Fired[], report: Record<string, any>): Promise<{
       htmlContent: buildEmailHtml(fired, report),
     }),
   });
-  if (!res.ok) {
+  const body = (await res.text().catch(() => "")).slice(0, 400);
+  if (!res.ok) return { sent: false, status: res.status, body, error: `Brevo ${res.status}` };
+  return { sent: true, status: res.status, body };
+}
+
+// Diagnostic: recent Brevo delivery events for an address.
+async function brevoEvents(email: string): Promise<unknown> {
+  if (!BREVO_API_KEY) return { error: "BREVO_API_KEY not set" };
+  try {
+    const url = `https://api.brevo.com/v3/smtp/statistics/events?limit=10&sort=desc&email=${encodeURIComponent(email)}`;
+    const res = await fetch(url, { headers: { "api-key": BREVO_API_KEY, accept: "application/json" } });
     const text = await res.text().catch(() => "");
-    return { sent: false, error: `Brevo ${res.status}: ${text.slice(0, 300)}` };
+    return { status: res.status, body: text.slice(0, 1500) };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
   }
-  return { sent: true };
 }
 
 Deno.serve(async (req) => {
@@ -194,10 +206,10 @@ Deno.serve(async (req) => {
       samples: [],
     }];
     const alert = await sendAlert(fired, { generated_at: new Date().toISOString() });
-    return new Response(JSON.stringify({ ok: true, test: true, alert }, null, 2), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const events = await brevoEvents(ALERT_EMAIL);
+    return new Response(JSON.stringify({
+      ok: true, test: true, recipient: ALERT_EMAIL, from: ALERT_FROM, alert, events,
+    }, null, 2), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
