@@ -177,10 +177,28 @@ Deno.serve(async (req) => {
   }
 
   let dryRun = false;
+  let test = false;
   try {
     const body = await req.json().catch(() => ({}));
     dryRun = body?.dryRun === true;
+    test = body?.test === true;
   } catch (_) { /* no body */ }
+
+  // Wiring test: send a synthetic alert to prove email delivery works, without
+  // touching real data or thresholds.
+  if (test) {
+    const fired: Fired[] = [{
+      key: "watchdog_test",
+      severity: "warning",
+      summary: "Test alert — if you received this, watchdog email delivery is working.",
+      samples: [],
+    }];
+    const alert = await sendAlert(fired, { generated_at: new Date().toISOString() });
+    return new Response(JSON.stringify({ ok: true, test: true, alert }, null, 2), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
