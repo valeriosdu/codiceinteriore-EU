@@ -321,6 +321,95 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ---- Sweep D: claim paid-but-unclaimed checkouts that already have an account ----
+    // An orphan (paid, claimed_profile_id NULL) lingers when the buyer creates
+    // their account AFTER payment but the in-page /activate claim never completes
+    // (e.g. the email-confirmation flow drops the ?session_id=). The at-payment
+    // reconcile only claims if a profile already existed, and the rest of this
+    // function can't help: Sweep A is Stripe-only and ~9-min gated (never sees
+    // PayPal orphans), Sweep B needs an entitlement an orphan doesn't have yet.
+    // This sweep re-attempts the claim once the profile exists — for BOTH Stripe
+    // and PayPal — by delegating to sync-checkout-session (admin mode), which owns
+    // the full claim + entitlement + generate-report logic and is idempotent.
+    // It acts ONLY when a matching profile already exists, so it never creates
+    // shadow accounts (those are left to invite-orphan-checkouts / manual recovery).
+    const claimResults: Array<{ sessionId: string; status: string; detail?: string }> = [];
+    let claimOrphansSeen = 0;
+    if (isAdmin) {
+      const ORPHAN_LIMIT = 50;
+      const sinceIso = new Date(nowMs - 30 * 24 * 60 * 60 * 1000).toISOString();
+      // 90s grace so we never race the at-payment reconcile / in-page claim.
+      const graceIso = new Date(nowMs - 90 * 1000).toISOString();
+      const { data: orphans, error: orphanErr } = await supabaseAdmin
+        .from("checkout_sessions")
+        .select("stripe_session_id, customer_email")
+        .eq("payment_status", "paid")
+        .is("claimed_profile_id", null)
+        .not("customer_email", "is", null)
+        .in("purchase_type", ["base", "premium", "synastry", "synastry_launch"])
+        .gte("payment_completed_at", sinceIso)
+        .lt("payment_completed_at", graceIso)
+        .order("payment_completed_at", { ascending: true })
+        .limit(ORPHAN_LIMIT);
+      if (orphanErr) {
+        console.error("[recover-pending-reports] Sweep D query error:", orphanErr.message);
+      }
+      claimOrphansSeen = orphans?.length || 0;
+      if (claimOrphansSeen === ORPHAN_LIMIT) {
+        console.warn(
+          `[recover-pending-reports] Sweep D hit the ${ORPHAN_LIMIT}-orphan cap; remaining orphans will be claimed on the next tick`,
+        );
+      }
+
+      for (const orphan of orphans || []) {
+        const email = (orphan as { customer_email?: string }).customer_email || "";
+        const sessionId = (orphan as { stripe_session_id?: string }).stripe_session_id || "";
+        if (!email || !sessionId) continue;
+
+        // Only claim when the buyer already has an account; otherwise leave the
+        // orphan for invite-orphan-checkouts / manual recovery (no shadow users).
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .ilike("email", email)
+          .limit(1)
+          .maybeSingle();
+        if (!prof?.id) {
+          claimResults.push({ sessionId, status: "skipped_no_account" });
+          continue;
+        }
+
+        try {
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-checkout-session`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+              "x-admin-secret": ADMIN_SECRET,
+            },
+            body: JSON.stringify({ email, sessionId }),
+          });
+          const text = await response.text().catch(() => "");
+          claimResults.push({
+            sessionId,
+            status: response.ok ? "claimed" : `error_${response.status}`,
+            detail: text.slice(0, 200),
+          });
+        } catch (e) {
+          claimResults.push({
+            sessionId,
+            status: "exception",
+            detail: e instanceof Error ? e.message : String(e),
+          });
+        }
+      }
+      if (claimResults.length) {
+        console.log(
+          `[recover-pending-reports] Sweep D: ${claimResults.filter((r) => r.status === "claimed").length}/${claimResults.length} orphans claimed`,
+        );
+      }
+    }
+
     return new Response(
       JSON.stringify({
         reconciled: reconciliation.length,
@@ -329,6 +418,9 @@ Deno.serve(async (req) => {
         results,
         synastry_recovered: synastryResults.length,
         synastry_results: synastryResults,
+        orphans_seen: claimOrphansSeen,
+        orphans_claimed: claimResults.filter((r) => r.status === "claimed").length,
+        claim_results: claimResults,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
