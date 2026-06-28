@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { isLovablePreview } from "@/lib/preview-mode";
+import { clearAdminSecret, getAdminSecret, setAdminSecret } from "@/hooks/admin/adminSecretStorage";
 
-const SECRET_KEY = "ci_admin_secret";
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-dashboard`;
 const AI_METRICS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-metrics`;
 
@@ -348,7 +348,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 const AUTO_REFRESH_MS = 300_000;
 
 const AdminDashboard = () => {
-  const [secret, setSecret] = useState<string>(() => sessionStorage.getItem(SECRET_KEY) || "");
+  const [secret, setSecret] = useState<string>(() => getAdminSecret());
   const [secretInput, setSecretInput] = useState("");
   const [authError, setAuthError] = useState(false);
 
@@ -422,7 +422,7 @@ const AdminDashboard = () => {
       });
       if (res.status === 401) {
         setAuthError(true);
-        sessionStorage.removeItem(SECRET_KEY);
+        clearAdminSecret();
         setSecret("");
         toast.error("Password non valida.");
         return;
@@ -522,12 +522,12 @@ const AdminDashboard = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!secretInput.trim()) return;
-    sessionStorage.setItem(SECRET_KEY, secretInput.trim());
+    setAdminSecret(secretInput.trim());
     setSecret(secretInput.trim());
     setSecretInput("");
   };
   const handleLogout = () => {
-    sessionStorage.removeItem(SECRET_KEY);
+    clearAdminSecret();
     setSecret("");
     setData(null);
     setAiMetrics(null);

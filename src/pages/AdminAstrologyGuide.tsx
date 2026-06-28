@@ -4,7 +4,8 @@
 //   2. Manually grant credits to a user
 //   3. Force-regenerate a single question
 // Auth: shares the admin password convention with AdminDashboard / AdminCustomersList
-// (sessionStorage key "ci_admin_secret"). Edge functions verify x-admin-secret.
+// (localStorage key "ci_admin_secret", 7-day expiry — see adminSecretStorage.ts).
+// Edge functions verify x-admin-secret.
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
@@ -52,8 +53,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { clearAdminSecret, getAdminSecret, setAdminSecret } from "@/hooks/admin/adminSecretStorage";
 
-const SECRET_KEY = "ci_admin_secret";
 const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const LIST_URL = `${BASE_URL}/functions/v1/admin-astrology-questions-list`;
 const GRANT_URL = `${BASE_URL}/functions/v1/admin-grant-astrology-credits`;
@@ -183,7 +184,7 @@ const StatCard = ({
 const PAGE_SIZE = 100;
 
 const AdminAstrologyGuide = () => {
-  const [secret, setSecret] = useState<string>(() => sessionStorage.getItem(SECRET_KEY) || "");
+  const [secret, setSecret] = useState<string>(() => getAdminSecret());
   const [secretInput, setSecretInput] = useState("");
   const [authError, setAuthError] = useState(false);
 
@@ -231,7 +232,7 @@ const AdminAstrologyGuide = () => {
       });
       if (res.status === 403) {
         setAuthError(true);
-        sessionStorage.removeItem(SECRET_KEY);
+        clearAdminSecret();
         setSecret("");
         toast.error("Password non valida.");
         return;
@@ -277,13 +278,13 @@ const AdminAstrologyGuide = () => {
   const handleSecretSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!secretInput.trim()) return;
-    sessionStorage.setItem(SECRET_KEY, secretInput.trim());
+    setAdminSecret(secretInput.trim());
     setSecret(secretInput.trim());
     setSecretInput("");
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem(SECRET_KEY);
+    clearAdminSecret();
     setSecret("");
     setData(null);
   };

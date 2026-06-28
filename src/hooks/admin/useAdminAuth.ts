@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
+import {
+  ADMIN_SECRET_KEY,
+  clearAdminSecret,
+  getAdminSecret,
+  setAdminSecret,
+} from "./adminSecretStorage";
 
 // Stessa chiave usata dalle altre pagine admin (Dashboard, Astrology Guide):
-// il login fatto su una pagina vale per tutte finché la sessione del browser
-// è aperta.
-const SECRET_KEY = "ci_admin_secret";
+// il login fatto su una pagina vale per tutte. Lo storage (localStorage con
+// scadenza a 7 giorni) vive in adminSecretStorage.ts.
 
 export function useAdminAuth() {
-  const [secret, setSecret] = useState<string>(
-    () => sessionStorage.getItem(SECRET_KEY) || "",
-  );
+  const [secret, setSecret] = useState<string>(() => getAdminSecret());
 
-  // Tieni in sync se cambia in un'altra tab (es. login su /admin/dashboard)
+  // Tieni in sync se cambia in un'altra tab (es. login su /admin/dashboard).
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === SECRET_KEY) setSecret(e.newValue || "");
+      if (e.key === ADMIN_SECRET_KEY) setSecret(getAdminSecret());
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -22,17 +25,17 @@ export function useAdminAuth() {
   const login = useCallback((value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    sessionStorage.setItem(SECRET_KEY, trimmed);
+    setAdminSecret(trimmed);
     setSecret(trimmed);
   }, []);
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem(SECRET_KEY);
+    clearAdminSecret();
     setSecret("");
   }, []);
 
   const clearOnAuthError = useCallback(() => {
-    sessionStorage.removeItem(SECRET_KEY);
+    clearAdminSecret();
     setSecret("");
   }, []);
 

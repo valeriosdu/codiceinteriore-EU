@@ -89,3 +89,5 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.admin-ai-metrics]
     verify_jwt = false
+  [functions.watchdog]
+    verify_jwt = true
