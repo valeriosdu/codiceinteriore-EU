@@ -40,7 +40,7 @@ const activate = {
     },
     checkEmailConfirm: {
       title: 'Controlla la tua email',
-      description: 'Ti abbiamo inviato un link per confermare il tuo account.',
+      description: 'Ti abbiamo inviato un link per confermare il tuo account e accedere subito al tuo report.',
     },
     authError: 'Errore di autenticazione',
     welcomeBack: {

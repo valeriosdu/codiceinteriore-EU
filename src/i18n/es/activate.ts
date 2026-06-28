@@ -42,7 +42,7 @@ const activate: Messages['activate'] = {
     },
     checkEmailConfirm: {
       title: 'Revisa tu correo',
-      description: 'Te hemos enviado un enlace para confirmar tu cuenta.',
+      description: 'Te hemos enviado un enlace para confirmar tu cuenta y acceder enseguida a tu informe.',
     },
     authError: 'Error de autenticación',
     welcomeBack: {

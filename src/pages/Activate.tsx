@@ -348,6 +348,14 @@ const Activate = () => {
     }
 
     // Signup
+    // emailRedirectTo brings the email/password path in line with Google OAuth:
+    // when email confirmation is required, signUp returns no session, so the
+    // in-page claim (saveProfileAndRedirect → sync-checkout-session) never runs.
+    // Pointing the confirmation link back to /activate WITH the session_id means
+    // that, on return, the SIGNED_IN handler completes the claim with context —
+    // instead of dropping the buyer on the site root as a paid-but-unclaimed orphan.
+    const confirmRedirect = new URL(`${window.location.origin}/activate`);
+    if (stripeSessionId) confirmRedirect.searchParams.set("session_id", stripeSessionId);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -355,6 +363,7 @@ const Activate = () => {
         data: {
           stripe_session_id: stripeSessionId,
         },
+        emailRedirectTo: confirmRedirect.toString(),
       },
     });
 
