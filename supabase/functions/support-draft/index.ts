@@ -177,6 +177,20 @@ function compactCustomerData(detail: Record<string, unknown> | null): Record<str
   };
 }
 
+// Safety net: the model sometimes copies a real activation link (with a
+// session_id) that the customer quoted from their confirmation email. Per policy
+// we never hand back a session-id/token URL — we point customers to the recovery
+// page, which emails them a genuine login link to the address they enter (and
+// also fixes the paid-with-a-different-email case). This strips any such URL from
+// the finished draft regardless of what the model wrote.
+const SENSITIVE_URL_PARAM = /[?&](session_id|token|access_token|refresh_token|code)=/i;
+function sanitizeAccessLinks(text: string, recoveryUrl: string): string {
+  if (!text) return text;
+  return text.replace(/https?:\/\/[^\s<>()[\]]+/gi, (url) =>
+    SENSITIVE_URL_PARAM.test(url) ? recoveryUrl : url,
+  );
+}
+
 type DraftResult = {
   category: string;
   reply_language: string;
@@ -463,6 +477,9 @@ serve(async (req) => {
         ? `[forzato come support; l'AI aveva classificato: ${result.category}] ${result.summary}`.trim()
         : result.summary;
 
+    const recoveryUrl = `${market.siteUrl}/activate?intent=forgot`;
+    const cleanDraft = sanitizeAccessLinks(result.draft, recoveryUrl);
+
     // Auto-suggest attaching the customer's ready natal report PDF(s) when they
     // want it / can't access it. Only for matched customers; the operator can
     // edit the selection before Send.
@@ -484,7 +501,7 @@ serve(async (req) => {
       .update({
         status: "drafted",
         category: "support",
-        draft_body: result.draft,
+        draft_body: cleanDraft,
         reply_language: normalizeLang(result.reply_language) || lang,
         ai_confidence: result.confidence,
         flag_for_human: result.flagForHuman || !compact.matched || (forceSupport && !result.draft),

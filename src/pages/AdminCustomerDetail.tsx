@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { AlertCircle, ArrowLeft, LayoutDashboard, Loader2, MessageCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, LayoutDashboard, LifeBuoy, Loader2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminAuthGate from "@/components/admin/AdminAuthGate";
@@ -207,6 +207,12 @@ export default function AdminCustomerDetail() {
                 <a href="/admin/astrology-guide">
                   <MessageCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">Guida astrologica</span>
+                </a>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                <a href="/admin/support">
+                  <LifeBuoy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Assistenza</span>
                 </a>
               </Button>
             </div>

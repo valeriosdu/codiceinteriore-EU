@@ -72,6 +72,50 @@ Always respond by invoking the "return_support_draft" tool with these fields:
 - wants_report_pdf: boolean (see "ATTACHING THE REPORT" above)
 Do not write any text outside the tool call.`;
 
+// How the product actually works: a small, stable set of operational facts so the
+// draft can give concrete, correct guidance (login, where the report lives, the
+// emails the customer received, delivery timing, subscription cancellation, the
+// refund guarantee) instead of vague directions. Facts only, no prose; this is the
+// same for every customer, separate from the per-ticket CUSTOMER DATA block. Keep
+// it accurate: the prompt forbids inventing anything beyond what is written here.
+// Per-language; only the market's language is ever used (ES is the live market).
+const SUPPORT_KNOWLEDGE_ES = `CÓMO FUNCIONA EL SERVICIO (datos operativos reales — úsalos para orientar al cliente; no inventes nada fuera de esto):
+
+ACCESO Y CUENTA
+- Web: www.cartainterior.com. El informe se lee online en el área personal.
+- Para entrar: "Continuar con Google" o con correo y contraseña, SIEMPRE con el MISMO correo usado en la compra. Mensaje oficial: "Para abrir tu lectura, entra con el mismo correo que usaste al hacer la compra."
+- SI NO CONSIGUE ACCEDER (el caso más habitual), o si pagó con un correo distinto (p. ej. con PayPal), o no recibió el correo de activación: indícale que entre en https://www.cartainterior.com/activate?intent=forgot , escriba el correo con el que hizo la compra y pida el enlace de acceso. Nuestro sistema le enviará a ese correo un enlace para entrar y abrir su informe. Funciona aunque todavía no haya creado la cuenta y resuelve también el caso de haber pagado con otro correo. Si aun así no aparece el informe, pon flagForHuman = true.
+- NUNCA pegues ni construyas enlaces que contengan un identificador de sesión o token (por ejemplo .../activate?session_id=...). Para dar acceso usa SIEMPRE la página de recuperación de arriba o el botón del correo que el cliente ya recibió.
+- Menú de la cuenta: "Mi informe", "Comprar otra lectura", "Gestionar suscripción de tránsitos", "Leer los tránsitos del mes", "Contacto / Soporte".
+
+CORREOS QUE RECIBE EL CLIENTE
+- Justo tras pagar: "Tu pago está confirmado — activa tu lectura", botón "Activa y abre tu informe".
+- Cuando el informe está listo: "Tu lectura está lista — entra en tu espacio", botón "Entra y abre tu informe".
+- Para enviarlo a su lectura, remítelo a estos correos o a entrar en la web. Nunca inventes un enlace.
+
+TIEMPOS DE ENTREGA
+- El informe se genera normalmente en pocos minutos tras la activación; para cartas complejas puede tardar hasta 10 minutos. Si pasados 10 minutos no recibe nada, que escriba a soporte.
+
+PRODUCTOS
+- Carta natal (lectura completa), con variante que incluye el primer mes de Tránsitos.
+- Sinastría de pareja (compatibilidad, con PDF descargable).
+- Suscripción mensual de Tránsitos (se renueva sola; "cancela cuando quieras").
+- Paquete de preguntas (Guía astrológica): respuestas personalizadas en pocas horas.
+
+SUSCRIPCIÓN DE TRÁNSITOS (cancelación)
+- Se gestiona y se cancela desde el área personal con "Gestionar suscripción de tránsitos", que abre el portal de pago. Se renueva cada mes hasta cancelarla; el acceso sigue hasta la siguiente renovación.
+
+REEMBOLSOS
+- Por ser contenido digital personalizado generado de inmediato, el derecho de desistimiento de 14 días deja de aplicarse una vez iniciada la generación.
+- Garantía comercial voluntaria "satisfecho o reembolsado": dentro de 14 días desde la entrega, si la lectura resulta genérica o no corresponde a los datos de nacimiento, se puede pedir el reembolso íntegro escribiendo a info@cartainterior.com desde el correo de la compra. Válida UNA vez por cliente y solo para la compra inicial de la carta natal (incl. la variante con el primer mes de Tránsitos); las renovaciones de la suscripción no entran.
+- Puedes EXPLICAR que esta garantía existe, pero NO confirmes tú un reembolso: registra la solicitud, di que el equipo la revisará, y pon flagForHuman = true.`;
+
+const SUPPORT_KNOWLEDGE: Record<PromptLang, string> = {
+  // IT is handled by external software (support-poll skips it); fill in if ever wired.
+  it: "",
+  es: SUPPORT_KNOWLEDGE_ES,
+};
+
 // Few-shot examples — illustrative of tone, length and the flag/escalation
 // behaviour. The astrological/account details are invented; never copy them into
 // a real answer. The examples are written in the reader's language.
@@ -109,9 +153,11 @@ const SUPPORT_EXAMPLES: Record<PromptLang, string> = {
 };
 
 export function supportSystemPrompt(lang: PromptLang, siteName: string): string {
+  const knowledge = SUPPORT_KNOWLEDGE[lang] ?? "";
   return (
     outputLanguageDirective(lang) +
     SUPPORT_INSTRUCTIONS_EN(siteName, lang) +
+    (knowledge ? "\n\n" + knowledge : "") +
     "\n\n" +
     (SUPPORT_EXAMPLES[lang] ?? SUPPORT_EXAMPLES.it)
   );
