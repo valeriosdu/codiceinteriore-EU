@@ -43,6 +43,18 @@ const MAX_RETRIES = 3;
 const STALE_DRAFTING_MS = 5 * 60 * 1000;
 const MAX_CANDIDATES = 5;
 
+// Normalize the model's reported language to a 2-letter code (it sometimes
+// returns "spanish" instead of "es"). Cosmetic — reply_language is a label.
+function normalizeLang(v: string | null | undefined): string {
+  const s = (v || "").trim().toLowerCase();
+  if (!s) return "";
+  const map: Record<string, string> = {
+    spanish: "es", "español": "es", espanol: "es", castellano: "es",
+    italian: "it", italiano: "it", english: "en", inglese: "en", "inglés": "en",
+  };
+  return map[s] || s.slice(0, 2);
+}
+
 function parseJwtClaims(token: string): Record<string, unknown> | null {
   const parts = token.split(".");
   if (parts.length < 2) return null;
@@ -449,7 +461,7 @@ serve(async (req) => {
         status: "drafted",
         category: "support",
         draft_body: result.draft,
-        reply_language: result.reply_language || lang,
+        reply_language: normalizeLang(result.reply_language) || lang,
         ai_confidence: result.confidence,
         flag_for_human: result.flagForHuman || !compact.matched || (forceSupport && !result.draft),
         ai_note: aiNote || null,

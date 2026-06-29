@@ -56,7 +56,8 @@ serve(async (req) => {
     let q = admin.from("support_tickets").select(COLS, { count: "exact" });
     if (status) q = q.eq("status", status);
     if (category) q = q.eq("category", category);
-    if (email) q = q.or(`from_email.ilike.%${email}%,resolved_email.ilike.%${email}%`);
+    // In a raw PostgREST or() string the wildcard is `*` (mapped to SQL `%`).
+    if (email) q = q.or(`from_email.ilike.*${email}*,resolved_email.ilike.*${email}*`);
     q = q.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
 
     const { data, count, error } = await q;
