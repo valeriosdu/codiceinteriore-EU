@@ -183,12 +183,47 @@ function compactCustomerData(detail: Record<string, unknown> | null): Record<str
 // page, which emails them a genuine login link to the address they enter (and
 // also fixes the paid-with-a-different-email case). This strips any such URL from
 // the finished draft regardless of what the model wrote.
+// Any URL carrying a session id / token (query param) OR an id in the path (UUID,
+// or a Stripe cs_… id) is a per-customer deep link the model lifted or fabricated
+// from the data/thread. We never hand those back — they may be broken (e.g. an
+// invented /natal/<uuid> route) and we can't tell real from fake. Replace with the
+// static recovery page, which emails a genuine login link to the address entered.
 const SENSITIVE_URL_PARAM = /[?&](session_id|token|access_token|refresh_token|code)=/i;
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+const CS_ID_RE = /\bcs_(live|test)_[A-Za-z0-9]+/;
 function sanitizeAccessLinks(text: string, recoveryUrl: string): string {
   if (!text) return text;
   return text.replace(/https?:\/\/[^\s<>()[\]]+/gi, (url) =>
-    SENSITIVE_URL_PARAM.test(url) ? recoveryUrl : url,
+    SENSITIVE_URL_PARAM.test(url) || UUID_RE.test(url) || CS_ID_RE.test(url) ? recoveryUrl : url,
   );
+}
+
+// Make the sign-off the agent's name. The model sometimes signs with a bracketed
+// placeholder ("[Tu nombre]") or with the brand team name ("El equipo de Carta
+// Interior") despite the prompt; normalize both so a reviewer never has to catch
+// it. The team-name swap is anchored to a closing farewell line, so a mid-sentence
+// mention of the team is left untouched.
+function sanitizeSignaturePlaceholder(text: string, signer: string): string {
+  if (!text || !signer) return text;
+  let out = text.replace(/\[[^\]\n]*(nombre|name|equipo|team|firma|signature)[^\]\n]*\]/gi, signer);
+  out = out.replace(
+    /((?:^|\n)[ \t]*(?:Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo)[,.!]?[ \t]*\n+[ \t]*)(?:el |El )?(?:equipo|Equipo)(?: de Carta Interior)?\.?/g,
+    (_m, lead) => `${lead}${signer}`,
+  );
+  return out;
+}
+
+// Final guarantee: the draft ends signed with the agent's name. flash-lite is
+// inconsistent — it sometimes drops the name entirely and ends on a bare "Un
+// saludo,". If the signer is not already in the closing, add it (after an existing
+// farewell line, or with a fresh farewell when there is none).
+const FAREWELL_END = /(Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo)[,.!]?$/i;
+function ensureSigner(text: string, signer: string): string {
+  if (!text || !signer) return text;
+  const trimmed = text.replace(/\s+$/, "");
+  if (trimmed.slice(-60).toLowerCase().includes(signer.toLowerCase())) return trimmed;
+  if (FAREWELL_END.test(trimmed)) return `${trimmed}\n${signer}`;
+  return `${trimmed}\n\nUn saludo,\n${signer}`;
 }
 
 type DraftResult = {
@@ -428,12 +463,60 @@ serve(async (req) => {
       }
     }
 
+    // ── Prior tickets from the same person (continuity) ─────────────────────
+    // Matched on the sender address and (when known) the resolved customer email,
+    // so the model can avoid repeating itself and treat repeat contacts as more
+    // urgent. A repeat is also what flips the default "guide to the website" into
+    // attaching the report below.
+    const safeEmail = (e: string) => e.replace(/[^a-zA-Z0-9@._%+\-]/g, "").slice(0, 200);
+    const orParts: string[] = [];
+    if (ticket.from_email) orParts.push(`from_email.ilike.${safeEmail(String(ticket.from_email))}`);
+    if (resolvedEmail) orParts.push(`resolved_email.ilike.${safeEmail(String(resolvedEmail))}`);
+    let priorTickets: Record<string, unknown>[] = [];
+    if (orParts.length) {
+      const { data: priors, error: priorErr } = await admin
+        .from("support_tickets")
+        .select("subject, body_plain, status, created_at")
+        .eq("market", ticket.market)
+        .neq("id", ticketId)
+        .or(orParts.join(","))
+        .order("created_at", { ascending: false })
+        .limit(3);
+      if (priorErr) {
+        console.error("[support-draft] prior tickets query failed:", priorErr.message);
+      } else {
+        priorTickets = (priors || []).map((p) => {
+          const row = p as Record<string, unknown>;
+          return {
+            subject: row.subject ?? null,
+            asked: String(row.body_plain || "").replace(/\s+/g, " ").slice(0, 200),
+            answered: row.status === "answered",
+            when: row.created_at ?? null,
+          };
+        });
+      }
+    }
+    const isRepeat = priorTickets.length >= 1;
+    const reports = Array.isArray(compact.reports) ? (compact.reports as Record<string, unknown>[]) : [];
+    const readyReports = reports.filter((r) => r.ready && r.id);
+    // Repeat contact + a ready report => attach the PDF automatically (see the
+    // attachment policy below). Decided BEFORE the model call so the draft can tell
+    // the customer the PDF is attached.
+    const forceAttachRepeat = Boolean(compact.matched && readyReports.length > 0 && isRepeat);
+
     // ── Build the prompt ────────────────────────────────────────────────────
-    const dataBlock = compact.matched
-      ? `CUSTOMER DATA (matched customer — account/order status only, no report content):\n${JSON.stringify(compact)}`
-      : `CUSTOMER DATA: the sender (${ticket.from_email}) was NOT matched to any customer in our records. Include NO account specifics in the reply.${
-          candidateMatches.length ? " Unconfirmed possible matches exist; a human will link the right one." : ""
-        }`;
+    const priorBlock = priorTickets.length
+      ? `\n\nPRIOR TICKETS from this same person (most recent first), for continuity:\n${JSON.stringify(priorTickets)}`
+      : "";
+    const attachNote = forceAttachRepeat
+      ? "\n\nNOTE: This is a repeat contact and the customer's report PDF is being attached to this reply automatically. In your draft, tell them warmly that you are attaching their informe (PDF) so they can read it right now, in addition to guiding them to log in on the website."
+      : "";
+    const dataBlock =
+      (compact.matched
+        ? `CUSTOMER DATA (matched customer — account/order status only, no report content):\n${JSON.stringify(compact)}`
+        : `CUSTOMER DATA: the sender (${ticket.from_email}) was NOT matched to any customer in our records. Include NO account specifics in the reply.${
+            candidateMatches.length ? " Unconfirmed possible matches exist; a human will link the right one." : ""
+          }`) + priorBlock + attachNote;
 
     const emailBlock =
       `Subject: ${ticket.subject || "(no subject)"}\n` +
@@ -478,23 +561,25 @@ serve(async (req) => {
         : result.summary;
 
     const recoveryUrl = `${market.siteUrl}/activate?intent=forgot`;
-    const cleanDraft = sanitizeAccessLinks(result.draft, recoveryUrl);
+    const signer = lang === "es" ? "María" : "";
+    const cleanDraft = ensureSigner(
+      sanitizeSignaturePlaceholder(sanitizeAccessLinks(result.draft, recoveryUrl), signer),
+      signer,
+    );
 
-    // Auto-suggest attaching the customer's ready natal report PDF(s) when they
-    // want it / can't access it. Only for matched customers; the operator can
-    // edit the selection before Send.
-    const reports = Array.isArray(compact.reports) ? (compact.reports as Record<string, unknown>[]) : [];
-    const attachments =
-      result.wantsReportPdf && compact.matched
-        ? reports
-            .filter((r) => r.ready && r.id)
-            .slice(0, 3)
-            .map((r) => ({
-              kind: "natal",
-              session_id: String(r.id),
-              label: r.name ? `Carta natal - ${r.name}` : "Carta natal",
-            }))
-        : [];
+    // Attachment policy: default is to guide the customer to the website (log in /
+    // recovery page), NOT to attach. Attach the ready natal PDF(s) only when the
+    // model judged it warranted (customer struggling / upset / refund-dispute) OR
+    // this is a repeat contact from the same person. Only for matched customers;
+    // the operator can still edit the selection before Send.
+    const shouldAttach = compact.matched && readyReports.length > 0 && (result.wantsReportPdf || isRepeat);
+    const attachments = shouldAttach
+      ? readyReports.slice(0, 3).map((r) => ({
+          kind: "natal",
+          session_id: String(r.id),
+          label: r.name ? `Carta natal - ${r.name}` : "Carta natal",
+        }))
+      : [];
 
     await admin
       .from("support_tickets")
@@ -504,9 +589,9 @@ serve(async (req) => {
         draft_body: cleanDraft,
         reply_language: normalizeLang(result.reply_language) || lang,
         ai_confidence: result.confidence,
-        flag_for_human: result.flagForHuman || !compact.matched || (forceSupport && !result.draft),
+        flag_for_human: result.flagForHuman || !compact.matched || isRepeat || (forceSupport && !result.draft),
         ai_note: aiNote || null,
-        data_summary: compact,
+        data_summary: { ...compact, prior_tickets: priorTickets },
         resolved_email: resolvedEmail,
         resolved_profile_id: resolvedProfileId,
         candidate_matches: candidateMatches,
