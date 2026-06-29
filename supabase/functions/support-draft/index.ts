@@ -144,12 +144,16 @@ function compactCustomerData(detail: Record<string, unknown> | null): Record<str
       is_orphan: c.is_orphan ?? false,
     })),
     reports: sessions.map((s) => ({
+      id: s.id ?? null,
+      kind: "natal",
       name: s.user_name ?? null,
       status: s.processing_status ?? null,
       ready: s.has_full_report ?? false,
       error: s.processing_error ?? null,
     })),
     synastry: arr(detail.synastry_sessions).map((s) => ({
+      id: s.id ?? null,
+      kind: "synastry",
       status: s.processing_status ?? null,
       ready: s.has_full_report ?? false,
     })),
@@ -180,6 +184,7 @@ type DraftResult = {
   confidence: string;
   flagForHuman: boolean;
   summary: string;
+  wantsReportPdf: boolean;
 };
 
 async function callGemini(
@@ -209,8 +214,9 @@ async function callGemini(
               confidence: { type: "string", enum: ["high", "medium", "low"] },
               flagForHuman: { type: "boolean" },
               summary: { type: "string" },
+              wants_report_pdf: { type: "boolean" },
             },
-            required: ["category", "reply_language", "draft", "confidence", "flagForHuman", "summary"],
+            required: ["category", "reply_language", "draft", "confidence", "flagForHuman", "summary", "wants_report_pdf"],
             additionalProperties: false,
           },
         },
@@ -277,6 +283,7 @@ async function callGemini(
     usage: completion?.usage,
   });
 
+  const p = parsed as Record<string, unknown>;
   return {
     category: typeof parsed.category === "string" ? parsed.category : "other",
     reply_language: typeof parsed.reply_language === "string" ? parsed.reply_language : "",
@@ -284,6 +291,7 @@ async function callGemini(
     confidence: typeof parsed.confidence === "string" ? parsed.confidence : "low",
     flagForHuman: Boolean(parsed.flagForHuman),
     summary: typeof parsed.summary === "string" ? parsed.summary.trim() : "",
+    wantsReportPdf: Boolean(p.wants_report_pdf),
   };
 }
 
@@ -455,6 +463,22 @@ serve(async (req) => {
         ? `[forzato come support; l'AI aveva classificato: ${result.category}] ${result.summary}`.trim()
         : result.summary;
 
+    // Auto-suggest attaching the customer's ready natal report PDF(s) when they
+    // want it / can't access it. Only for matched customers; the operator can
+    // edit the selection before Send.
+    const reports = Array.isArray(compact.reports) ? (compact.reports as Record<string, unknown>[]) : [];
+    const attachments =
+      result.wantsReportPdf && compact.matched
+        ? reports
+            .filter((r) => r.ready && r.id)
+            .slice(0, 3)
+            .map((r) => ({
+              kind: "natal",
+              session_id: String(r.id),
+              label: r.name ? `Carta natal - ${r.name}` : "Carta natal",
+            }))
+        : [];
+
     await admin
       .from("support_tickets")
       .update({
@@ -469,6 +493,7 @@ serve(async (req) => {
         resolved_email: resolvedEmail,
         resolved_profile_id: resolvedProfileId,
         candidate_matches: candidateMatches,
+        attachments,
         model_used: MODEL,
         error: null,
       })

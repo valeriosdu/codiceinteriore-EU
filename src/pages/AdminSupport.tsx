@@ -20,18 +20,14 @@ import {
   UserPlus,
   ExternalLink,
   Languages,
+  Trash2,
+  Ban,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -49,10 +45,35 @@ const REGEN_URL = `${BASE_URL}/functions/v1/admin-regenerate-draft`;
 const LINK_URL = `${BASE_URL}/functions/v1/admin-link-customer`;
 const SEND_URL = `${BASE_URL}/functions/v1/support-send`;
 const TRANSLATE_URL = `${BASE_URL}/functions/v1/admin-translate`;
+const ACTION_URL = `${BASE_URL}/functions/v1/admin-support-action`;
 
 type Status = "received" | "drafting" | "drafted" | "draft_failed" | "answered" | "ignored";
 
 type Candidate = { email: string; name: string | null; score: number };
+type AttachItem = { kind?: string; session_id: string; label?: string };
+type ReportSummary = { id?: string; kind?: string; name?: string | null; status?: string | null; ready?: boolean };
+type OrderSummary = {
+  product?: string | null;
+  purchase_type?: string | null;
+  status?: string | null;
+  amount_total?: number | null;
+  currency?: string | null;
+  paid_at?: string | null;
+  created_at?: string | null;
+  is_orphan?: boolean;
+};
+type DataSummary = {
+  matched?: boolean;
+  name?: string | null;
+  email?: string | null;
+  orders?: OrderSummary[];
+  reports?: ReportSummary[];
+  synastry?: ReportSummary[];
+  transit_subscription?: { status?: string | null; current_period_end?: string | null } | null;
+  feedback_count?: number;
+  latest_feedback_rating?: unknown;
+  prior_contacts?: number;
+};
 
 type Ticket = {
   id: string;
@@ -72,7 +93,7 @@ type Ticket = {
   candidate_matches: Candidate[] | null;
   draft_body: string | null;
   reply_language: string | null;
-  data_summary: Record<string, unknown> | null;
+  data_summary: DataSummary | null;
   ai_note: string | null;
   ai_confidence: string | null;
   flag_for_human: boolean;
@@ -84,6 +105,7 @@ type Ticket = {
   error: string | null;
   manually_linked: boolean;
   force_support: boolean;
+  attachments: AttachItem[] | null;
 };
 
 type Aggregate = {
@@ -94,14 +116,23 @@ type Aggregate = {
 
 type ListResponse = { items: Ticket[]; total: number; aggregate: Aggregate };
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
+// Multi-select status chips (toggle several at once).
+const STATUS_FILTERS: { value: Status; label: string }[] = [
   { value: "drafted", label: "Da rivedere" },
   { value: "answered", label: "Risposte" },
   { value: "received", label: "In coda" },
+  { value: "drafting", label: "In elaborazione" },
   { value: "draft_failed", label: "Errore" },
-  { value: "ignored", label: "Ignorati (spam/auto)" },
-  { value: "all", label: "Tutti" },
+  { value: "ignored", label: "Ignorati" },
 ];
+// Default view keeps active tickets AND answered ones (so sent stay visible).
+const DEFAULT_STATUSES: Status[] = ["received", "drafting", "drafted", "answered"];
+
+const money = (cents?: number | null, currency?: string | null) => {
+  if (typeof cents !== "number") return null;
+  const v = (cents / 100).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${v} ${currency || "EUR"}`;
+};
 
 const formatDate = (iso: string | null | undefined) => {
   if (!iso) return "—";
@@ -153,6 +184,55 @@ const StatCard = ({ label, value, hint }: { label: string; value: React.ReactNod
   </Card>
 );
 
+const CustomerSummary = ({ ds, ticketCount }: { ds: DataSummary; ticketCount: number }) => {
+  const orders = ds.orders || [];
+  const paid = orders.filter((o) => o.status === "paid");
+  const totalCents = paid.reduce((s, o) => s + (typeof o.amount_total === "number" ? o.amount_total : 0), 0);
+  const currency = paid.find((o) => o.currency)?.currency || "EUR";
+  const reports = ds.reports || [];
+  const readyReports = reports.filter((r) => r.ready).length;
+  const products = Array.from(new Set(paid.map((o) => o.product).filter(Boolean))) as string[];
+  const sub = ds.transit_subscription?.status || null;
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+      <div>
+        <span className="text-muted-foreground">Speso: </span>
+        <span className="font-medium text-foreground">{money(totalCents, currency) ?? "—"}</span>
+      </div>
+      <div>
+        <span className="text-muted-foreground">Ordini pagati: </span>
+        <span className="font-medium text-foreground">{paid.length}</span>
+      </div>
+      <div>
+        <span className="text-muted-foreground">Report pronti: </span>
+        <span className="font-medium text-foreground">
+          {readyReports}/{reports.length}
+        </span>
+      </div>
+      <div>
+        <span className="text-muted-foreground">Ticket: </span>
+        <span className="font-medium text-foreground">{ticketCount}</span>
+      </div>
+      <div className="col-span-2">
+        <span className="text-muted-foreground">Acquisti: </span>
+        <span className="font-medium text-foreground">{products.length ? products.join(", ") : "—"}</span>
+      </div>
+      {sub && (
+        <div className="col-span-2">
+          <span className="text-muted-foreground">Abbonamento transiti: </span>
+          <span className="font-medium text-foreground">{sub}</span>
+        </div>
+      )}
+      {typeof ds.prior_contacts === "number" && ds.prior_contacts > 0 && (
+        <div className="col-span-2">
+          <span className="text-muted-foreground">Messaggi dal modulo contatti: </span>
+          <span className="font-medium text-foreground">{ds.prior_contacts}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const PAGE_SIZE = 100;
 
 const AdminSupport = () => {
@@ -160,7 +240,7 @@ const AdminSupport = () => {
   const [secretInput, setSecretInput] = useState("");
   const [authError, setAuthError] = useState(false);
 
-  const [statusFilter, setStatusFilter] = useState<string>("drafted");
+  const [statuses, setStatuses] = useState<Status[]>(DEFAULT_STATUSES);
   const [emailFilter, setEmailFilter] = useState("");
   const [emailQuery, setEmailQuery] = useState("");
 
@@ -173,6 +253,9 @@ const AdminSupport = () => {
   // Italian translations of the customer email + draft, for the operator to read
   // foreign-language tickets. The reply stays in the customer's language.
   const [translated, setTranslated] = useState<Record<string, { customer: string; draft: string }>>({});
+  // Per-ticket attachment selection (session_ids to attach). Initialized from the
+  // AI's suggestion (ticket.attachments) when a ticket is first expanded.
+  const [attachSel, setAttachSel] = useState<Record<string, Set<string>>>({});
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -188,7 +271,7 @@ const AdminSupport = () => {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-secret": secret },
         body: JSON.stringify({
-          status: statusFilter === "all" ? null : statusFilter,
+          statuses,
           email: emailQuery || null,
           limit: PAGE_SIZE,
           offset: 0,
@@ -223,7 +306,10 @@ const AdminSupport = () => {
   useEffect(() => {
     if (secret) void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secret, statusFilter, emailQuery]);
+  }, [secret, statuses, emailQuery]);
+
+  const toggleStatus = (s: Status) =>
+    setStatuses((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   useEffect(() => {
     const handle = setTimeout(() => setEmailQuery(emailFilter.trim()), 400);
@@ -281,18 +367,57 @@ const AdminSupport = () => {
     }
   };
 
+  // Ready reports available to attach (from the data the AI pulled).
+  const readyReports = (t: Ticket): ReportSummary[] =>
+    (t.data_summary?.reports || []).filter((r) => r.ready && r.id);
+
+  // Current attachment selection: operator edits in attachSel, else the AI's suggestion.
+  const selectedAttachIds = (t: Ticket): Set<string> =>
+    attachSel[t.id] ?? new Set((t.attachments || []).map((a) => a.session_id));
+
+  const toggleAttach = (t: Ticket, sessionId: string) =>
+    setAttachSel((m) => {
+      const cur = new Set(m[t.id] ?? new Set((t.attachments || []).map((a) => a.session_id)));
+      if (cur.has(sessionId)) cur.delete(sessionId);
+      else cur.add(sessionId);
+      return { ...m, [t.id]: cur };
+    });
+
+  const handleAction = async (t: Ticket, action: "ignore" | "delete") => {
+    const label = action === "delete" ? "Eliminare" : "Ignorare";
+    if (!confirm(`${label} questo ticket di ${t.from_email}?`)) return;
+    const key = `${t.id}:${action}`;
+    if (busy) return;
+    setBusy(key);
+    try {
+      await callFn(ACTION_URL, { ticketId: t.id, action });
+      toast.success(action === "delete" ? "Ticket eliminato." : "Ticket ignorato.");
+      setExpandedId(null);
+      void load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleSend = async (t: Ticket) => {
     const text = (draftEdits[t.id] ?? t.draft_body ?? "").trim();
     if (!text) {
       toast.error("La risposta è vuota.");
       return;
     }
-    if (!confirm(`Inviare la risposta a ${t.from_email}?`)) return;
+    const sel = selectedAttachIds(t);
+    const attachments: AttachItem[] = readyReports(t)
+      .filter((r) => sel.has(r.id!))
+      .map((r) => ({ kind: "natal", session_id: r.id!, label: r.name ? `Carta natal - ${r.name}` : "Carta natal" }));
+    const attachNote = attachments.length ? ` con ${attachments.length} allegato/i` : "";
+    if (!confirm(`Inviare la risposta a ${t.from_email}${attachNote}?`)) return;
     const key = `${t.id}:send`;
     if (busy) return;
     setBusy(key);
     try {
-      const res = await callFn(SEND_URL, { ticketId: t.id, text });
+      const res = await callFn(SEND_URL, { ticketId: t.id, text, attachments });
       if (res.dryRun) {
         toast.info("Invio in modalità test (Phase 1): la risposta NON è stata inviata.");
       } else {
@@ -427,19 +552,28 @@ const AdminSupport = () => {
           <CardContent className="pt-4 space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
               <div className="flex-1 space-y-1">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vista</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Stati (selezione multipla)
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {STATUS_FILTERS.map((o) => {
+                    const on = statuses.includes(o.value);
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => toggleStatus(o.value)}
+                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                          on
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-muted-foreground border-border hover:bg-secondary"
+                        }`}
+                      >
                         {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
@@ -571,7 +705,7 @@ const AdminSupport = () => {
                                     {matched ? (
                                       <div className="rounded-lg bg-background p-3 border border-border/60 space-y-2">
                                         <a
-                                          className="text-primary inline-flex items-center gap-1 hover:underline"
+                                          className="text-primary inline-flex items-center gap-1 hover:underline font-medium"
                                           href={`/admin/clienti/${encodeURIComponent(t.resolved_email!)}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
@@ -580,8 +714,21 @@ const AdminSupport = () => {
                                           <ExternalLink className="h-3 w-3" />
                                         </a>
                                         {t.data_summary && (
+                                          <CustomerSummary
+                                            ds={t.data_summary}
+                                            ticketCount={
+                                              items.filter(
+                                                (x) =>
+                                                  x.resolved_email &&
+                                                  t.resolved_email &&
+                                                  x.resolved_email.toLowerCase() === t.resolved_email.toLowerCase(),
+                                              ).length
+                                            }
+                                          />
+                                        )}
+                                        {t.data_summary && (
                                           <details className="text-xs text-muted-foreground">
-                                            <summary className="cursor-pointer">Dati usati dall'AI</summary>
+                                            <summary className="cursor-pointer">Dettaglio dati AI</summary>
                                             <pre className="whitespace-pre-wrap break-words mt-1">
                                               {JSON.stringify(t.data_summary, null, 2)}
                                             </pre>
@@ -667,20 +814,50 @@ const AdminSupport = () => {
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                       Bozza di risposta
                                     </p>
-                                    {t.status === "ignored" ? (
+                                    <div className="flex items-center gap-1">
+                                      {t.status === "ignored" && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 text-xs gap-1"
+                                          disabled={busy === `${t.id}:regen`}
+                                          onClick={() => void handleRegenerate(t, true)}
+                                        >
+                                          {busy === `${t.id}:regen` ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                                          Tratta come ticket
+                                        </Button>
+                                      )}
+                                      {t.status !== "ignored" && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 text-xs gap-1 text-muted-foreground"
+                                          disabled={busy === `${t.id}:ignore`}
+                                          onClick={() => void handleAction(t, "ignore")}
+                                        >
+                                          {busy === `${t.id}:ignore` ? (
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                          ) : (
+                                            <Ban className="h-3 w-3" />
+                                          )}
+                                          Ignora
+                                        </Button>
+                                      )}
                                       <Button
                                         size="sm"
-                                        variant="outline"
-                                        className="h-7 text-xs gap-1"
-                                        disabled={busy === `${t.id}:regen`}
-                                        onClick={() => void handleRegenerate(t, true)}
+                                        variant="ghost"
+                                        className="h-7 text-xs gap-1 text-destructive hover:text-destructive"
+                                        disabled={busy === `${t.id}:delete`}
+                                        onClick={() => void handleAction(t, "delete")}
                                       >
-                                        {busy === `${t.id}:regen` ? (
+                                        {busy === `${t.id}:delete` ? (
                                           <Loader2 className="h-3 w-3 animate-spin" />
-                                        ) : null}
-                                        Tratta come ticket
+                                        ) : (
+                                          <Trash2 className="h-3 w-3" />
+                                        )}
+                                        Elimina
                                       </Button>
-                                    ) : null}
+                                    </div>
                                   </div>
 
                                   {t.status === "ignored" ? (
@@ -702,6 +879,29 @@ const AdminSupport = () => {
                                         }
                                         className="text-sm"
                                       />
+                                      {matched && readyReports(t).length > 0 && (
+                                        <div className="rounded-lg border border-border/60 p-2 space-y-1">
+                                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                                            <Paperclip className="h-3 w-3" /> Allegati (PDF report)
+                                          </p>
+                                          {readyReports(t).map((r) => {
+                                            const checked = selectedAttachIds(t).has(r.id!);
+                                            return (
+                                              <label
+                                                key={r.id}
+                                                className="flex items-center gap-2 text-xs cursor-pointer"
+                                              >
+                                                <input
+                                                  type="checkbox"
+                                                  checked={checked}
+                                                  onChange={() => toggleAttach(t, r.id!)}
+                                                />
+                                                <span>{r.name ? `Carta natal · ${r.name}` : "Carta natal"}</span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
                                       <div className="flex items-center gap-2 justify-end">
                                         <Button
                                           variant="outline"

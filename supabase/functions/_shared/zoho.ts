@@ -175,12 +175,58 @@ export async function zohoGetMessageContent(
 // confirmed against the live API before enabling send in Phase 2 — sending is
 // gated off in Phase 1. We pass the original messageId so threading can be wired
 // once the live behaviour is confirmed; adjust the payload here, nowhere else.
+// Upload an attachment to Zoho, returning the reference to include in a send.
+// NOTE (Phase 0 verification): confirm the multipart field/response shape against
+// the live API on the first real attachment send.
+export interface ZohoAttachmentRef {
+  storeName: string;
+  attachmentPath: string;
+  attachmentName: string;
+}
+
+export async function zohoUploadAttachment(
+  cfg: ZohoMarketConfig,
+  token: string,
+  file: { fileName: string; bytes: Uint8Array; contentType?: string },
+): Promise<ZohoAttachmentRef> {
+  const url =
+    `${cfg.dcBase}/api/accounts/${cfg.accountId}/messages/attachments` +
+    `?uploadType=multipart&fileName=${encodeURIComponent(file.fileName)}`;
+  const form = new FormData();
+  form.append(
+    "attach",
+    new Blob([file.bytes], { type: file.contentType || "application/octet-stream" }),
+    file.fileName,
+  );
+  const res = await fetch(url, { method: "POST", headers: authHeaders(token), body: form });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`zoho_attach_upload_error (${cfg.market}): ${res.status} ${text.slice(0, 200)}`);
+  }
+  let json: { data?: unknown };
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`zoho_attach_parse_error (${cfg.market}): ${text.slice(0, 200)}`);
+  }
+  const d = (Array.isArray(json.data) ? json.data[0] : json.data) as Record<string, unknown> | undefined;
+  if (!d?.storeName || !d?.attachmentPath) {
+    throw new Error(`zoho_attach_unexpected (${cfg.market}): ${text.slice(0, 200)}`);
+  }
+  return {
+    storeName: String(d.storeName),
+    attachmentPath: String(d.attachmentPath),
+    attachmentName: String(d.attachmentName ?? file.fileName),
+  };
+}
+
 export interface ZohoReplyParams {
   originalMessageId: string;
   fromAddress: string;
   toAddress: string;
   subject: string;
   contentPlain: string;
+  attachments?: ZohoAttachmentRef[];
 }
 
 export async function zohoSendReply(
@@ -189,7 +235,7 @@ export async function zohoSendReply(
   params: ZohoReplyParams,
 ): Promise<{ sentMessageId: string | null }> {
   const url = `${cfg.dcBase}/api/accounts/${cfg.accountId}/messages`;
-  const body = {
+  const body: Record<string, unknown> = {
     fromAddress: params.fromAddress,
     toAddress: params.toAddress,
     subject: params.subject,
@@ -200,6 +246,13 @@ export async function zohoSendReply(
     // Phase 0; harmless if ignored by Zoho.
     inReplyTo: params.originalMessageId,
   };
+  if (params.attachments && params.attachments.length > 0) {
+    body.attachments = params.attachments.map((a) => ({
+      storeName: a.storeName,
+      attachmentPath: a.attachmentPath,
+      attachmentName: a.attachmentName,
+    }));
+  }
   const res = await fetch(url, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },

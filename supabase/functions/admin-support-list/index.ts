@@ -24,7 +24,7 @@ const COLS =
   "attachment_count, received_at, category, triage_reason, resolved_email, resolved_profile_id, " +
   "candidate_matches, draft_body, reply_language, data_summary, ai_note, ai_confidence, " +
   "flag_for_human, model_used, sent_body, answered_at, status, retry_count, error, " +
-  "manually_linked, force_support, zoho_thread_id, zoho_message_id";
+  "manually_linked, force_support, attachments, zoho_thread_id, zoho_message_id";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -44,6 +44,10 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const status = typeof body.status === "string" ? body.status : null;
+    const ALLOWED = ["received", "drafting", "drafted", "draft_failed", "answered", "ignored"];
+    const statuses = Array.isArray(body.statuses)
+      ? (body.statuses as unknown[]).filter((s): s is string => typeof s === "string" && ALLOWED.includes(s))
+      : null;
     const category = typeof body.category === "string" ? body.category : null;
     const emailRaw = typeof body.email === "string" ? body.email.trim() : "";
     // Sanitize for safe use inside the PostgREST or() filter syntax.
@@ -54,7 +58,8 @@ serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let q = admin.from("support_tickets").select(COLS, { count: "exact" });
-    if (status) q = q.eq("status", status);
+    if (statuses && statuses.length > 0) q = q.in("status", statuses);
+    else if (status) q = q.eq("status", status);
     if (category) q = q.eq("category", category);
     // In a raw PostgREST or() string the wildcard is `*` (mapped to SQL `%`).
     if (email) q = q.or(`from_email.ilike.*${email}*,resolved_email.ilike.*${email}*`);

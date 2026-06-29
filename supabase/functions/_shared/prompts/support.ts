@@ -44,6 +44,14 @@ First classify the email into "category":
 - "other": a real human message that is not about this service.
 Only when category = "support" do you write a real "draft". For any other category, set "draft" to an empty string.
 
+ATTACHING THE REPORT
+Set wants_report_pdf = true ONLY when the customer is asking to receive their
+reading/report or says they cannot access it, AND the CUSTOMER DATA shows they
+have a report that is ready. When you set it true, your reply MAY say you are
+attaching their report (PDF) to this email, alongside the normal access steps.
+If no ready report exists in the data, or the sender is not a matched customer,
+set wants_report_pdf = false and do NOT claim any attachment.
+
 ESCALATE (set flagForHuman = true and confidence = "low")
 - Payment disputes, chargebacks, double charges, refund or cancellation requests
 - Anger, threats, legal mentions, GDPR / data-deletion requests, safety or medical matters
@@ -61,6 +69,7 @@ Always respond by invoking the "return_support_draft" tool with these fields:
 - confidence: "high" | "medium" | "low"
 - flagForHuman: boolean
 - summary: 1-2 sentences for the human teammate about what account data you used and what (if anything) is uncertain. Write the summary in ${OUTPUT_LANGUAGE_NAME[lang]}.
+- wants_report_pdf: boolean (see "ATTACHING THE REPORT" above)
 Do not write any text outside the tool call.`;
 
 // Few-shot examples — illustrative of tone, length and the flag/escalation

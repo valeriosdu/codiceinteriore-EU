@@ -105,3 +105,5 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.admin-translate]
     verify_jwt = false
+  [functions.admin-support-action]
+    verify_jwt = false

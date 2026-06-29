@@ -12,7 +12,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getMarket, type MarketId } from "../_shared/markets.ts";
-import { getZohoConfig, zohoAccessToken, zohoSendReply } from "../_shared/zoho.ts";
+import {
+  getZohoConfig,
+  zohoAccessToken,
+  zohoSendReply,
+  zohoUploadAttachment,
+  type ZohoAttachmentRef,
+} from "../_shared/zoho.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +39,24 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+type AttachmentItem = { kind?: string; session_id: string; label?: string };
+
+// Fetch a natal report PDF as bytes via admin-download-report (returns a signed
+// URL). The PDF is generated in the session's own language.
+async function fetchNatalPdfBytes(sessionId: string): Promise<Uint8Array> {
+  const urlRes = await fetch(
+    `${SUPABASE_URL}/functions/v1/admin-download-report?session_id=${encodeURIComponent(sessionId)}`,
+    { headers: { "x-admin-secret": ADMIN_SECRET } },
+  );
+  const j = (await urlRes.json().catch(() => ({}))) as { url?: string; error?: string };
+  if (!urlRes.ok || !j.url) {
+    throw new Error(`pdf_url_${urlRes.status}: ${(j.error || "").slice(0, 120)}`);
+  }
+  const fileRes = await fetch(j.url);
+  if (!fileRes.ok) throw new Error(`pdf_fetch_${fileRes.status}`);
+  return new Uint8Array(await fileRes.arrayBuffer());
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -49,7 +73,7 @@ serve(async (req) => {
 
     const { data: row, error: loadErr } = await admin
       .from("support_tickets")
-      .select("id, market, status, from_email, subject, zoho_message_id, draft_body")
+      .select("id, market, status, from_email, subject, zoho_message_id, draft_body, attachments")
       .eq("id", ticketId)
       .maybeSingle();
     if (loadErr) throw loadErr;
@@ -63,6 +87,7 @@ serve(async (req) => {
       subject: string | null;
       zoho_message_id: string;
       draft_body: string | null;
+      attachments: AttachmentItem[] | null;
     };
 
     if (ticket.status === "answered") return json({ error: "already_answered" }, 409);
@@ -80,6 +105,12 @@ serve(async (req) => {
       ? ticket.subject
       : `Re: ${ticket.subject || ""}`.trim();
 
+    // Attachment plan: the operator's edited selection (body.attachments) wins;
+    // otherwise the AI's stored suggestion. v1 supports natal report PDFs.
+    const attachInput = Array.isArray(body.attachments) ? (body.attachments as AttachmentItem[]) : null;
+    const attachPlan = ((attachInput ?? ticket.attachments ?? []) as AttachmentItem[])
+      .filter((a) => a && typeof a.session_id === "string" && a.session_id);
+
     // Phase-1 dry run: do not send, do not mutate state.
     if (!SEND_ENABLED) {
       return json({
@@ -89,7 +120,38 @@ serve(async (req) => {
         from: market.contactEmail,
         subject,
         chars: text.length,
+        attachments: attachPlan.length,
       });
+    }
+
+    let cfg;
+    let token: string;
+    try {
+      cfg = getZohoConfig(marketId);
+      token = await zohoAccessToken(cfg);
+    } catch (e) {
+      return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+    }
+
+    // Build attachments BEFORE claiming, so a failure leaves the ticket as-is.
+    const attachmentRefs: ZohoAttachmentRef[] = [];
+    try {
+      for (const a of attachPlan) {
+        if (a.kind && a.kind !== "natal") continue; // v1: natal only
+        const bytes = await fetchNatalPdfBytes(a.session_id);
+        const safe = (a.label || "informe").replace(/[^\w.-]+/g, "_").slice(0, 60) || "informe";
+        attachmentRefs.push(
+          await zohoUploadAttachment(cfg, token, {
+            fileName: `${safe}.pdf`,
+            bytes,
+            contentType: "application/pdf",
+          }),
+        );
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[support-send] attachment build failed:", msg);
+      return json({ error: `attachment_failed: ${msg}` }, 502);
     }
 
     // Compare-and-swap claim BEFORE sending → no double-send under concurrency.
@@ -103,20 +165,19 @@ serve(async (req) => {
     if (!claimed) return json({ error: "already_answered" }, 409);
 
     try {
-      const cfg = getZohoConfig(marketId);
-      const token = await zohoAccessToken(cfg);
       const { sentMessageId } = await zohoSendReply(cfg, token, {
         originalMessageId: ticket.zoho_message_id,
         fromAddress: market.contactEmail,
         toAddress: ticket.from_email,
         subject,
         contentPlain: text,
+        attachments: attachmentRefs,
       });
       await admin
         .from("support_tickets")
-        .update({ sent_body: text, zoho_sent_message_id: sentMessageId })
+        .update({ sent_body: text, zoho_sent_message_id: sentMessageId, attachments: attachPlan })
         .eq("id", ticketId);
-      return json({ ok: true, ticketId, sentMessageId });
+      return json({ ok: true, ticketId, sentMessageId, attachments: attachmentRefs.length });
     } catch (sendErr) {
       // Revert the claim so the admin can retry.
       const msg = sendErr instanceof Error ? sendErr.message : String(sendErr);
