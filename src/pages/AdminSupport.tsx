@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   UserPlus,
   ExternalLink,
+  Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ const LIST_URL = `${BASE_URL}/functions/v1/admin-support-list`;
 const REGEN_URL = `${BASE_URL}/functions/v1/admin-regenerate-draft`;
 const LINK_URL = `${BASE_URL}/functions/v1/admin-link-customer`;
 const SEND_URL = `${BASE_URL}/functions/v1/support-send`;
+const TRANSLATE_URL = `${BASE_URL}/functions/v1/admin-translate`;
 
 type Status = "received" | "drafting" | "drafted" | "draft_failed" | "answered" | "ignored";
 
@@ -168,6 +170,9 @@ const AdminSupport = () => {
   const [busy, setBusy] = useState<string | null>(null); // `${id}:${action}`
   const [draftEdits, setDraftEdits] = useState<Record<string, string>>({});
   const [linkEmail, setLinkEmail] = useState<Record<string, string>>({});
+  // Italian translations of the customer email + draft, for the operator to read
+  // foreign-language tickets. The reply stays in the customer's language.
+  const [translated, setTranslated] = useState<Record<string, { customer: string; draft: string }>>({});
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -296,6 +301,23 @@ const AdminSupport = () => {
       setTimeout(() => void load(), 1500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Errore.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleTranslate = async (t: Ticket) => {
+    const key = `${t.id}:translate`;
+    if (busy) return;
+    setBusy(key);
+    try {
+      const customerText = t.body_plain || "";
+      const draftText = draftEdits[t.id] ?? t.draft_body ?? "";
+      const res = await callFn(TRANSLATE_URL, { texts: [customerText, draftText], target: "it" });
+      const out = Array.isArray(res.translations) ? (res.translations as string[]) : [];
+      setTranslated((m) => ({ ...m, [t.id]: { customer: out[0] ?? "", draft: out[1] ?? "" } }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore traduzione.");
     } finally {
       setBusy(null);
     }
@@ -503,17 +525,43 @@ const AdminSupport = () => {
                                 {/* Inbound + customer panel */}
                                 <div className="space-y-4">
                                   <div>
-                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                                      Email del cliente
-                                      {t.attachment_count > 0 && (
-                                        <span className="ml-2 normal-case font-normal">
-                                          · {t.attachment_count} allegato/i (apri in Zoho)
-                                        </span>
-                                      )}
-                                    </p>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Email del cliente
+                                        {t.attachment_count > 0 && (
+                                          <span className="ml-2 normal-case font-normal">
+                                            · {t.attachment_count} allegato/i (apri in Zoho)
+                                          </span>
+                                        )}
+                                      </p>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 text-[11px] gap-1"
+                                        disabled={busy === `${t.id}:translate`}
+                                        onClick={() => void handleTranslate(t)}
+                                      >
+                                        {busy === `${t.id}:translate` ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Languages className="h-3 w-3" />
+                                        )}
+                                        Traduci in IT
+                                      </Button>
+                                    </div>
                                     <p className="text-foreground/90 whitespace-pre-wrap rounded-lg bg-background p-3 border border-border/60 max-h-64 overflow-auto">
                                       {t.body_plain || "(corpo vuoto)"}
                                     </p>
+                                    {translated[t.id]?.customer && (
+                                      <div className="mt-2 rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
+                                        <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700/80 mb-1">
+                                          🇮🇹 Traduzione IT
+                                        </p>
+                                        <p className="text-foreground/90 whitespace-pre-wrap text-sm max-h-64 overflow-auto">
+                                          {translated[t.id].customer}
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
 
                                   <div>
@@ -683,6 +731,16 @@ const AdminSupport = () => {
                                           {t.status === "answered" ? "Inviata" : "Invia"}
                                         </Button>
                                       </div>
+                                      {translated[t.id]?.draft && (
+                                        <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
+                                          <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700/80 mb-1">
+                                            🇮🇹 Bozza tradotta (solo per te — la risposta resta in {t.reply_language || "lingua del cliente"})
+                                          </p>
+                                          <p className="text-foreground/90 whitespace-pre-wrap text-sm max-h-64 overflow-auto">
+                                            {translated[t.id].draft}
+                                          </p>
+                                        </div>
+                                      )}
                                     </>
                                   )}
                                 </div>
