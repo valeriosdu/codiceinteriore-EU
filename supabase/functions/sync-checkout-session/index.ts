@@ -313,14 +313,21 @@ serve(async (req) => {
             const completedAt = capture?.create_time
               ? new Date(capture.create_time).toISOString()
               : new Date().toISOString();
+            // Market persisted on the row picks the listing currency. These are
+            // only fallbacks: PayPal's captured amount/currency always wins.
+            const rowMarket = getMarket((effectiveRow as { market?: string | null }).market);
+            const fallbackAmount =
+              rowMarket.currency === "USD"
+                ? (purchaseType === "premium" ? "29.99" : "19.99") // TODO: confirm USD prices
+                : (purchaseType === "premium" ? "29.00" : "19.00");
             const captureAmountStr =
               (capture as any)?.amount?.value ||
               purchaseUnit?.amount?.value ||
-              (purchaseType === "premium" ? "29.00" : "19.00");
+              fallbackAmount;
             const captureCurrency =
               (capture as any)?.amount?.currency_code ||
               purchaseUnit?.amount?.currency_code ||
-              "EUR";
+              rowMarket.currency;
             const amountCents = Math.round(parseFloat(captureAmountStr) * 100);
             const payer = order.payer || {};
             const payerName = [payer.name?.given_name, payer.name?.surname].filter(Boolean).join(" ").trim() || null;
@@ -413,7 +420,9 @@ serve(async (req) => {
         paymentProvider: "paypal",
         providerPaymentId: effectiveRow.provider_payment_id || null,
         amountTotal: typeof effectiveRow.amount_total === "number" ? effectiveRow.amount_total : null,
-        currency: effectiveRow.currency || "EUR",
+        currency:
+          effectiveRow.currency ||
+          getMarket((effectiveRow as { market?: string | null }).market).currency,
         providerMetadata: (effectiveRow.provider_metadata as Record<string, unknown>) || {},
         paymentCompletedAtFromRow: hasCompletedAt,
       };

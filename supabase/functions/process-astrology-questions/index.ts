@@ -28,6 +28,7 @@ import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncAstrologyGuideStatusBackground } from "../_shared/astrology-guide-brevo.ts";
 import { resolvePromptLang, outputLanguageDirective, type PromptLang } from "../_shared/prompts/lang.ts";
+import { getMarket } from "../_shared/markets.ts";
 import { getArchetypeLabel } from "../_shared/synastry-archetypes.ts";
 
 // Istruzioni in inglese (neutre per la lingua di output, come per
@@ -283,7 +284,41 @@ Lo que está pasando ahora añade un elemento: Saturno está tocando tu Marte na
 
 La inquietud, en este periodo, tiene menos que ver con el volumen de trabajo que con una verificación de sentido que va por debajo. Una parte de ti está entendiendo que el modo en que trabajas ahora no es sostenible para los próximos años, y Marte bajo Saturno no deja ignorar esa percepción.»`;
 
-const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES };
+const QA_EXAMPLES_EN = `Example 0 — simple/generic question, SHORT band, 1-2 references, full close.
+Q: «Am I compatible with Pisces?»
+A: «Sun-sign compatibility is the most surface-level thing astrology offers, and usually the least telling. Between your Sun in Virgo and a Sun in Pisces there's a classic opposition: the other person dreams while you organize, the other feels while you analyze. It's a polarity that can work beautifully or burn out fast, depending on what the respective Moons and Venuses are doing. Your Moon in Capricorn, for instance, wants emotional solidity, and with a Sun in Pisces that steadiness isn't a given. What really matters isn't the sign's label, but what you're looking for in a relationship. Your chart already says something quite specific about how you love: that's probably the better place to start.»
+
+Example 1 — structural question, close with an implicit question.
+Q: «Why do I tend to feel alone even when I'm in a relationship?»
+A: «Your Moon in Scorpio in the 8th house describes an emotional need that operates at a different threshold than the people around you. You're tuned to a level of intimacy you've known all along — made of dense emotions, unspoken but felt, a presence that asks for the other person whole, not just their availability.
+
+When you're in a relationship, knowing the other person is there isn't enough. You need to feel they're truly present, that they don't pull back at the most uncomfortable points. And that's where a loneliness sets in that isn't objective: the person may be there, but at a level that stays superficial for you. From the outside it looks like a request for "more love," but it isn't. It's a request for depth.
+
+The loneliness you feel isn't a flaw to fix. It's a fine thermometer. It tells you when a relationship is operating at the depth you actually need, and when it isn't. The problem isn't that you feel too much. It's when you mistake the other person's physical presence for what you're really after.
+
+The question underneath is how willing you really are to ask for that depth out loud, instead of waiting for the other person to guess it.»
+
+Example 2 — temporally charged question, hasTransits=false, close with a soft upsell.
+Q: «I feel like I'm going through a phase of confusion — what's happening?»
+A: «Your natal chart won't tell you what's happening right now, but it does tell you how you're built to move through moments of confusion. And that's often the more useful piece of information.
+
+Your confusion, when it arrives, has a recognizable quality. Your Mercury in Pisces tends to hold too many possibilities open at once, and as long as you're keeping five of them alive you can't see any of them clearly. It isn't a flaw. It's a way of thinking that needs time before it narrows the field. The trouble usually starts when you demand clarity before the process has run its course: you feel stuck, but you're only waiting for a signal that hasn't arrived yet.
+
+What this phase is probably asking of you is to stop forcing the clarity and to notice which possibility, among all of them, keeps coming back — even quietly. Not the one you think you're supposed to choose, but the one that keeps insisting.
+
+To really read the present moment I'd need to cross your natal chart with the current transits, and without that data I can't give you the timing dimension. In your personal area you'll find the Monthly Transits pack, which activates month by month: once it's active, I'll be able to answer you on the "when" as well.»
+
+Example 3 — temporally charged question, hasTransits=true, sober close.
+Q: «Why have I been so on edge at work lately?»
+A: «There's a structural part and a contextual part that are overlapping.
+
+The structural part: your Mars in Virgo has a very specific way of approaching work. It cares about the quality of the execution, not the quantity of things done. When you feel on edge, it usually isn't because you have too much to do. It's because you're doing things you feel are poorly tended — rushed, done for someone else. Mars in Virgo runs on precision, and when it has to work in "throw it in fast" mode it builds a tension it doesn't know where to release.
+
+What's happening now adds an element: Saturn is touching your natal Mars, and that's precisely a professional pressure. Saturn puts your way of working under review and asks you: this pace you've built — is it really yours, or are you holding it up because "it's fine this way"?
+
+The restlessness, in this period, has less to do with the volume of work than with a quiet test of meaning running underneath. Part of you is realizing that the way you work right now isn't sustainable for the years ahead, and Mars under Saturn won't let you ignore that.»`;
+
+const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES, en: QA_EXAMPLES_EN };
 
 const QA_FINAL_EN = `Always respond by invoking the "return_answer" tool with the "answer" field containing your final answer (in the output language set above, length calibrated to the SHORT/MEDIUM/ARTICULATED/EXTENDED band defined above, never under 110 words). Do not add any text outside the tool.`;
 
@@ -394,7 +429,7 @@ const buildCurrentDateContext = (lang: PromptLang) => {
     month: "2-digit",
     day: "2-digit",
   }).format(now);
-  const localized = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "it-IT", {
+  const localized = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : lang === "en" ? "en-US" : "it-IT", {
     timeZone: "Europe/Rome",
     weekday: "long",
     day: "numeric",
@@ -942,7 +977,7 @@ serve(async (req) => {
           creditsRemaining: creditsRow?.balance ?? 0,
           questionId,
           lang: resolvePromptLang(quizSession.language),
-          market: quizSession.market === "es" ? "es" : "it",
+          market: getMarket(quizSession.market).id,
         },
       });
       await supabaseAdmin

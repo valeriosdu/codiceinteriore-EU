@@ -32,14 +32,23 @@ const COPY = {
     fallback: 'Si el botón no funciona, copia y pega este enlace en el navegador:',
     closing: 'Si necesitas ayuda, basta con responder a este correo.',
   },
+  en: {
+    preview: 'Your payment is confirmed — activate your reading',
+    h1: 'Your payment is confirmed',
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    body: 'We\'ve received your order. To access your report and find it again whenever you like, just create your personal space with this email: your reading will be linked automatically.',
+    cta: 'Activate and open your report',
+    fallback: "If the button doesn't work, copy and paste this link into your browser:",
+    closing: 'If you need any help, simply reply to this email.',
+  },
 } as const
 
 const ReportClaimEmail = ({ name, sessionId, lang, market }: ReportClaimProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
   const claimUrl = `${theme.baseUrl}/activate?session_id=${encodeURIComponent(sessionId)}`
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'} dir="ltr">
       <Head />
       <Preview>{t.preview}</Preview>
       <Body style={styles.main}>
@@ -78,9 +87,11 @@ const ReportClaimEmail = ({ name, sessionId, lang, market }: ReportClaimProps) =
 export const template = {
   component: ReportClaimEmail,
   subject: (data: Record<string, any>) =>
-    data?.lang === 'es'
-      ? 'Tu pago está confirmado — activa tu lectura'
-      : 'Il tuo pagamento è confermato — attiva la tua lettura',
+    data?.lang === 'en'
+      ? 'Your payment is confirmed — activate your reading'
+      : data?.lang === 'es'
+        ? 'Tu pago está confirmado — activa tu lectura'
+        : 'Il tuo pagamento è confermato — attiva la tua lettura',
   displayName: 'Recupero report (claim)',
   previewData: { name: 'Maria', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

@@ -11,6 +11,7 @@ import {
 } from "../_shared/synastry-pdf.ts";
 import { rasterizeChartSvg } from "../_shared/report-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -100,8 +101,8 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Report not ready yet" }, 404);
     }
 
-    const synLang = (session as { language?: string }).language === "es" ? "es" : "it";
-    const synMarket = (session as { market?: string }).market === "es" ? "es" : "it";
+    const synLang = resolvePromptLang((session as { language?: string }).language);
+    const synMarket = getMarket((session as { market?: string }).market).id;
     const filename = `${brandSlug(getMarket((session as { market?: string }).market))}-${docNoun((session as { language?: string }).language, "couple")}-${safeSlug(session.person_a_name)}-${safeSlug(session.person_b_name)}.pdf`;
     const storagePath = `admin/synastry-${session.id}-${SYNASTRY_PDF_VERSION}-${synLang}.pdf`;
 

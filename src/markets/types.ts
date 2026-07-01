@@ -1,5 +1,5 @@
-export type MarketId = 'it' | 'es';
-export type Language = 'it' | 'es';
+export type MarketId = 'it' | 'es' | 'us';
+export type Language = 'it' | 'es' | 'en';
 
 export interface MarketPrices {
   base: number;
@@ -32,7 +32,7 @@ export interface MarketConfig {
   // default og:image e come immagine prodotto nello structured data.
   ogImage: string;
   contactEmail: string;
-  currency: 'EUR';
+  currency: 'EUR' | 'USD';
   countryCode: string;
   prices: MarketPrices;
   legal: MarketLegal;

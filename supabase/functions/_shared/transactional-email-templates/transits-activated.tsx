@@ -34,17 +34,31 @@ const COPY = {
     fallback: 'Si el botón no funciona, copia y pega este enlace en el navegador:',
     closing: 'Si necesitas ayuda, basta con responder a este correo.',
   },
+  en: {
+    headingRenewal: 'Your new transits for the month are ready',
+    headingNew: 'Your transits are now active',
+    introRenewal: "We've prepared your transit reading for the new month, based on the real astrological movements calculated against your birth chart, with four periods to guide you week by week.",
+    introNew: "You've activated the monthly transits subscription ($9.90/month). Each month we prepare a new reading on how the movements of the sky touch the key points of your birth chart, with four periods to guide you week by week. You can manage or cancel the subscription anytime from your account.",
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    cta: 'Open your reading',
+    fallback: "If the button doesn't work, copy and paste this link into your browser:",
+    closing: 'If you need any help, just reply to this email.',
+  },
 } as const
+
+type Lang = keyof typeof COPY
+const resolveLang = (lang?: string): Lang =>
+  lang === 'es' || lang === 'en' ? lang : 'it'
 
 const TransitsActivatedEmail = ({ name, isRenewal, lang, market }: TransitsActivatedProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[resolveLang(lang)]
   const reportUrl = `${theme.baseUrl}/report`
   const heading = isRenewal ? t.headingRenewal : t.headingNew
   const intro = isRenewal ? t.introRenewal : t.introNew
 
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={resolveLang(lang)} dir="ltr">
       <Head />
       <Preview>{heading}</Preview>
       <Body style={styles.main}>
@@ -83,7 +97,7 @@ const TransitsActivatedEmail = ({ name, isRenewal, lang, market }: TransitsActiv
 export const template = {
   component: TransitsActivatedEmail,
   subject: (data: Record<string, unknown>) => {
-    const t = COPY[data?.lang === 'es' ? 'es' : 'it']
+    const t = COPY[resolveLang(data?.lang as string | undefined)]
     return data.isRenewal ? t.headingRenewal : t.headingNew
   },
   displayName: 'Transiti attivati',

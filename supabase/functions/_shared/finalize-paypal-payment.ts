@@ -71,25 +71,6 @@ export async function finalizePaypalPayment(
     ? new Date(capture.create_time).toISOString()
     : new Date().toISOString();
 
-  const defaultAmount =
-    purchaseType === "premium" ? "29.00"
-    : purchaseType === "synastry_launch" ? "14.90"
-    : "19.00";
-  const captureAmountStr =
-    (capture as any)?.amount?.value ||
-    purchaseUnit?.amount?.value ||
-    defaultAmount;
-  const captureCurrency =
-    (capture as any)?.amount?.currency_code ||
-    purchaseUnit?.amount?.currency_code ||
-    "EUR";
-  const amountCents = Math.round(parseFloat(captureAmountStr) * 100);
-
-  const payer = captured.payer || {};
-  const payerName =
-    [payer.name?.given_name, payer.name?.surname].filter(Boolean).join(" ").trim() || null;
-  const payerId = (payer as any)?.payer_id || null;
-
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Check existing state so we can skip side-effects on idempotent re-runs.
@@ -102,6 +83,31 @@ export async function finalizePaypalPayment(
 
   // Il market è stato persistito sulla riga alla creazione dell'ordine.
   const market = getMarket((existing as { market?: string | null } | null)?.market);
+
+  // Listing prices per market. EUR markets (it/es) keep the exact historical
+  // amounts; us is a USD placeholder until the real listing is live. These are
+  // only fallbacks: PayPal's captured amount/currency below always wins.
+  const PRODUCT_AMOUNTS: Record<string, Record<PurchaseType, string>> = {
+    EUR: { base: "19.00", premium: "29.00", synastry: "19.00", synastry_launch: "14.90" },
+    USD: { base: "19.99", premium: "29.99", synastry: "19.99", synastry_launch: "14.99" }, // TODO: confirm USD prices
+  };
+  const defaultAmount =
+    (PRODUCT_AMOUNTS[market.currency] || PRODUCT_AMOUNTS.EUR)[purchaseType];
+  const captureAmountStr =
+    (capture as any)?.amount?.value ||
+    purchaseUnit?.amount?.value ||
+    defaultAmount;
+  const captureCurrency =
+    (capture as any)?.amount?.currency_code ||
+    purchaseUnit?.amount?.currency_code ||
+    market.currency;
+  const amountCents = Math.round(parseFloat(captureAmountStr) * 100);
+
+  const payer = captured.payer || {};
+  const payerName =
+    [payer.name?.given_name, payer.name?.surname].filter(Boolean).join(" ").trim() || null;
+  const payerId = (payer as any)?.payer_id || null;
+
   const paypalEnv = (() => {
     const raw = (Deno.env.get(market.paypal.envEnv) || "sandbox").toLowerCase();
     return raw === "live" || raw === "production" ? "live" : "sandbox";

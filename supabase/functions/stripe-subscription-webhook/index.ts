@@ -20,6 +20,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
 import { getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 import { getInvoiceSubscriptionId, getSubscriptionPeriod } from "../_shared/stripe-basil.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
@@ -198,8 +199,8 @@ async function provisionTransitCycle(
       templateData: {
         name: quizSession.user_name || "",
         isRenewal: params.isRenewal,
-        lang: (quizSession as { language?: string | null }).language === "es" ? "es" : "it",
-        market: (quizSession as { market?: string | null }).market === "es" ? "es" : "it",
+        lang: resolvePromptLang((quizSession as { language?: string | null }).language),
+        market: getMarket((quizSession as { market?: string | null }).market).id,
       },
     });
     syncBrevoContactBackground({
@@ -331,8 +332,8 @@ async function handleCheckoutCompleted(
       current_period_end: periodEnd.toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end || false,
       canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-      language: (qsLocale as { language?: string | null } | null)?.language === "es" ? "es" : "it",
-      market: (qsLocale as { market?: string | null } | null)?.market === "es" ? "es" : "it",
+      language: resolvePromptLang((qsLocale as { language?: string | null } | null)?.language),
+      market: getMarket((qsLocale as { market?: string | null } | null)?.market).id,
     },
     { onConflict: "stripe_subscription_id" },
   );

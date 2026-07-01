@@ -34,11 +34,25 @@ const COPY = {
     nextCharge: (date: string) => `El próximo cargo (9,90 €) está previsto para el ${date}. No tienes que hacer nada; si quieres, puedes gestionar la suscripción cuando prefieras.`,
     closing: 'Si necesitas ayuda, basta con responder a este correo.',
   },
+  en: {
+    locale: 'en-US',
+    preview: 'Your new transits for the month are on the way',
+    h1: 'Your new transit reading is almost here',
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    body: 'Your new month of transits is about to begin: a fresh reading on how the movements of the sky touch the key points of your birth chart, with four periods to guide you week by week.',
+    cta: 'Manage subscription',
+    nextCharge: (date: string) => `Your next charge ($9.90) is scheduled for ${date}. There's nothing you need to do; if you'd like, you can manage your subscription anytime.`,
+    closing: 'If you need any help, just reply to this email.',
+  },
 } as const
+
+type Lang = keyof typeof COPY
+const resolveLang = (lang?: string): Lang =>
+  lang === 'es' || lang === 'en' ? lang : 'it'
 
 const TransitsRenewalReminderEmail = ({ name, renewalDate, lang, market }: TransitsRenewalReminderProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[resolveLang(lang)]
   const manageUrl = `${theme.baseUrl}/report#transits-upsell`
   const formattedDate = (() => {
     if (!renewalDate) return null
@@ -48,7 +62,7 @@ const TransitsRenewalReminderEmail = ({ name, renewalDate, lang, market }: Trans
   })()
 
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={resolveLang(lang)} dir="ltr">
       <Head />
       <Preview>{t.preview}</Preview>
       <Body style={styles.main}>
@@ -84,7 +98,7 @@ const TransitsRenewalReminderEmail = ({ name, renewalDate, lang, market }: Trans
 
 export const template = {
   component: TransitsRenewalReminderEmail,
-  subject: (data: Record<string, any>) => COPY[data?.lang === 'es' ? 'es' : 'it'].preview,
+  subject: (data: Record<string, any>) => COPY[resolveLang(data?.lang)].preview,
   displayName: 'Promemoria rinnovo transiti',
   previewData: { name: 'Maria', renewalDate: '2026-07-15' },
 } satisfies TemplateEntry

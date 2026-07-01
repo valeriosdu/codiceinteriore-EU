@@ -99,8 +99,8 @@ serve(async (req) => {
       return json({ error: "no_recipient_address" }, 400);
     }
 
-    const marketId: MarketId = ticket.market === "es" ? "es" : "it";
-    const market = getMarket(marketId);
+    const market = getMarket(ticket.market);
+    const marketId: MarketId = market.id;
     const subject = ticket.subject?.toLowerCase().startsWith("re:")
       ? ticket.subject
       : `Re: ${ticket.subject || ""}`.trim();

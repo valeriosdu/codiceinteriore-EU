@@ -36,7 +36,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 
-const MARKETS: MarketId[] = ["it", "es"];
+const MARKETS: MarketId[] = ["it", "es", "us"];
 const LIST_LIMIT = 25;
 const MAX_NEW_PER_RUN = 10; // cap content fetches / drafts per market per tick
 const STALE_DRAFTING_MS = 5 * 60 * 1000; // matches support-draft's claim window

@@ -397,8 +397,8 @@ serve(async (req) => {
       force_support: boolean | null;
     };
 
-    const marketId: MarketId = ticket.market === "es" ? "es" : "it";
-    const market = getMarket(marketId);
+    const market = getMarket(ticket.market);
+    const marketId: MarketId = market.id;
     const lang = resolvePromptLang(market.language);
 
     // ── Resolve the sender, or build candidate matches ──────────────────────
@@ -561,7 +561,7 @@ serve(async (req) => {
         : result.summary;
 
     const recoveryUrl = `${market.siteUrl}/activate?intent=forgot`;
-    const signer = lang === "es" ? "María" : "";
+    const signer = lang === "es" ? "María" : lang === "en" ? "Emma" : "";
     const cleanDraft = ensureSigner(
       sanitizeSignaturePlaceholder(sanitizeAccessLinks(result.draft, recoveryUrl), signer),
       signer,

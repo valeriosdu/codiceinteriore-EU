@@ -6,6 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { resolveProfileByEmail } from "../_shared/resolve-profile.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -285,6 +286,9 @@ Deno.serve(async (req) => {
     const profile = await resolveProfileByEmail(supabase, customerEmail);
 
     const stripeSessionIdComp = `admin_comp_synastry_${synastrySessionId}`;
+    const marketCurrency = getMarket(
+      typeof body.market === "string" ? body.market : null,
+    ).currency;
     const now = new Date().toISOString();
     const { error: checkoutErr } = await supabase
       .from("checkout_sessions")
@@ -299,7 +303,7 @@ Deno.serve(async (req) => {
         payment_status: "paid",
         payment_completed_at: now,
         amount_total: 0,
-        currency: "EUR",
+        currency: marketCurrency,
         provider_metadata: { stage: "admin_comp" },
         claimed_profile_id: profile?.id ?? null,
         claimed_at: profile?.id ? now : null,

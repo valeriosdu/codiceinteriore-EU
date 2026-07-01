@@ -36,16 +36,27 @@ const COPY = {
     closing: 'A partir de ahora podréis encontrarla en vuestro espacio personal, cada vez que queráis volver.',
     subject: 'Vuestra sinastría está lista — acceded a vuestro espacio',
   },
+  en: {
+    preview: (siteName: string) => `Your couple's synastry is ready — ${siteName}`,
+    h1: 'Your synastry is ready',
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    p1: "your couple's reading is complete. Inside, you'll find the archetype of your relationship, compatibility scores across six dimensions, and eight sections of analysis: from a portrait of the two of you to the direction your relationship is heading.",
+    p2: "It isn't a generic horoscope: it's a reading grounded in your real planets, written in clear English, to revisit over time.",
+    cta: 'Open your synastry',
+    fallback: "If the button doesn't work, copy and paste this link into your browser:",
+    closing: "From now on, you'll be able to find it in your personal space, whenever you want to come back to it.",
+    subject: 'Your synastry is ready — sign in to your space',
+  },
 } as const
 
 const SynastryReadyEmail = ({ name, sessionId, lang, market }: SynastryReadyProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
   const reportUrl = sessionId
     ? `${theme.baseUrl}/coppia/activate?session_id=${encodeURIComponent(sessionId)}&intent=signin`
     : `${theme.baseUrl}/coppia/activate?intent=signin`
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'} dir="ltr">
       <Head />
       <Preview>{t.preview(theme.siteName)}</Preview>
       <Body style={styles.main}>
@@ -84,7 +95,7 @@ const SynastryReadyEmail = ({ name, sessionId, lang, market }: SynastryReadyProp
 
 export const template = {
   component: SynastryReadyEmail,
-  subject: (data: Record<string, any>) => COPY[data?.lang === 'es' ? 'es' : 'it'].subject,
+  subject: (data: Record<string, any>) => COPY[data?.lang === 'en' ? 'en' : data?.lang === 'es' ? 'es' : 'it'].subject,
   displayName: 'Sinastria pronta',
   previewData: { name: 'Maria', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

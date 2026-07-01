@@ -15,6 +15,7 @@ import {
   type InterpretedTransits,
 } from "../_shared/transit-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -181,8 +182,8 @@ Deno.serve(async (req) => {
         .single();
 
       const userName = session?.user_name || null;
-      const tLang = (session as { language?: string })?.language === "es" ? "es" : "it";
-      const tMarket = (session as { market?: string })?.market === "es" ? "es" : "it";
+      const tLang = resolvePromptLang((session as { language?: string })?.language);
+      const tMarket = getMarket((session as { market?: string })?.market).id;
       const safeName = safeSlug(userName, "transiti");
       const filename = `${brandSlug(getMarket((session as { market?: string })?.market))}-${docNoun((session as { language?: string })?.language, "transits")}-${safeName}.pdf`;
 
@@ -272,8 +273,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const pdfLang = (session as { language?: string }).language === "es" ? "es" : "it";
-    const pdfMarket = (session as { market?: string }).market === "es" ? "es" : "it";
+    const pdfLang = resolvePromptLang((session as { language?: string }).language);
+    const pdfMarket = getMarket((session as { market?: string }).market).id;
     const storagePath = `admin/${sessionId}-${PDF_VERSION}-${pdfLang}.pdf`;
     const legacyPath = `admin/${sessionId}.pdf`;
 

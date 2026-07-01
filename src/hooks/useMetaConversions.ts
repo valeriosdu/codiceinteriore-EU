@@ -81,8 +81,8 @@ interface TrackOptions {
 }
 
 const OFFER_VALUES: Record<string, number> = {
-  base: 19,
-  premium: 29,
+  base: MARKET.prices.base,
+  premium: MARKET.prices.premium,
 };
 
 const getOfferCustomData = (purchaseType?: string, extra?: Record<string, unknown>) => {
@@ -90,7 +90,7 @@ const getOfferCustomData = (purchaseType?: string, extra?: Record<string, unknow
   return {
     content_category: purchaseType,
     content_name: purchaseType === "premium" ? "Lettura completa + transiti" : "Lettura completa",
-    currency: "EUR",
+    currency: MARKET.currency,
     value: OFFER_VALUES[purchaseType] ?? undefined,
     ...extra,
   };

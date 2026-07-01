@@ -6,6 +6,7 @@ import {
   type InterpretedTransits,
 } from "../_shared/transit-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -147,8 +148,8 @@ Deno.serve(async (req) => {
       .eq("id", quizSessionId)
       .single();
 
-    const pdfLang = (session as any)?.language === "es" ? "es" : "it";
-    const pdfMarket = (session as any)?.market === "es" ? "es" : "it";
+    const pdfLang = resolvePromptLang((session as any)?.language);
+    const pdfMarket = getMarket((session as any)?.market).id;
     const filename = safeFilename(session?.user_name || null, (session as any)?.market, (session as any)?.language);
     const storagePath = `${userId}/${quizSessionId}/transit-${cycle.id}-${TRANSIT_PDF_VERSION}-${pdfLang}.pdf`;
 

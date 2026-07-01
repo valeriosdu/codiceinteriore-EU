@@ -34,14 +34,24 @@ const COPY = {
     closing: 'Si necesitáis ayuda, basta con responder a este correo.',
     subject: 'Vuestro pago está confirmado — activad vuestra sinastría de pareja',
   },
+  en: {
+    preview: "Your payment is confirmed — activate your couple's reading",
+    h1: 'Your payment is confirmed',
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    body: "We've received your order. To access your couple's synastry and find it again whenever you like, just create your personal space with this email: your reading will be linked automatically.",
+    cta: 'Activate and open your synastry',
+    fallback: "If the button doesn't work, copy and paste this link into your browser:",
+    closing: 'If you need any help, simply reply to this email.',
+    subject: "Your payment is confirmed — activate your couple's synastry",
+  },
 } as const
 
 const SynastryClaimEmail = ({ name, sessionId, lang, market }: SynastryClaimProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
   const claimUrl = `${theme.baseUrl}/coppia/activate?session_id=${encodeURIComponent(sessionId)}`
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'} dir="ltr">
       <Head />
       <Preview>{t.preview}</Preview>
       <Body style={styles.main}>
@@ -79,7 +89,7 @@ const SynastryClaimEmail = ({ name, sessionId, lang, market }: SynastryClaimProp
 
 export const template = {
   component: SynastryClaimEmail,
-  subject: (data: Record<string, any>) => COPY[data?.lang === 'es' ? 'es' : 'it'].subject,
+  subject: (data: Record<string, any>) => COPY[data?.lang === 'en' ? 'en' : data?.lang === 'es' ? 'es' : 'it'].subject,
   displayName: 'Recupero sinastria (claim)',
   previewData: { name: 'Maria', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

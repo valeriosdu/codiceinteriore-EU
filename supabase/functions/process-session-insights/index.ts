@@ -269,6 +269,26 @@ Respond ONLY with the required tool call.`;
 // not in love but in *movement*. The 3 insights cover activation, the form
 // of the block, and rhythm. Intake answers (symptom, narrative) are emotional
 // calibration only — never quoted, never used as content.
+// Per-language STYLE GUARD: the blacklist of cliché phrases the model must
+// avoid, expressed in the OUTPUT language so the model can actually pattern-match
+// against what it is about to write. `it`/`es` keep the Italian list (es was
+// always guarded with the Italian phrasing — do not regress it); `en` uses the
+// English banned-phrase list.
+const ATTIVAZIONE_STYLE_GUARD: Record<PromptLang, string> = {
+  it: `STYLE GUARD — never use any of these (or close paraphrases):
+manifestare, abbondanza, vibrazione, energia universale, energia femminile, energia maschile, anima gemella, alto sé, frequenze, allinearsi, fluire, destino, il tuo cammino, il vero te stesso, ascolta il tuo cuore, sei pronto/a per, ferita interiore, bambino interiore, trasformazione interiore, trova il tuo perché, fai il primo passo, ognuno ha il suo tempo.
+
+Words like "sbloccare", "sblocco", "potenziale", "non parti", "mettersi in moto", "consapevolezza" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
+  es: `STYLE GUARD — never use any of these (or close paraphrases):
+manifestare, abbondanza, vibrazione, energia universale, energia femminile, energia maschile, anima gemella, alto sé, frequenze, allinearsi, fluire, destino, il tuo cammino, il vero te stesso, ascolta il tuo cuore, sei pronto/a per, ferita interiore, bambino interiore, trasformazione interiore, trova il tuo perché, fai il primo passo, ognuno ha il suo tempo.
+
+Words like "sbloccare", "sblocco", "potenziale", "non parti", "mettersi in moto", "consapevolezza" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
+  en: `STYLE GUARD — never use any of these (or close paraphrases):
+manifest, abundance, vibration, universal energy, feminine energy, masculine energy, soulmate, higher self, frequencies, align, flow, destiny, your path, the real you, listen to your heart, you're ready for, inner wound, inner child, inner transformation, find your why, take the first step, everyone has their own timing.
+
+Words like "unblock", "get unstuck", "potential", "you don't get going", "get moving", "awareness" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
+};
+
 const buildAttivazionePrompt = (lang: PromptLang): string => {
   const langName = OUTPUT_LANGUAGE_NAME[lang];
   return `You are a psychologically sophisticated astrologer focused on patterns of activation: what makes a person move forward, what blocks them, and the rhythm at which their structure actually expresses.
@@ -341,13 +361,10 @@ For Uranus, Neptune, Pluto:
 - keep tight
 
 ASTROLOGICAL REFERENCE RULE
-At most 2 explicit chart references across the full output. No textbook tone.
+Include at least 1 and at most 2 explicit chart references across the full output. No textbook tone.
 Prefer lived psychological description over chart terminology.
 
-STYLE GUARD — never use any of these (or close paraphrases):
-manifestare, abbondanza, vibrazione, energia universale, energia femminile, energia maschile, anima gemella, alto sé, frequenze, allinearsi, fluire, destino, il tuo cammino, il vero te stesso, ascolta il tuo cuore, sei pronto/a per, ferita interiore, bambino interiore, trasformazione interiore, trova il tuo perché, fai il primo passo, ognuno ha il suo tempo.
-
-Words like "sbloccare", "sblocco", "potenziale", "non parti", "mettersi in moto", "consapevolezza" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.
+${ATTIVAZIONE_STYLE_GUARD[lang]}
 
 Avoid also: zodiac clichés, generic self-help, flattery, prediction, deterministic tone, repetition, overly poetic phrasing.
 Prefer: short, immediate, recognizable language.
@@ -695,14 +712,16 @@ async function generateInsights(
     attempt: 1,
   };
 
-  // reasoning_effort "none": thinking is disabled. Under reasoning, flash-lite's
-  // latency became highly variable (p50 climbed to ~9s, tail to 55s) on congested
-  // Google capacity; with thinking off latency drops back to ~2–3s and is far more
-  // stable. The aspect/orb selection stays driven by the detailed system prompt.
+  // reasoning_effort "low": a light thinking budget. We previously ran "none"
+  // (thinking off) purely for latency stability — on congested Google capacity
+  // flash-lite's p50 could climb to ~9s (55s tail) under reasoning. "low" trades a
+  // little of that latency back for steadier aspect/orb selection and to honor the
+  // "at least 1 explicit chart reference" rule; geminiInsightsFetch's per-attempt
+  // timeout + retry still bounds the tail.
   const response = await geminiInsightsFetch(
     JSON.stringify({
       model,
-      reasoning_effort: "none",
+      reasoning_effort: "low",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

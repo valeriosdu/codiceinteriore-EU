@@ -147,7 +147,7 @@ serve(async (req) => {
         payment_status: session.payment_status || "open",
         payment_provider: "stripe",
         amount_total: ASTROLOGY_GUIDE_PACK_AMOUNT_CENTS,
-        currency: "EUR",
+        currency: market.currency,
         market: market.id,
         provider_metadata: {
           stripe_mode: "payment",

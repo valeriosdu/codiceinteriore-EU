@@ -22,6 +22,10 @@ const FUNNEL_EVENTS = [
 
 type FunnelEventName = (typeof FUNNEL_EVENTS)[number];
 
+// TODO(multi-market): these reference prices and labels are IT/EUR only. The
+// dashboard aggregates checkout_sessions across all markets into a single total
+// with no per-market split in scope here, so labels/symbols/currency below stay
+// EUR until the dashboard is made market-aware (group rows by market.currency).
 const PRODUCT_PRICE_EUR: Record<string, number> = {
   natal_report_base: 19,
   natal_report_plus_transits: 29,
@@ -849,6 +853,9 @@ Deno.serve(async (req) => {
         },
         revenue: {
           total_eur: Math.round((totalRevenueCents / 100) * 100) / 100,
+          // TODO(multi-market): revenue is summed across markets without a
+          // per-market currency split; hardcoded EUR until the dashboard groups
+          // by market.currency. See note on PRODUCT_PRICE_EUR.
           currency: "EUR",
           order_count: orderCount,
           unique_customers: uniqueCustomers,

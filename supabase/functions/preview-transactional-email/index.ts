@@ -40,8 +40,12 @@ Deno.serve(async (req) => {
   // template. Merged into each template's static previewData so the per-lang
   // COPY maps and per-market theme/sender resolve to the requested locale.
   const url = new URL(req.url)
-  const previewLang = url.searchParams.get('lang') === 'es' ? 'es' : undefined
-  const previewMarket = url.searchParams.get('market') === 'es' ? 'es' : undefined
+  const langParam = url.searchParams.get('lang')
+  const previewLang =
+    langParam === 'es' ? 'es' : langParam === 'en' ? 'en' : undefined
+  const marketParam = url.searchParams.get('market')
+  const previewMarket =
+    marketParam === 'es' ? 'es' : marketParam === 'us' ? 'us' : undefined
 
   const templateNames = Object.keys(TEMPLATES)
   const results: Array<{

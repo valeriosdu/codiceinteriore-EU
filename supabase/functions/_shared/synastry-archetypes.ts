@@ -106,6 +106,22 @@ const ARCHETYPE_LABELS: Record<PromptLang, Record<SynastryArchetypeId, string>> 
   it: Object.fromEntries(
     (Object.keys(ARCHETYPES) as SynastryArchetypeId[]).map((id) => [id, ARCHETYPES[id].label]),
   ) as Record<SynastryArchetypeId, string>,
+  en: {
+    soulmates: "Soulmates",
+    kindred_spirits: "Kindred Spirits",
+    opposites_attract: "Opposites Attract",
+    karmic_lesson: "Karmic Lesson",
+    steady_rock: "Steady Rock",
+    intellectual_powerhouse: "Intellectual Powerhouse",
+    magnetic_attraction: "Magnetic Attraction",
+    long_term_anchor: "Long-term Anchor",
+    mental_synergy: "Mental Synergy",
+    volatile_spark: "Volatile Spark",
+    catalyst_for_change: "Catalyst for Change",
+    deep_bond: "Deep Bond",
+    balanced_connection: "Balanced Connection",
+    discordant_layout: "Discordant Layout",
+  },
   es: {
     soulmates: "Almas afines",
     kindred_spirits: "Espíritus afines",

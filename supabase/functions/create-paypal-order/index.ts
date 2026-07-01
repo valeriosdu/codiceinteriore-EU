@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 interface ProductDef {
-  amount: string;
+  amount: Record<Language, string>;
   amountCents: number;
   description: Record<Language, string>;
   productCode: string;
@@ -23,11 +23,16 @@ interface ProductDef {
 
 const PRODUCTS: Record<string, ProductDef> = {
   base: {
-    amount: "19.00",
+    amount: {
+      it: "19.00",
+      es: "19.00",
+      en: "19.99", // TODO: confirm USD price
+    },
     amountCents: 1900,
     description: {
       it: "Lettura Completa del Tema Natale",
       es: "Lectura Completa de la Carta Natal",
+      en: "Complete Natal Chart Reading",
     },
     productCode: "natal_report_base",
     includesTransits: false,
@@ -35,11 +40,16 @@ const PRODUCTS: Record<string, ProductDef> = {
     sessionKind: "natal",
   },
   premium: {
-    amount: "29.00",
+    amount: {
+      it: "29.00",
+      es: "29.00",
+      en: "29.99", // TODO: confirm USD price
+    },
     amountCents: 2900,
     description: {
       it: "Lettura Completa + 1 Mese di Transiti",
       es: "Lectura Completa + 1 Mes de Tránsitos",
+      en: "Complete Reading + 1 Month of Transits",
     },
     productCode: "natal_report_plus_transits",
     includesTransits: true,
@@ -47,11 +57,16 @@ const PRODUCTS: Record<string, ProductDef> = {
     sessionKind: "natal",
   },
   synastry: {
-    amount: "19.00",
+    amount: {
+      it: "19.00",
+      es: "19.00",
+      en: "19.99", // TODO: confirm USD price
+    },
     amountCents: 1900,
     description: {
       it: "Sinastria di Coppia",
       es: "Sinastría de Pareja",
+      en: "Couple Synastry Reading",
     },
     productCode: "synastry_couple_report",
     includesTransits: false,
@@ -61,11 +76,16 @@ const PRODUCTS: Record<string, ProductDef> = {
     cancelPath: "/coppia/offer",
   },
   synastry_launch: {
-    amount: "14.90",
+    amount: {
+      it: "14.90",
+      es: "14.90",
+      en: "14.99", // TODO: confirm USD price
+    },
     amountCents: 1490,
     description: {
       it: "Sinastria di Coppia (Lancio)",
       es: "Sinastría de Pareja (Lanzamiento)",
+      en: "Couple Synastry Reading (Launch)",
     },
     productCode: "synastry_couple_report_launch",
     includesTransits: false,
@@ -164,8 +184,8 @@ serve(async (req) => {
     const cancelPath = product.cancelPath || "/offer";
 
     const order = await createPaypalOrder({
-      amount: product.amount,
-      currency: "EUR",
+      amount: product.amount[market.language],
+      currency: market.currency,
       customId,
       description: product.description[market.language],
       returnUrl: `${origin}${successPath}`,
@@ -189,7 +209,7 @@ serve(async (req) => {
         payment_status: "open",
         payment_provider: "paypal",
         amount_total: product.amountCents,
-        currency: "EUR",
+        currency: market.currency,
         market: market.id,
         provider_metadata: {
           environment: creds.env,

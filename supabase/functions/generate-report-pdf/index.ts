@@ -9,6 +9,7 @@ import {
   ReportContent,
 } from "../_shared/report-pdf.ts";
 import { brandSlug, getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -140,7 +141,7 @@ Deno.serve(async (req) => {
       .single();
 
     // La lingua entra nel path di cache così IT ed ES non si sovrascrivono.
-    const pdfLang = (session as any)?.language === "es" ? "es" : "it";
+    const pdfLang = resolvePromptLang((session as any)?.language);
     const storagePath = `${userId}/${quizSessionId}/report-${PDF_VERSION}-${pdfLang}.pdf`;
     const legacyPath = `${userId}/${quizSessionId}/report.pdf`;
 
@@ -215,7 +216,7 @@ Deno.serve(async (req) => {
       chartPng,
       funnelSlug: ((session as any).funnel_slug as string) || "classica",
       lang: pdfLang,
-      market: (session as any).market === "es" ? "es" : "it",
+      market: getMarket((session as any).market).id,
     });
 
     const { error: uploadError } = await supabaseAdmin.storage

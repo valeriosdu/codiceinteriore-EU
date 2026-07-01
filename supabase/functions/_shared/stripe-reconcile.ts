@@ -22,6 +22,8 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { getMarket } from "./markets.ts";
+import { resolvePromptLang } from "./prompts/lang.ts";
 import { sendTransactionalEmailBackground } from "./send-email.ts";
 import { syncBrevoContactBackground } from "./sync-brevo.ts";
 import { syncAstrologyGuideStatusBackground } from "./astrology-guide-brevo.ts";
@@ -515,8 +517,8 @@ export async function reconcilePaidStripeSession(
         templateData: {
           name: quizSession.user_name || "",
           isRenewal: false,
-          lang: (quizSession as any).language === "es" ? "es" : "it",
-          market: (quizSession as any).market === "es" ? "es" : "it",
+          lang: resolvePromptLang((quizSession as any).language),
+          market: getMarket((quizSession as any).market).id,
         },
       });
       syncBrevoContactBackground({
@@ -687,8 +689,8 @@ export async function reconcilePaidStripeSession(
       templateData: {
         name: session.customer_details?.name || "",
         sessionId: session.id,
-        lang: (quizSession as any).language === "es" ? "es" : "it",
-        market: (quizSession as any).market === "es" ? "es" : "it",
+        lang: resolvePromptLang((quizSession as any).language),
+        market: getMarket((quizSession as any).market).id,
       },
     });
     // HAS_TRANSITS must reflect cumulative state, not just this checkout —

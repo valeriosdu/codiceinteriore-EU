@@ -8,6 +8,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { resolveProfileByEmail } from "../_shared/resolve-profile.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -251,6 +252,9 @@ Deno.serve(async (req) => {
     if (customerEmail) {
       const profile = await resolveProfileByEmail(supabase, customerEmail);
 
+      const marketCurrency = getMarket(
+        typeof body.market === "string" ? body.market : null,
+      ).currency;
       const now = new Date().toISOString();
       // skipGeneration: a non-paid "registration" marker so the customer shows up
       // in the CRM list (which aggregates any checkout with an email) without
@@ -266,7 +270,7 @@ Deno.serve(async (req) => {
             payment_provider: "admin_manual",
             payment_status: "unpaid",
             amount_total: 0,
-            currency: "EUR",
+            currency: marketCurrency,
             provider_metadata: { stage: "admin_manual_registration" },
             claimed_profile_id: profile?.id ?? null,
             claimed_at: profile?.id ? now : null,
@@ -281,7 +285,7 @@ Deno.serve(async (req) => {
             payment_status: "paid",
             payment_completed_at: now,
             amount_total: 0,
-            currency: "EUR",
+            currency: marketCurrency,
             provider_metadata: { stage: "admin_comp" },
             claimed_profile_id: profile?.id ?? null,
             claimed_at: profile?.id ? now : null,

@@ -447,7 +447,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
   // Tag the PDF so we can detect its version when deciding whether a
   // cached copy is still valid. Title shows in PDF readers, but keywords
   // are what we use programmatically.
-  doc.setTitle(sanitizePdfText(S.metaTitle(userName || (lang === "es" ? "Lectura personal" : "Lettura personale"))));
+  doc.setTitle(sanitizePdfText(S.metaTitle(userName || (lang === "es" ? "Lectura personal" : lang === "en" ? "Personal reading" : "Lettura personale"))));
   doc.setSubject(S.metaSubject);
   doc.setProducer(PDF_VERSION_TAG);
   doc.setCreator(PDF_VERSION_TAG);

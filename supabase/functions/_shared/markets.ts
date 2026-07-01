@@ -18,8 +18,8 @@ import {
 } from "./transit-products.ts";
 import { ASTROLOGY_GUIDE_PACK_PRICE_ID } from "./astrology-products.ts";
 
-export type MarketId = "it" | "es";
-export type Language = "it" | "es";
+export type MarketId = "it" | "es" | "us";
+export type Language = "it" | "es" | "en";
 
 export type StripeProduct =
   | "base"
@@ -39,7 +39,7 @@ export interface BackendMarketConfig {
   senderDomain: string;
   fromDomain: string;
   contactEmail: string;
-  currency: "EUR";
+  currency: "EUR" | "USD";
   countryCode: string;
   stripe: {
     secretKeyEnv: string;
@@ -145,13 +145,54 @@ const ES_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__ES",
 };
 
+// TODO: real US brand/domain values go here once the US listing is live.
+const US_MARKET: BackendMarketConfig = {
+  id: "us",
+  language: "en",
+  locale: "en-US",
+  siteUrl: "https://us.example.com", // TODO: real US site URL
+  siteName: "US Brand (TODO)", // TODO: real US brand name
+  senderDomain: "notifiche.us.example.com", // TODO: real US sender domain
+  fromDomain: "us.example.com", // TODO: real US from domain
+  contactEmail: "info@us.example.com", // TODO: real US contact email
+  currency: "USD",
+  countryCode: "US",
+  stripe: {
+    secretKeyEnv: "STRIPE_SECRET_KEY__US",
+    secretKeyTestEnv: "STRIPE_SECRET_KEY_TEST__US",
+    webhookSecretEnv: "STRIPE_WEBHOOK_SECRET__US",
+    webhookSecretTestEnv: "STRIPE_WEBHOOK_SECRET_TEST__US",
+    subscriptionWebhookSecretEnv: "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__US",
+    priceEnv: {
+      base: "STRIPE_PRICE_BASE__US",
+      premium: "STRIPE_PRICE_PREMIUM__US",
+      synastry: "STRIPE_PRICE_SYNASTRY__US",
+      synastryLaunch: "STRIPE_PRICE_SYNASTRY_LAUNCH__US",
+      transitOneTime: "STRIPE_PRICE_TRANSIT_ONE_TIME__US",
+      transitSubscription: "STRIPE_PRICE_TRANSIT_SUBSCRIPTION__US",
+      astroPack: "STRIPE_PRICE_ASTRO_PACK__US",
+    },
+    priceDefaults: {},
+  },
+  paypal: {
+    envEnv: "PAYPAL_ENV__US",
+    clientIdEnv: "PAYPAL_CLIENT_ID__US",
+    clientSecretEnv: "PAYPAL_CLIENT_SECRET__US",
+    webhookIdEnv: "PAYPAL_WEBHOOK_ID__US",
+  },
+  brevoApiKeyEnv: "BREVO_API_KEY__US",
+  metaPixelIdEnv: "META_PIXEL_ID__US",
+  metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__US",
+};
+
 const MARKETS: Record<MarketId, BackendMarketConfig> = {
   it: IT_MARKET,
   es: ES_MARKET,
+  us: US_MARKET,
 };
 
 export function isMarketId(value: unknown): value is MarketId {
-  return value === "it" || value === "es";
+  return value === "it" || value === "es" || value === "us";
 }
 
 export function getMarket(id?: string | null): BackendMarketConfig {
@@ -231,6 +272,7 @@ export function brandSlug(market: BackendMarketConfig): string {
 const DOC_NOUN: Record<Language, { couple: string; transits: string }> = {
   it: { couple: "coppia", transits: "transiti" },
   es: { couple: "pareja", transits: "transitos" },
+  en: { couple: "couple", transits: "transits" },
 };
 
 export function docNoun(

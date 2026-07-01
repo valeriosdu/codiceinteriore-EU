@@ -38,9 +38,20 @@ const COPY = {
     subject: (siteName: string, name?: string) =>
       `Nuevo mensaje desde la web ${siteName}${name ? ` — ${name}` : ''}`,
   },
+  en: {
+    preview: (name: string, siteName: string) => `New message from ${name} — ${siteName}`,
+    h1: 'New message from the website',
+    name: 'Name',
+    email: 'Email',
+    reason: 'Reason',
+    message: 'Message',
+    sentVia: (siteName: string) => `Sent via the ${siteName} contact form`,
+    subject: (siteName: string, name?: string) =>
+      `New message from the ${siteName} website${name ? ` — ${name}` : ''}`,
+  },
 } as const
 
-const langFor = (market?: string) => (market === 'es' ? 'es' : 'it')
+const langFor = (market?: string) => (market === 'us' ? 'en' : market === 'es' ? 'es' : 'it')
 
 const ContactNotificationEmail = ({ name, email, reason, message, market }: ContactNotificationProps) => {
   const theme = getEmailTheme(market)

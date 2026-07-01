@@ -768,7 +768,7 @@ Deno.serve(async (req) => {
               name: quizSession.user_name || "",
               sessionId: userReport.stripe_session_id || undefined,
               lang: resolvePromptLang((quizSession as any).language),
-              market: (quizSession as any).market === "es" ? "es" : "it",
+              market: getMarket((quizSession as any).market).id,
             },
           });
         }
@@ -1296,7 +1296,7 @@ Generate the complete personalized report.`;
                   name: userName || "",
                   sessionId: userReport.stripe_session_id || undefined,
                   lang,
-                  market: (quizSession as any).market === "es" ? "es" : "it",
+                  market: getMarket((quizSession as any).market).id,
                 },
               });
             }

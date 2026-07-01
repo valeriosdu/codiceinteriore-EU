@@ -21,6 +21,7 @@ import {
 } from "../_shared/synastry-system-prompt.ts";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { resolvePromptLang, outputLanguageDirective, OUTPUT_LANGUAGE_NAME } from "../_shared/prompts/lang.ts";
+import { getMarket } from "../_shared/markets.ts";
 import {
   LLM_CHAT_COMPLETIONS_URL,
   LONG_REPORT_MODEL,
@@ -321,7 +322,7 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
         name: session.person_a_name || "",
         sessionId: checkout.stripe_session_id || undefined,
         lang,
-        market: session.market === "es" ? "es" : "it",
+        market: getMarket(session.market).id,
       },
     });
     sendTransactionalEmailBackground({
@@ -332,7 +333,7 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
         name: session.person_a_name || "",
         sessionId: checkout.stripe_session_id || undefined,
         lang,
-        market: session.market === "es" ? "es" : "it",
+        market: getMarket(session.market).id,
       },
     });
   }

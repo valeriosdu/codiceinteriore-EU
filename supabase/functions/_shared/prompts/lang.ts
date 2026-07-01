@@ -4,23 +4,26 @@
 // forza il modello a produrre tutto nella lingua del mercato, trattando
 // eventuali parole/etichette italiane nel prompt come solo illustrative.
 
-export type PromptLang = "it" | "es";
+export type PromptLang = "it" | "es" | "en";
 
 export function resolvePromptLang(value: unknown): PromptLang {
-  return value === "es" ? "es" : "it";
+  if (value === "es") return "es";
+  if (value === "en") return "en";
+  return "it";
 }
 
 // Nome lingua usato nelle istruzioni inglesi ("write in ${X}").
 export const OUTPUT_LANGUAGE_NAME: Record<PromptLang, string> = {
   it: "Italian",
   es: "Spanish",
+  en: "English",
 };
 
 // Direttiva da anteporre a un system prompt per blindare la lingua di output.
 export function outputLanguageDirective(lang: PromptLang): string {
   const name = OUTPUT_LANGUAGE_NAME[lang];
   return `OUTPUT LANGUAGE — HIGHEST PRIORITY
-Write ALL output strictly and only in ${name} (${lang === "es" ? "es-ES, Spanish from Spain" : "it-IT"}).
+Write ALL output strictly and only in ${name} (${lang === "es" ? "es-ES, Spanish from Spain" : lang === "en" ? "en-US, English (United States)" : "it-IT"}).
 Any Italian word, label, or example shown later in this prompt is illustrative of intent ONLY — never copy it; always produce the equivalent in ${name}. Grammatical gender agreement must follow ${name}.
 
 `;
@@ -37,6 +40,11 @@ const PLANET_NAMES: Record<PromptLang, Record<string, string>> = {
     mars: "Marte", jupiter: "Júpiter", saturn: "Saturno", uranus: "Urano",
     neptune: "Neptuno", pluto: "Plutón", chiron: "Quirón", lilith: "Lilith",
   },
+  en: {
+    sun: "Sun", moon: "Moon", mercury: "Mercury", venus: "Venus",
+    mars: "Mars", jupiter: "Jupiter", saturn: "Saturn", uranus: "Uranus",
+    neptune: "Neptune", pluto: "Pluto", chiron: "Chiron", lilith: "Lilith",
+  },
 };
 
 const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
@@ -47,6 +55,10 @@ const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
   es: {
     conjunction: "conjunto", opposition: "opuesto", square: "cuadrado",
     trine: "trígono", sextile: "sextil",
+  },
+  en: {
+    conjunction: "conjunct", opposition: "opposite", square: "square",
+    trine: "trine", sextile: "sextile",
   },
 };
 

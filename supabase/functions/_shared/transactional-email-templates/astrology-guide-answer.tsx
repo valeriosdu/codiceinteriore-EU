@@ -49,7 +49,23 @@ const COPY = {
     closing: 'Si necesitas ayuda, basta con responder a este correo.',
     subject: (q: string) => (q ? `Sobre tu pregunta: ${truncate(q, 60)}` : 'Tu respuesta está lista'),
   },
+  en: {
+    h1: 'The answer to your question',
+    greeting: (name?: string) => (name ? `Hi ${name},` : 'Hi,'),
+    intro: 'Here is the deeper look you asked for, based on your birth chart and your report.',
+    yourQuestion: 'Your question',
+    usefulQuestion: 'Was this answer helpful?',
+    creditsLeft: (n: number) => `You still have ${n} ${n === 1 ? 'question' : 'questions'} available.`,
+    noCredits: "You've used all of your questions.",
+    cta: 'Open the Astrology Guide',
+    closing: 'If you need any help, just reply to this email.',
+    subject: (q: string) => (q ? `About your question: ${truncate(q, 60)}` : 'Your answer is ready'),
+  },
 } as const
+
+type Lang = keyof typeof COPY
+const resolveLang = (lang?: string): Lang =>
+  lang === 'es' || lang === 'en' ? lang : 'it'
 
 const AstrologyGuideAnswerEmail = ({
   name,
@@ -61,14 +77,14 @@ const AstrologyGuideAnswerEmail = ({
   market,
 }: AstrologyGuideAnswerProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'es' ? 'es' : 'it']
+  const t = COPY[resolveLang(lang)]
   const reportUrl = `${theme.baseUrl}/report?openGuide=1`
   const feedbackBaseUrl = `${SUPABASE_URL}/functions/v1/astrology-guide-feedback`
   const feedbackUpUrl = questionId ? `${feedbackBaseUrl}?id=${questionId}&f=up` : null
   const feedbackDownUrl = questionId ? `${feedbackBaseUrl}?id=${questionId}&f=down` : null
 
   return (
-    <Html lang={lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={resolveLang(lang)} dir="ltr">
       <Head />
       <Preview>{truncate(answer, 110)}</Preview>
       <Body style={styles.main}>
@@ -174,7 +190,7 @@ export const template = {
   component: AstrologyGuideAnswerEmail,
   subject: (data: Record<string, unknown>) => {
     const q = typeof data.question === 'string' ? data.question : ''
-    return COPY[data?.lang === 'es' ? 'es' : 'it'].subject(q)
+    return COPY[resolveLang(data?.lang as string | undefined)].subject(q)
   },
   displayName: 'Guida astrologica – risposta',
   previewData: {

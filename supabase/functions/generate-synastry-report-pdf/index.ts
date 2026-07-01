@@ -16,6 +16,7 @@ import {
   rasterizeChartSvg,
 } from "../_shared/report-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
 const BI_WHEEL_URL = "https://api.freeastroapi.com/api/v1/natal/chart/synastry";
@@ -241,8 +242,8 @@ Deno.serve(async (req: Request) => {
       scoreOverall: session.score_overall,
       scores: session.scores,
       biWheelPng,
-      lang: (session as any).language === "es" ? "es" : "it",
-      market: (session as any).market === "es" ? "es" : "it",
+      lang: resolvePromptLang((session as any).language),
+      market: getMarket((session as any).market).id,
     });
 
     return pdfResponse(

@@ -107,6 +107,7 @@ function blocco5OraNascita(brief: SynastryBrief, langName: string): string {
   const declarations: Record<string, string> = {
     Italian: `"Senza l'ora esatta di ${who}, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di ${who} non sono nel quadro."`,
     Spanish: `"Sin la hora exacta de ${who}, esta lectura se centra en los contactos planetarios, que son la columna vertebral de la sinastría. Las casas y el ascendente de ${who} no están en el cuadro."`,
+    English: `"Without ${who}'s exact birth time, this reading focuses on the planetary contacts, which are the backbone of synastry. ${who}'s houses and Ascendant are not part of the picture."`,
   };
   const declaration = declarations[langName] ?? declarations.Italian;
 
