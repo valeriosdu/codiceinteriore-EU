@@ -162,13 +162,20 @@ Deno.serve(async (req) => {
     // che le citta' locali compaiano comunque; il sort sotto le mette in cima.
     // Se q e' prefisso di un endonimo italiano MA NON dell'esonimo inglese,
     // aggiungo una fetch con l'esonimo: upstream indicizza "Rome" non "Roma",
-    // quindi q=roma non troverebbe mai Roma IT senza questo.
+    // quindi q=roma non troverebbe mai Roma IT senza questo. L'alias e' un endonimo
+    // ITALIANO: la sua fetch va SEMPRE cercata in Italia (country 'IT'), mai nel
+    // country della richiesta. Su mercati non-IT (es/us) usare US/ES cercherebbe
+    // "Rome"/"Florence" negli Stati Uniti e non troverebbe mai la citta' italiana.
     const aliasExonym = aliasNeedingSecondFetch(qLower)
     const tasks: Array<{ q: string; country: string }> = [{ q, country: '' }]
     if (country) tasks.push({ q, country })
-    if (aliasExonym) tasks.push({ q: aliasExonym, country })
+    if (aliasExonym) tasks.push({ q: aliasExonym, country: 'IT' })
 
-    const responses = await Promise.all(tasks.map((t) => fetchUpstream(t.q, limit, t.country, lang)))
+    // Chiediamo a upstream piu' risultati di quanti ne mostriamo: cosi' il pool
+    // contiene le citta' estere popolose anche quando il paese preferito ha molte
+    // omonime, e la riserva mondiale sotto puo' pescarle.
+    const fetchLimit = Math.max(limit, 15)
+    const responses = await Promise.all(tasks.map((t) => fetchUpstream(t.q, fetchLimit, t.country, lang)))
     if (responses.every((r) => r === null)) {
       return new Response(JSON.stringify({ error: 'Upstream geo lookup failed' }), {
         status: 502,
@@ -201,8 +208,28 @@ Deno.serve(async (req) => {
       return bPop - aPop
     })
 
-    // Localizza nomi IT e tronca al limite richiesto.
-    const localized = merged.slice(0, limit).map((r: any) => {
+    // Selezione finale: paese preferito in cima (gia' ordinato sopra), troncato al
+    // limite. MA se fra i primi `limit` non c'e' nessuna citta' estera e nel pool
+    // esiste una citta' estera davvero popolosa (>=100k ab.) nascosta dalle omonime
+    // del paese preferito (le tante "Rome"/"Florence"/"Paris" USA che seppelliscono
+    // Roma/Firenze/Parigi), le riserviamo gli ultimi slot. Su it/es non scatta quasi
+    // mai (le omonime estere di citta' italiane sono paesini <100k), quindi il loro
+    // comportamento resta invariato.
+    const WORLD_POP_MIN = 100_000
+    const WORLD_RESERVE = 2
+    const head = merged.slice(0, limit)
+    if (limit > WORLD_RESERVE && !head.some((r: any) => r?.country !== preferredCountry)) {
+      const notableWorld = merged.filter(
+        (r: any) => r?.country !== preferredCountry && (Number(r?.population) || 0) >= WORLD_POP_MIN,
+      )
+      if (notableWorld.length) {
+        const take = Math.min(WORLD_RESERVE, notableWorld.length)
+        head.splice(limit - take, take, ...notableWorld.slice(0, take))
+      }
+    }
+
+    // Localizza nomi IT.
+    const localized = head.map((r: any) => {
       if (r?.country !== 'IT') return r
       return {
         ...r,
