@@ -62,6 +62,18 @@ const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
   },
 };
 
+// Ordine dei componenti data per lingua: en usa MM/DD/YYYY (en-US), it/es DD/MM/YYYY.
+// I chiamanti passano i componenti già formattati (padding a loro scelta) così il
+// comportamento it/es resta identico byte-per-byte; cambia solo l'ordine per en.
+export function orderDateParts(
+  lang: PromptLang,
+  day: string,
+  month: string,
+  year: string,
+): string {
+  return lang === "en" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
+}
+
 export function planetName(lang: PromptLang, en: string): string {
   return PLANET_NAMES[lang][en] || (en ? en[0].toUpperCase() + en.slice(1) : en);
 }

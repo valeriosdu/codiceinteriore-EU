@@ -8,11 +8,11 @@ export const US_MARKET: MarketConfig = {
   id: 'us',
   language: 'en',
   locale: 'en-US',
-  // TODO: confirm production domain.
-  siteUrl: 'https://us.example.com',
-  // TODO: confirm production hostnames.
-  hostnames: ['us.example.com'],
-  // TODO: confirm US brand name.
+  // Smoke test: sottodominio in prestito di Carta Interior. Migrerà al
+  // dominio .com US dedicato quando comprato (basta cambiare questi due valori).
+  siteUrl: 'https://us.cartainterior.com',
+  hostnames: ['us.cartainterior.com'],
+  // TODO: confirm US brand name (mostrato in header/email/PDF).
   siteName: 'US Brand (TODO)',
   logo,
   // TODO: swap to US brand OG asset.

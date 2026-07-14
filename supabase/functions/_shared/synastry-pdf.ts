@@ -16,7 +16,7 @@ import { sanitizePdfText } from "./report-pdf.ts";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
-import { type PromptLang } from "./prompts/lang.ts";
+import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
 import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
 import { getArchetypeLabel } from "./synastry-archetypes.ts";
 
@@ -116,12 +116,14 @@ function formatBirthDetail(
   birthTime: any,
   birthPlace: string | null | undefined,
   timePrefix: string,
+  lang: PromptLang,
 ): string {
   const parts: string[] = [];
   if (birthPlace) parts.push(sanitizePdfText(birthPlace));
   if (birthDate && typeof birthDate === "object") {
     const { day, month, year } = birthDate;
-    if (day && month && year) parts.push(`${day}/${month}/${year}`);
+    if (day && month && year)
+      parts.push(orderDateParts(lang, `${day}`, `${month}`, `${year}`));
   }
   if (birthTime && typeof birthTime === "object") {
     const { hour, minute } = birthTime;
@@ -300,12 +302,14 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
     input.personABirthTime,
     input.personABirthPlace,
     S.timePrefix,
+    lang,
   );
   const personBDetail = formatBirthDetail(
     input.personBBirthDate,
     input.personBBirthTime,
     input.personBBirthPlace,
     S.timePrefix,
+    lang,
   );
   if (personADetail) {
     drawCenteredText(

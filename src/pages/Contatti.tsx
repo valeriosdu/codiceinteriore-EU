@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { contactPageJsonLd } from "@/lib/seo-jsonld";
+import { ROUTES } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,7 +106,7 @@ const Contatti = () => {
       <SEO
         title={c.seoTitle(market.siteName)}
         description={c.seoDescription(market.contactEmail)}
-        path="/contatti"
+        path={ROUTES.contact}
         jsonLd={contactPageJsonLd()}
       />
       <Header />

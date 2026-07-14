@@ -145,16 +145,17 @@ const ES_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__ES",
 };
 
-// TODO: real US brand/domain values go here once the US listing is live.
+// Smoke test: sottodominio in prestito di Carta Interior (us.cartainterior.com).
+// Migrerà al dominio .com US dedicato quando comprato.
 const US_MARKET: BackendMarketConfig = {
   id: "us",
   language: "en",
   locale: "en-US",
-  siteUrl: "https://us.example.com", // TODO: real US site URL
-  siteName: "US Brand (TODO)", // TODO: real US brand name
-  senderDomain: "notifiche.us.example.com", // TODO: real US sender domain
-  fromDomain: "us.example.com", // TODO: real US from domain
-  contactEmail: "info@us.example.com", // TODO: real US contact email
+  siteUrl: "https://us.cartainterior.com",
+  siteName: "US Brand (TODO)", // TODO: real US brand name (header/email/PDF)
+  senderDomain: "us.cartainterior.com", // Brevo: verificare il sottodominio come sender
+  fromDomain: "us.cartainterior.com",
+  contactEmail: "info@us.cartainterior.com", // TODO: casella reale o reuse info@cartainterior.com
   currency: "USD",
   countryCode: "US",
   stripe: {

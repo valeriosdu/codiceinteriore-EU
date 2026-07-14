@@ -9,7 +9,7 @@ import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold, sourceSansRegular } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
-import { type PromptLang } from "./prompts/lang.ts";
+import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
 import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump this version whenever the PDF layout, fonts, or chart rendering
@@ -751,7 +751,9 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
   if (birthDate) {
     const bd = typeof birthDate === "object" ? birthDate : {};
     if (bd.day && bd.month && bd.year) {
-      birthInfo += (birthInfo ? " - " : "") + `${bd.day}/${bd.month}/${bd.year}`;
+      birthInfo +=
+        (birthInfo ? " - " : "") +
+        orderDateParts(lang, `${bd.day}`, `${bd.month}`, `${bd.year}`);
     }
   }
   if (birthInfo) {

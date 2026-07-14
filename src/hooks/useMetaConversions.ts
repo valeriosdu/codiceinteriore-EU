@@ -1,6 +1,13 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MARKET } from "@/markets";
+import type { Language } from "@/markets";
+
+const OFFER_CONTENT_NAMES: Record<Language, { base: string; premium: string }> = {
+  it: { base: "Lettura completa", premium: "Lettura completa + transiti" },
+  es: { base: "Lectura completa", premium: "Lectura completa + tránsitos" },
+  en: { base: "Full reading", premium: "Full reading + transits" },
+};
 
 function getCookie(name: string): string | undefined {
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
@@ -89,7 +96,10 @@ const getOfferCustomData = (purchaseType?: string, extra?: Record<string, unknow
   if (!purchaseType) return extra;
   return {
     content_category: purchaseType,
-    content_name: purchaseType === "premium" ? "Lettura completa + transiti" : "Lettura completa",
+    content_name:
+      purchaseType === "premium"
+        ? OFFER_CONTENT_NAMES[MARKET.language].premium
+        : OFFER_CONTENT_NAMES[MARKET.language].base,
     currency: MARKET.currency,
     value: OFFER_VALUES[purchaseType] ?? undefined,
     ...extra,

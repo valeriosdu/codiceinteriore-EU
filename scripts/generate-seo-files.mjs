@@ -29,14 +29,23 @@ const SITE_URL = (env("VITE_SITE_URL", "https://www.codiceinteriore.it")).replac
 const MARKET = env("VITE_MARKET", "it");
 const hasEditorial = MARKET === "it";
 
+// Slug localizzati: il mercato us usa slug inglesi (allineati a src/lib/routes.ts).
+const enSlugs = MARKET === "us";
+const slug = {
+  lpClassica: enSlugs ? "/lp/classic" : "/lp/classica",
+  lpAttivazione: enSlugs ? "/lp/activation" : "/lp/attivazione",
+  contact: enSlugs ? "/contact" : "/contatti",
+  terms: enSlugs ? "/terms" : "/termini",
+};
+
 // Route base, presenti in tutti i mercati.
 const baseRoutes = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/lp/classica", changefreq: "weekly", priority: "0.9" },
-  { path: "/lp/attivazione", changefreq: "weekly", priority: "0.9" },
-  { path: "/contatti", changefreq: "monthly", priority: "0.4" },
+  { path: slug.lpClassica, changefreq: "weekly", priority: "0.9" },
+  { path: slug.lpAttivazione, changefreq: "weekly", priority: "0.9" },
+  { path: slug.contact, changefreq: "monthly", priority: "0.4" },
   { path: "/privacy", changefreq: "yearly", priority: "0.2" },
-  { path: "/termini", changefreq: "yearly", priority: "0.2" },
+  { path: slug.terms, changefreq: "yearly", priority: "0.2" },
 ];
 
 // Route editoriali (guide + glossario): solo nei mercati con editorialContent.

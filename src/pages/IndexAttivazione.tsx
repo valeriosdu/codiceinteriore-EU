@@ -9,6 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { DEFAULT_FAQS, faqJsonLd, productJsonLd } from "@/lib/seo-jsonld";
 import { useI18n } from "@/i18n/I18nProvider";
+import { ROUTES } from "@/lib/routes";
 
 const INK = "#1a2744";
 const RULE = "rgba(26,39,68,0.32)";
@@ -259,12 +260,12 @@ const IndexAttivazione = () => {
       <SEO
         title={la.seo.title}
         description={la.seo.description}
-        path="/lp/attivazione"
+        path={ROUTES.lpAttivazione}
         jsonLd={[
           productJsonLd({
             name: la.seo.productName,
             description: la.seo.productDescription,
-            url: `${market.siteUrl}/lp/attivazione`,
+            url: `${market.siteUrl}${ROUTES.lpAttivazione}`,
           }),
           faqJsonLd(DEFAULT_FAQS),
         ]}

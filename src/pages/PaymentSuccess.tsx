@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
 import { useI18n } from "@/i18n/I18nProvider";
+import { MARKET } from "@/markets";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -115,7 +116,8 @@ const PaymentSuccess = () => {
 
     let cancelled = false;
     const fallbackPurchaseType = data.purchaseType || undefined;
-    const fallbackValue = fallbackPurchaseType === "premium" ? 29 : 19;
+    const fallbackValue =
+      fallbackPurchaseType === "premium" ? MARKET.prices.premium : MARKET.prices.base;
 
     const trackVerifiedPurchase = async () => {
       const { data: checkoutData } = await supabase.functions.invoke("get-checkout-email", {
@@ -125,7 +127,7 @@ const PaymentSuccess = () => {
 
       const purchaseType = checkoutData?.purchaseType || fallbackPurchaseType;
       const amountTotal = Number(checkoutData?.amountTotal);
-      const value = Number.isFinite(amountTotal) && amountTotal > 0 ? amountTotal : purchaseType === "premium" ? 29 : fallbackValue;
+      const value = Number.isFinite(amountTotal) && amountTotal > 0 ? amountTotal : purchaseType === "premium" ? MARKET.prices.premium : fallbackValue;
       const quizSessionId = checkoutData?.quizSessionId || data.sessionId || undefined;
 
       // Mark before firing so a re-render in the same mount can't double-call.
@@ -133,7 +135,7 @@ const PaymentSuccess = () => {
 
       trackPurchase({
         value,
-        currency: checkoutData?.currency || "EUR",
+        currency: checkoutData?.currency || MARKET.currency,
         purchaseType,
         email: checkoutData?.email || undefined,
         firstName: data.userName || undefined,
@@ -146,7 +148,7 @@ const PaymentSuccess = () => {
         {
           purchase_type: purchaseType,
           amount: value,
-          currency: checkoutData?.currency || "EUR",
+          currency: checkoutData?.currency || MARKET.currency,
           provider: sessionId.startsWith("pp_") ? "paypal" : "stripe",
           checkout_session_id: sessionId,
           quiz_session_id: quizSessionId || null,

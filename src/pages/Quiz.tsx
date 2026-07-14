@@ -10,6 +10,7 @@ import { trackEvent } from '@/lib/analytics';
 import PickerField from '@/components/PickerField';
 import { type WheelItem } from '@/components/WheelPicker';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 // Wheel options, built once. The wheels open centered on these anchors while the
 // field is still unset (birth year ~1980, mid-day/month/hour), then the user
@@ -73,7 +74,7 @@ const Quiz = () => {
   // The /regalo route is the public entry point for the gift flow (e.g. shared
   // via email or campaigns). We reset on mount to make sure no leftover quiz
   // data from a previous in-progress session leaks into the new gift purchase.
-  const isGiftRoute = location.pathname === '/regalo';
+  const isGiftRoute = location.pathname === ROUTES.gift;
   useEffect(() => {
     if (isGiftRoute && !data.subjectIsOther) {
       resetQuizForNewPurchase();

@@ -9,7 +9,7 @@ const TermsEn = () => (
   <LegalPage
     seoTitle={`Terms of Service — ${MARKET.siteName}`}
     seoDescription={`Terms of Service governing the use of ${MARKET.siteName} and the digital services offered.`}
-    path="/termini"
+    path="/terms"
     backAria="Back"
     heading="Terms of Service"
     lastUpdated="Last updated: April 24, 2026"

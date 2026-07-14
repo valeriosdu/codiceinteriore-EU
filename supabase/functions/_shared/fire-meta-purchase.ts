@@ -15,7 +15,7 @@
 // the webhook handler, same pattern as Brevo sync and generate-report.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { getMarket } from "./markets.ts";
+import { getMarket, type Language } from "./markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -55,9 +55,22 @@ function buildEventId(quizSessionId: string, purchaseType: ServerPurchaseType): 
   return `purchase:${quizSessionId}:${purchaseType}`;
 }
 
-const PRODUCT_NAMES: Record<ServerPurchaseType, string> = {
-  base: "Lettura completa",
-  premium: "Lettura completa + transiti",
+// content_name inviato a Meta come segnale di catalogo/attribuzione (non mostrato
+// all'acquirente). Localizzato per lingua così un acquisto US riporta il nome
+// prodotto in inglese; it/es restano invariati byte-per-byte.
+const PRODUCT_NAMES: Record<Language, Record<ServerPurchaseType, string>> = {
+  it: {
+    base: "Lettura completa",
+    premium: "Lettura completa + transiti",
+  },
+  es: {
+    base: "Lettura completa",
+    premium: "Lettura completa + transiti",
+  },
+  en: {
+    base: "Complete reading",
+    premium: "Complete reading + transits",
+  },
 };
 
 export function firePurchaseEventBackground(args: FireMetaPurchaseArgs) {
@@ -119,7 +132,7 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
     value: args.value,
     currency: args.currency,
     content_category: args.purchaseType,
-    content_name: PRODUCT_NAMES[args.purchaseType],
+    content_name: PRODUCT_NAMES[market.language][args.purchaseType],
   };
 
   const body = {

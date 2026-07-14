@@ -12,7 +12,7 @@ import { sanitizePdfText } from "./report-pdf.ts";
 import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
-import { type PromptLang } from "./prompts/lang.ts";
+import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
 import { TRANSIT_PDF_STRINGS } from "./pdf-i18n.ts";
 
 // Bump whenever the transit PDF layout/fonts change so cached files
@@ -113,20 +113,20 @@ function wrapText(text: string, font: any, fontSize: number, maxWidth: number): 
   return lines;
 }
 
-function formatItDate(iso: string | null): string {
+function formatItDate(iso: string | null, lang: PromptLang): string {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!m) return iso;
-  return `${m[3]}/${m[2]}/${m[1]}`;
+  return orderDateParts(lang, m[3], m[2], m[1]);
 }
 
-function formatBirthDate(value: any): string {
+function formatBirthDate(value: any, lang: PromptLang): string {
   if (!value) return "";
-  if (typeof value === "string") return formatItDate(value);
+  if (typeof value === "string") return formatItDate(value, lang);
   if (typeof value === "object" && value.day && value.month && value.year) {
     const day = String(value.day).padStart(2, "0");
     const month = String(value.month).padStart(2, "0");
-    return `${day}/${month}/${value.year}`;
+    return orderDateParts(lang, day, month, `${value.year}`);
   }
   return "";
 }
@@ -422,7 +422,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
 
   const birthDetails = [
     birthPlace ? sanitizePdfText(birthPlace) : "",
-    formatBirthDate(birthDate),
+    formatBirthDate(birthDate, lang),
     formatBirthTime(birthTime),
   ].filter(Boolean).join(" - ");
   if (birthDetails) {
@@ -430,7 +430,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   }
 
   const rangeText = periodStart && periodEnd
-    ? `${S.periodLabel} ${formatItDate(periodStart)} - ${formatItDate(periodEnd)}`
+    ? `${S.periodLabel} ${formatItDate(periodStart, lang)} - ${formatItDate(periodEnd, lang)}`
     : "";
   if (rangeText) {
     drawCenteredText(coverPage, rangeText, PAGE_HEIGHT / 2 - 92, 12, timesRomanItalic, mutedText);

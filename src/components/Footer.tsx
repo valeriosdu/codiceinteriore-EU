@@ -1,4 +1,5 @@
 import { useI18n } from "@/i18n/I18nProvider";
+import { ROUTES } from "@/lib/routes";
 
 const Footer = () => {
   const { m, market } = useI18n();
@@ -26,11 +27,11 @@ const Footer = () => {
             {f.privacy}
           </a>
           {" · "}
-          <a href="/termini" className="hover:text-foreground transition-colors">
+          <a href={ROUTES.terms} className="hover:text-foreground transition-colors">
             {f.terms}
           </a>
           {" · "}
-          <a href="/contatti" className="hover:text-foreground transition-colors">
+          <a href={ROUTES.contact} className="hover:text-foreground transition-colors">
             {f.contact}
           </a>
         </p>
