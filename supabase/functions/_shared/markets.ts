@@ -152,10 +152,12 @@ const US_MARKET: BackendMarketConfig = {
   language: "en",
   locale: "en-US",
   siteUrl: "https://us.cartainterior.com",
-  siteName: "US Brand (TODO)", // TODO: real US brand name (header/email/PDF)
-  senderDomain: "us.cartainterior.com", // Brevo: verificare il sottodominio come sender
-  fromDomain: "us.cartainterior.com",
-  contactEmail: "info@us.cartainterior.com", // TODO: casella reale o reuse info@cartainterior.com
+  // Smoke test: brand + mittente email = Carta Interior (dominio già verificato
+  // in Brevo, così le email arrivano). TODO: brand/sender US reali al lancio.
+  siteName: "Carta Interior",
+  senderDomain: "notifiche.cartainterior.com",
+  fromDomain: "cartainterior.com",
+  contactEmail: "info@cartainterior.com",
   currency: "USD",
   countryCode: "US",
   stripe: {

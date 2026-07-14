@@ -1,9 +1,10 @@
 import type { MarketConfig } from './types';
-// TODO: swap to US brand logo/OG assets once the US brand is finalized. For now
-// this reuses the existing IT logo asset (and the IT OG image path below).
-import logo from '@/assets/logo.webp';
+// Smoke test: brand = Carta Interior → riusa logo/OG di Carta Interior.
+// TODO: sostituire con logo/OG del brand US al lancio.
+import logo from '@/assets/logo.es.webp';
 
-// US market config — placeholders pending brand/legal/pricing decisions.
+// US market config — smoke test su us.cartainterior.com; prezzi/legali US da
+// confermare al lancio.
 export const US_MARKET: MarketConfig = {
   id: 'us',
   language: 'en',
@@ -12,13 +13,13 @@ export const US_MARKET: MarketConfig = {
   // dominio .com US dedicato quando comprato (basta cambiare questi due valori).
   siteUrl: 'https://us.cartainterior.com',
   hostnames: ['us.cartainterior.com'],
-  // TODO: confirm US brand name (mostrato in header/email/PDF).
-  siteName: 'US Brand (TODO)',
+  // Brand temporaneo per lo smoke test = "Carta Interior" (stesso brand del
+  // dominio). TODO: sostituire col brand US reale al lancio (header/email/PDF).
+  siteName: 'Carta Interior',
   logo,
   // TODO: swap to US brand OG asset.
-  ogImage: '/og/codice-interiore-1x1.webp',
-  // TODO: confirm US contact email.
-  contactEmail: 'info@us.example.com',
+  ogImage: '/og/carta-interior-1x1.webp',
+  contactEmail: 'info@cartainterior.com',
   currency: 'USD',
   countryCode: 'US',
   prices: {
@@ -32,10 +33,10 @@ export const US_MARKET: MarketConfig = {
     astroPack: 7.9,
   },
   legal: {
-    // TODO: confirm US legal entity / company fields before launch.
-    companyName: 'US Company LLC (TODO)',
-    address: 'TODO US registered address',
-    regNumber: 'TODO',
+    // Smoke test: riusa l'entità Carta Interior. TODO: entità legale US reale al lancio.
+    companyName: 'ECOLIFE COMMERCE LTD.',
+    address: '71-75 Shelton Street, Covent Garden, London, United Kingdom',
+    regNumber: '16364511',
   },
   editorialContent: false,
 };
