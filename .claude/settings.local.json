@@ -7,11 +7,16 @@
       "mcp__supabase",
       "mcp__supabase__deploy_edge_function",
       "mcp__supabase__get_edge_function",
-      "mcp__supabase__list_edge_functions"
+      "mcp__supabase__list_edge_functions",
+      "Bash(npm run *)",
+      "Bash(VITE_MARKET=it VITE_SITE_URL=https://www.codiceinteriore.it node scripts/generate-seo-files.mjs)",
+      "Bash(git --no-pager log --oneline -8)",
+      "Bash(git --no-pager log --oneline -3 -- supabase/functions/_shared/markets.ts)",
+      "Bash(git --no-pager show --stat --oneline HEAD)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

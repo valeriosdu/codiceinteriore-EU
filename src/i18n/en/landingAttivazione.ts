@@ -1,11 +1,11 @@
 const landingAttivazione = {
   seo: {
-    title: 'Birth Chart for when you feel stuck — Codice Interiore',
+    title: 'Birth Chart for when you feel stuck — Carta Interior',
     description:
-      'You know what you want but you cannot get going? A birth chart reading to understand what lights you up and what holds you back. In English, about 10 pages. Start free.',
+      "You know what you want but can't get going? A birth chart reading to understand what lights you up and what holds you back — about 10 pages. Start free.",
     productName: 'Birth Chart Reading — Activation',
     productDescription:
-      'A birth chart reading focused on being stuck and getting moving: what lights you up, what holds you back, the conditions that get you going. Written in English.',
+      'A birth chart reading focused on being stuck and getting moving: what lights you up, what holds you back, the conditions that get you going.',
   },
   plateHero: 'Plate I · Sky chart',
   hero: {
@@ -41,7 +41,7 @@ const landingAttivazione = {
     ],
   },
   finalCta: {
-    body: 'Start with your opening reading. You will better understand what lights you up and what holds you back.',
+    body: "Start with your opening reading. You'll get a clearer sense of what lights you up and what holds you back.",
     cta: 'Start the quiz',
   },
 };
