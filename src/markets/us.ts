@@ -33,10 +33,8 @@ export const US_MARKET: MarketConfig = {
     astroPack: 7.9,
   },
   legal: {
-    // Smoke test: riusa l'entità Carta Interior. TODO: entità legale US reale al lancio.
-    companyName: 'ECOLIFE COMMERCE LTD.',
-    address: '71-75 Shelton Street, Covent Garden, London, United Kingdom',
-    regNumber: '16364511',
+    companyName: 'Montavia Digital LLC',
+    address: '30 N Gould St Ste N, Sheridan, Wyoming 82801, United States',
   },
   editorialContent: false,
 };
