@@ -23,9 +23,8 @@ export const US_MARKET: MarketConfig = {
   currency: 'USD',
   countryCode: 'US',
   prices: {
-    // TODO: confirm USD prices — these mirror the es/it numeric values as USD placeholders.
-    base: 19,
-    premium: 29,
+    base: 29,
+    premium: 39,
     synastry: 19,
     synastryLaunch: 14.9,
     transitOneTime: 10,
@@ -33,8 +32,9 @@ export const US_MARKET: MarketConfig = {
     astroPack: 7.9,
   },
   legal: {
-    companyName: 'Montavia Digital LLC',
-    address: '30 N Gould St Ste N, Sheridan, Wyoming 82801, United States',
+    companyName: 'VSD Green Commerce FZE LLC',
+    address: 'Business Centre, Sharjah Publishing City Free Zone, Sharjah, United Arab Emirates',
+    regNumber: '4418567',
   },
   editorialContent: false,
 };
