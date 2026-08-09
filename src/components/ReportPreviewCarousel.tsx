@@ -14,16 +14,27 @@ import schemi from "@/assets/report-preview/5-schemi.webp";
 import consigli from "@/assets/report-preview/6-consigli.webp";
 import poesia from "@/assets/report-preview/7-poesia.webp";
 
-// Screenshot del report italiano: asset per-lingua, da sostituire quando un
-// nuovo mercato avrà i propri estratti.
-const SLIDE_IMAGES = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
+import heroEn from "@/assets/report-preview/hero-US.webp";
+import identitaEn from "@/assets/report-preview/1-identita-en.webp";
+import emozioniEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0005.webp";
+import relazioniEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0006_11zon.webp";
+import lavoroEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0008.webp";
+import schemiEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0009.webp";
+import consigliEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0010.webp";
+import poesiaEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0011.webp";
+
+// Screenshot del report: asset per-lingua, da sostituire quando un nuovo
+// mercato avrà i propri estratti (es oggi riusa ancora quelli italiani).
+const SLIDE_IMAGES_IT = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
+const SLIDE_IMAGES_EN = [heroEn, identitaEn, emozioniEn, relazioniEn, lavoroEn, schemiEn, consigliEn, poesiaEn];
 
 const ReportPreviewCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
-  const { m } = useI18n();
+  const { m, market } = useI18n();
   const rp = m.social.reportPreview;
+  const SLIDE_IMAGES = market.language === "en" ? SLIDE_IMAGES_EN : SLIDE_IMAGES_IT;
   const slides = SLIDE_IMAGES.map((src, i) => ({ src, alt: rp.slideAlts[i] ?? "" }));
 
   useEffect(() => {
