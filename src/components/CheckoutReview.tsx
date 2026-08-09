@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2, Lock, Sparkles, RefreshCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -59,6 +59,18 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
         sessionKind: PRODUCT_KIND[purchaseType].sessionKind,
       }
     : null;
+
+  // We navigate away with window.location.href to reach Stripe/PayPal. If the
+  // user hits browser Back, the page can be restored from bfcache with this
+  // component's JS state frozen mid-redirect (loadingMethod still set), which
+  // leaves the buttons stuck disabled with a spinner forever.
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setLoadingMethod(null);
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   const handleSelect = async (method: "stripe" | "paypal") => {
     if (!purchaseType || !sessionId) {
