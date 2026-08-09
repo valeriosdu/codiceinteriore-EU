@@ -89,7 +89,7 @@ export async function finalizePaypalPayment(
   // only fallbacks: PayPal's captured amount/currency below always wins.
   const PRODUCT_AMOUNTS: Record<string, Record<PurchaseType, string>> = {
     EUR: { base: "19.00", premium: "29.00", synastry: "19.00", synastry_launch: "14.90" },
-    USD: { base: "19.99", premium: "29.99", synastry: "19.99", synastry_launch: "14.99" }, // TODO: confirm USD prices
+    USD: { base: "29.00", premium: "39.00", synastry: "19.00", synastry_launch: "14.90" },
   };
   const defaultAmount =
     (PRODUCT_AMOUNTS[market.currency] || PRODUCT_AMOUNTS.EUR)[purchaseType];

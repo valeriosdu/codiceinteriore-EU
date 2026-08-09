@@ -62,6 +62,40 @@ const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
   },
 };
 
+const SALIENCE_LABELS: Record<PromptLang, {
+  header: string;
+  angularPlanets: string;
+  planetsOnAxes: string;
+  keyAspects: string;
+  retrogradePersonal: string;
+}> = {
+  it: {
+    header: "PRIORITY MARKERS (calcolati dalla carta — usa SEMPRE in interpretazione):",
+    angularPlanets: "Pianeti angolari",
+    planetsOnAxes: "Pianeti su assi (orb<=8°)",
+    keyAspects: "Aspetti chiave",
+    retrogradePersonal: "Retrogradazioni personali",
+  },
+  es: {
+    header: "PRIORITY MARKERS (calculados a partir de la carta — usar SIEMPRE en la interpretación):",
+    angularPlanets: "Planetas angulares",
+    planetsOnAxes: "Planetas en ejes (orbe<=8°)",
+    keyAspects: "Aspectos clave",
+    retrogradePersonal: "Retrogradaciones personales",
+  },
+  en: {
+    header: "PRIORITY MARKERS (computed from the chart — ALWAYS use in the interpretation):",
+    angularPlanets: "Angular planets",
+    planetsOnAxes: "Planets on axes (orb<=8°)",
+    keyAspects: "Key aspects",
+    retrogradePersonal: "Personal retrogrades",
+  },
+};
+
+export function salienceLabels(lang: PromptLang) {
+  return SALIENCE_LABELS[lang];
+}
+
 // Ordine dei componenti data per lingua: en usa MM/DD/YYYY (en-US), it/es DD/MM/YYYY.
 // I chiamanti passano i componenti già formattati (padding a loro scelta) così il
 // comportamento it/es resta identico byte-per-byte; cambia solo l'ordine per en.

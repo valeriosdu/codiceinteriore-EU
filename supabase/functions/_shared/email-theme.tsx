@@ -17,7 +17,8 @@ export interface EmailTheme {
 
 export function getEmailTheme(marketId?: string | null): EmailTheme {
   const market = getMarket(marketId as MarketId | null | undefined)
-  const logoFile = market.id === 'es' ? 'logo-es.png' : 'logo.png'
+  // us riusa il brand Carta Interior (smoke test, stesso logo di es).
+  const logoFile = market.id === 'es' || market.id === 'us' ? 'logo-es.png' : 'logo.png'
   return {
     siteName: market.siteName,
     baseUrl: market.siteUrl,

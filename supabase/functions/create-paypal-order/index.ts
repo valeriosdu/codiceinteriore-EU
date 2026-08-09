@@ -26,7 +26,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "19.00",
       es: "19.00",
-      en: "19.99", // TODO: confirm USD price
+      en: "29.00",
     },
     amountCents: 1900,
     description: {
@@ -43,7 +43,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "29.00",
       es: "29.00",
-      en: "29.99", // TODO: confirm USD price
+      en: "39.00",
     },
     amountCents: 2900,
     description: {
@@ -60,7 +60,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "19.00",
       es: "19.00",
-      en: "19.99", // TODO: confirm USD price
+      en: "19.00",
     },
     amountCents: 1900,
     description: {
@@ -79,7 +79,7 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "14.90",
       es: "14.90",
-      en: "14.99", // TODO: confirm USD price
+      en: "14.90",
     },
     amountCents: 1490,
     description: {

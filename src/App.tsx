@@ -121,12 +121,12 @@ const App = () => (
             {/* Redirect 301 dai vecchi slug italiani ai nuovi (solo mercato en) */}
             {SLUGS_LOCALIZED && (
               <>
-                <Route path={LEGACY_SLUGS.lpClassica} element={<Navigate to={ROUTES.lpClassica} replace />} />
-                <Route path={LEGACY_SLUGS.lpAttivazione} element={<Navigate to={ROUTES.lpAttivazione} replace />} />
-                <Route path={LEGACY_SLUGS.gift} element={<Navigate to={ROUTES.gift} replace />} />
-                <Route path={LEGACY_SLUGS.contact} element={<Navigate to={ROUTES.contact} replace />} />
-                <Route path={LEGACY_SLUGS.terms} element={<Navigate to={ROUTES.terms} replace />} />
-                <Route path={LEGACY_SLUGS.couple} element={<Navigate to={ROUTES.couple} replace />} />
+                <Route path={LEGACY_SLUGS.lpClassica} element={<LegacyRedirect from={LEGACY_SLUGS.lpClassica} to={ROUTES.lpClassica} />} />
+                <Route path={LEGACY_SLUGS.lpAttivazione} element={<LegacyRedirect from={LEGACY_SLUGS.lpAttivazione} to={ROUTES.lpAttivazione} />} />
+                <Route path={LEGACY_SLUGS.gift} element={<LegacyRedirect from={LEGACY_SLUGS.gift} to={ROUTES.gift} />} />
+                <Route path={LEGACY_SLUGS.contact} element={<LegacyRedirect from={LEGACY_SLUGS.contact} to={ROUTES.contact} />} />
+                <Route path={LEGACY_SLUGS.terms} element={<LegacyRedirect from={LEGACY_SLUGS.terms} to={ROUTES.terms} />} />
+                <Route path={LEGACY_SLUGS.couple} element={<LegacyRedirect from={LEGACY_SLUGS.couple} to={ROUTES.couple} />} />
                 <Route path={`${LEGACY_SLUGS.couple}/*`} element={<LegacyRedirect from={LEGACY_SLUGS.couple} to={ROUTES.couple} />} />
               </>
             )}
