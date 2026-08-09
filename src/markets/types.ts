@@ -37,4 +37,8 @@ export interface MarketConfig {
   prices: MarketPrices;
   legal: MarketLegal;
   editorialContent: boolean;
+  // GDPR/ePrivacy (UE) richiede un banner di consenso opt-in; gli USA no
+  // (CCPA/CPRA usa un modello opt-out, non un banner). Per-mercato invece di
+  // un branch it/es binario.
+  cookieBanner: boolean;
 }

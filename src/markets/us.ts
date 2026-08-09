@@ -37,4 +37,8 @@ export const US_MARKET: MarketConfig = {
     regNumber: '4418567',
   },
   editorialContent: false,
+  // US: nessun obbligo di opt-in style GDPR (CCPA/CPRA usa un modello
+  // opt-out, gestito nella Privacy Policy). Il banner attuale è comunque
+  // cosmetico (non blocca i tracker), quindi qui non toglie protezione reale.
+  cookieBanner: false,
 };

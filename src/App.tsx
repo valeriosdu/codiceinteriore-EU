@@ -162,7 +162,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
-          <CookieBanner />
+          {MARKET.cookieBanner && <CookieBanner />}
         </BrowserRouter>
         </SynastryProvider>
       </QuizProvider>

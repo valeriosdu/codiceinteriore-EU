@@ -28,4 +28,5 @@ export const IT_MARKET: MarketConfig = {
     regNumber: '16364511',
   },
   editorialContent: true,
+  cookieBanner: true,
 };
