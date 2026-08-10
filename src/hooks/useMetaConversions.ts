@@ -10,6 +10,28 @@ function getCookie(name: string): string | undefined {
 const FBC_STORAGE_KEY = "ci_meta_fbc";
 
 /**
+ * Persists `fbclid` from the current URL as soon as the app mounts. Meta CAPI
+ * events only start firing mid-funnel (quiz done, teaser, checkout) — by then
+ * client-side navigation (`navigate("/quiz")`, no search string) has already
+ * dropped `fbclid` from the URL, so without this the only remaining source is
+ * the `_fbc` cookie the Meta pixel sets itself — which never appears for
+ * ad-blocked or Safari Link-Tracking-Protection traffic. Call this once, as
+ * early as possible (App mount), so it runs on whatever page the ad click
+ * actually landed on.
+ */
+export function captureFbclid(): void {
+  try {
+    const fbclid = new URLSearchParams(window.location.search).get("fbclid");
+    if (!fbclid) return;
+    const stored = localStorage.getItem(FBC_STORAGE_KEY) || undefined;
+    if (stored && stored.endsWith(`.${fbclid}`)) return;
+    localStorage.setItem(FBC_STORAGE_KEY, `fb.1.${Date.now()}.${fbclid}`);
+  } catch {
+    // best effort
+  }
+}
+
+/**
  * Facebook click id (`fbc`) for advanced matching. Prefers the real `_fbc`
  * cookie set by the Meta pixel; if it isn't there yet (the pixel is loaded
  * deferred, so it can lag behind the first navigation), reconstruct it from the

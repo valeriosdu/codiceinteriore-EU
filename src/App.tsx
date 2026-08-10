@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -64,10 +64,16 @@ const DevPaymentPreview = import.meta.env.DEV
 import ScrollToTop from "./components/ScrollToTop";
 import RouteAnalytics from "./components/RouteAnalytics";
 import CookieBanner from "./components/CookieBanner";
+import { captureFbclid } from "./hooks/useMetaConversions";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    captureFbclid();
+  }, []);
+
+  return (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -148,6 +154,7 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;
