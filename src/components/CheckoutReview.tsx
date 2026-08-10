@@ -60,17 +60,22 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
       }
     : null;
 
-  // We navigate away with window.location.href to reach Stripe/PayPal. If the
-  // user hits browser Back, the page can be restored from bfcache with this
-  // component's JS state frozen mid-redirect (loadingMethod still set), which
-  // leaves the buttons stuck disabled with a spinner forever.
+  // We navigate away with window.location.href to reach Stripe/PayPal. On
+  // browser Back the page is restored from bfcache with this component's state
+  // frozen mid-redirect: loadingMethod still set (spinner spinning, buttons
+  // disabled, and onOpenChange refusing to close while it is truthy) and the
+  // dialog still open — which leaves Radix's body lock (pointer-events: none +
+  // scroll lock) in place, so the whole page reads as frozen. Reset the state
+  // and close the dialog so the user lands back on a fully interactive page.
   useEffect(() => {
     const handlePageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) setLoadingMethod(null);
+      if (!e.persisted) return;
+      setLoadingMethod(null);
+      onClose();
     };
     window.addEventListener("pageshow", handlePageShow);
     return () => window.removeEventListener("pageshow", handlePageShow);
-  }, []);
+  }, [onClose]);
 
   const handleSelect = async (method: "stripe" | "paypal") => {
     if (!purchaseType || !sessionId) {
