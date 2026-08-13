@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/i18n/I18nProvider';
+import { useMetaConversions } from '@/hooks/useMetaConversions';
+import { useSynastry, toCompleteBirthDate } from '@/context/SynastryContext';
 
 export default function CoppiaSuccess() {
   const navigate = useNavigate();
   const { m, market } = useI18n();
+  const { data } = useSynastry();
+  const { trackPurchase } = useMetaConversions();
   const cs = m.coppia.success;
   const [sessionId, setSessionId] = useState<string>(
     () => new URLSearchParams(window.location.search).get('session_id') || '',
@@ -72,6 +76,46 @@ export default function CoppiaSuccess() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Purchase lato browser, gemello di quello in PaymentSuccess: parte solo con
+  // un checkout id confermato e usa i valori reali del checkout. Il gemello
+  // server-side (webhook) manda lo stesso event_id, quindi Meta li fonde.
+  const purchaseTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!sessionId || paypalCapturing || purchaseTrackedRef.current) return;
+
+    // Marcato subito: questa pagina si auto-redirige a /coppia/activate dopo
+    // 1,2s, quindi l'invio non deve dipendere dal fatto che il componente sia
+    // ancora montato quando get-checkout-email risponde (non tocca stato).
+    purchaseTrackedRef.current = true;
+
+    (async () => {
+      const { data: checkout } = await supabase.functions.invoke('get-checkout-email', {
+        body: { sessionId },
+      });
+
+      const purchaseType = checkout?.purchaseType || 'synastry_launch';
+      const amountTotal = Number(checkout?.amountTotal);
+      const value =
+        Number.isFinite(amountTotal) && amountTotal > 0
+          ? amountTotal
+          : purchaseType === 'synastry'
+            ? market.prices.synastry
+            : market.prices.synastryLaunch;
+
+      trackPurchase({
+        value,
+        currency: checkout?.currency || market.currency,
+        purchaseType,
+        email: checkout?.email || undefined,
+        firstName: data.personA.name || undefined,
+        sessionId: checkout?.synastrySessionId || data.sessionId || undefined,
+        birthDate: toCompleteBirthDate(data.personA.birthDate),
+      });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, paypalCapturing]);
 
   useEffect(() => {
     if (!sessionId || paypalCapturing) return;

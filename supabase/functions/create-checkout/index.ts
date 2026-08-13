@@ -7,6 +7,7 @@ import {
   getStripePrice,
   type StripeProduct,
 } from "../_shared/markets.ts";
+import { captureBrowserContext } from "../_shared/browser-context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -170,7 +171,11 @@ serve(async (req) => {
       amount_total: product.amountCents,
       currency: market.currency,
       market: market.id,
-      provider_metadata: { stripe_mode: "payment", stage: "created" },
+      provider_metadata: {
+        stripe_mode: "payment",
+        stage: "created",
+        browser_context: captureBrowserContext(req, body),
+      },
     };
     if (product.sessionKind === "synastry") {
       checkoutRow.synastry_session_id = sessionId;

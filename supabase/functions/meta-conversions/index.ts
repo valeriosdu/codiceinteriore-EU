@@ -10,12 +10,50 @@ const corsHeaders = {
 
 const API_VERSION = "v21.0";
 
-async function hashSHA256(value: string): Promise<string> {
+async function sha256(value: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(value.trim().toLowerCase());
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(value));
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Meta match keys must be normalized BEFORE hashing, otherwise the hash simply
+// never matches: the phone Stripe gives us ("+34 612 34 56 78") hashes to
+// something Meta never computes on its side (it expects "34612345678").
+// Rules: https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/customer-information-parameters
+const normalizers: Record<string, (raw: string) => string> = {
+  em: (v) => v.trim().toLowerCase(),
+  // Lettere (accenti inclusi: Meta accetta UTF-8 e i profili ES/IT li hanno)
+  // senza punteggiatura, cifre o spazi doppi.
+  fn: (v) => v.trim().toLowerCase().replace(/[\d_'".,()[\]{}!?]/g, "").replace(/\s+/g, " ").trim(),
+  ln: (v) => v.trim().toLowerCase().replace(/[\d_'".,()[\]{}!?]/g, "").replace(/\s+/g, " ").trim(),
+  // Solo cifre, prefisso internazionale incluso, senza zeri iniziali.
+  ph: (v) => v.replace(/\D/g, "").replace(/^0+/, ""),
+  db: (v) => v.replace(/\D/g, ""),
+  zp: (v) => v.trim().toLowerCase().replace(/\s+/g, "").slice(0, 5),
+  ct: (v) => v.trim().toLowerCase().replace(/[^a-zà-ÿ]/g, ""),
+  st: (v) => v.trim().toLowerCase().replace(/[^a-zà-ÿ]/g, ""),
+  country: (v) => v.trim().toLowerCase().slice(0, 2),
+  ge: (v) => v.trim().toLowerCase().slice(0, 1),
+};
+
+/**
+ * Normalizza + hasha un match key. Restituisce `null` se dopo la normalizzazione
+ * non resta nulla (es. nome fatto di sola punteggiatura): inviare l'hash di ""
+ * conta come copertura piena su un valore che non matcherà mai nessuno.
+ */
+async function hashField(key: string, value: unknown): Promise<string[] | null> {
+  const values = Array.isArray(value) ? value : [value];
+  const out: string[] = [];
+  for (const raw of values) {
+    if (typeof raw !== "string" && typeof raw !== "number") continue;
+    const normalize = normalizers[key] ?? ((v: string) => v.trim().toLowerCase());
+    const normalized = normalize(String(raw));
+    if (!normalized) continue;
+    out.push(await sha256(normalized));
+  }
+  return out.length > 0 ? out : null;
 }
 
 serve(async (req) => {
@@ -24,8 +62,16 @@ serve(async (req) => {
   }
 
   try {
-    const { event_name, event_source_url, user_data, custom_data, event_id, skip_request_ip, market } =
-      await req.json();
+    const {
+      event_name,
+      event_source_url,
+      user_data,
+      custom_data,
+      event_id,
+      skip_request_ip,
+      market,
+      test_event_code,
+    } = await req.json();
 
     const marketConfig = getMarket(market);
     const PIXEL_ID = Deno.env.get(marketConfig.metaPixelIdEnv);
@@ -42,38 +88,35 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[meta-conversions] event=${event_name} event_id=${event_id ?? "<missing>"}`);
+    console.log(
+      `[meta-conversions] event=${event_name} market=${marketConfig.id} pixel=${PIXEL_ID} event_id=${event_id ?? "<missing>"}`,
+    );
 
-    // Hash user data fields that need hashing
+    // Hash user data fields that need hashing (dopo normalizzazione)
     const hashedUserData: Record<string, unknown> = {};
 
-    if (user_data?.em) {
-      hashedUserData.em = [await hashSHA256(user_data.em)];
+    for (const key of ["em", "fn", "ln", "ph", "db", "zp", "ct", "st", "ge", "external_id"]) {
+      const value = (user_data as Record<string, unknown> | undefined)?.[key];
+      if (value === undefined || value === null || value === "") continue;
+      // external_id è l'unico match key non anagrafico: accetta anche array
+      // (mandiamo id sessione + id anonimo stabile, così un cliente di ritorno
+      // resta la stessa persona per Meta anche cambiando sessione).
+      const hashed = await hashField(key, value);
+      if (hashed) hashedUserData[key] = hashed;
     }
-    if (user_data?.fn) {
-      hashedUserData.fn = [await hashSHA256(user_data.fn)];
-    }
-    if (user_data?.ln) {
-      hashedUserData.ln = [await hashSHA256(user_data.ln)];
-    }
-    if (user_data?.ph) {
-      hashedUserData.ph = [await hashSHA256(user_data.ph)];
-    }
-    if (user_data?.db) {
-      hashedUserData.db = [await hashSHA256(user_data.db)];
-    }
-    if (user_data?.zp) {
-      hashedUserData.zp = [await hashSHA256(user_data.zp)];
-    }
+
     // Pass through non-hashed fields
     if (user_data?.client_user_agent) {
       hashedUserData.client_user_agent = user_data.client_user_agent;
     }
-    // Get client IP from request headers (forwarded by proxy). Server-to-server
-    // callers (stripe-webhook, paypal-webhook) pass skip_request_ip=true because
-    // the forwarded IP would be the Supabase runtime, not the buyer's browser —
-    // sending it would degrade match quality instead of improving it.
-    if (!skip_request_ip) {
+    // IP: preferisci quello esplicito nel body — i chiamanti server-to-server
+    // (stripe-webhook, paypal-webhook) lo rileggono da checkout_sessions, cioè
+    // è l'IP vero del browser al checkout. In assenza, e solo se non è stato
+    // chiesto di ignorarlo, si usa l'IP della richiesta: per un webhook sarebbe
+    // il runtime Supabase, che peggiora il match invece di migliorarlo.
+    if (user_data?.client_ip_address) {
+      hashedUserData.client_ip_address = user_data.client_ip_address;
+    } else if (!skip_request_ip) {
       const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
         || req.headers.get("cf-connecting-ip")
         || req.headers.get("x-real-ip");
@@ -87,14 +130,9 @@ serve(async (req) => {
     if (user_data?.fbp) {
       hashedUserData.fbp = user_data.fbp;
     }
-    if (user_data?.external_id) {
-      hashedUserData.external_id = [await hashSHA256(user_data.external_id)];
-    }
     // Always include country code as fallback to satisfy Meta's minimum user data requirement
-    if (user_data?.country) {
-      hashedUserData.country = [await hashSHA256(user_data.country)];
-    } else {
-      hashedUserData.country = [await hashSHA256(marketConfig.countryCode)];
+    if (!hashedUserData.country) {
+      hashedUserData.country = await hashField("country", user_data?.country || marketConfig.countryCode);
     }
 
     const eventData: Record<string, unknown> = {
@@ -114,7 +152,12 @@ serve(async (req) => {
       eventData.custom_data = custom_data;
     }
 
-    const payload = { data: [eventData] };
+    // test_event_code: opzionale, serve solo a far comparire l'evento nel Test
+    // Events di Events Manager. Mai valorizzato dal funnel in produzione.
+    const payload: Record<string, unknown> = { data: [eventData] };
+    if (typeof test_event_code === "string" && test_event_code) {
+      payload.test_event_code = test_event_code;
+    }
 
     const url = `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`;
 

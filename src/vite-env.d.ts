@@ -9,8 +9,18 @@ interface ImportMetaEnv {
 
 interface FbqFunction {
   (action: 'init', pixelId: string): void;
-  (action: 'track', eventName: string, params?: Record<string, unknown>): void;
-  (action: 'trackCustom', eventName: string, params?: Record<string, unknown>): void;
+  (
+    action: 'track',
+    eventName: string,
+    params?: Record<string, unknown>,
+    options?: { eventID?: string },
+  ): void;
+  (
+    action: 'trackCustom',
+    eventName: string,
+    params?: Record<string, unknown>,
+    options?: { eventID?: string },
+  ): void;
 }
 
 interface Window {

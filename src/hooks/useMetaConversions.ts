@@ -1,12 +1,30 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getAnonymousId } from "@/lib/analytics";
 import { MARKET } from "@/markets";
 import type { Language } from "@/markets";
 
-const OFFER_CONTENT_NAMES: Record<Language, { base: string; premium: string }> = {
-  it: { base: "Lettura completa", premium: "Lettura completa + transiti" },
-  es: { base: "Lectura completa", premium: "Lectura completa + tránsitos" },
-  en: { base: "Full reading", premium: "Full reading + transits" },
+type OfferKey = "base" | "premium" | "synastry" | "synastry_launch";
+
+const OFFER_CONTENT_NAMES: Record<Language, Record<OfferKey, string>> = {
+  it: {
+    base: "Lettura completa",
+    premium: "Lettura completa + transiti",
+    synastry: "Sinastria di coppia",
+    synastry_launch: "Sinastria di coppia (lancio)",
+  },
+  es: {
+    base: "Lectura completa",
+    premium: "Lectura completa + tránsitos",
+    synastry: "Sinastría de pareja",
+    synastry_launch: "Sinastría de pareja (lanzamiento)",
+  },
+  en: {
+    base: "Full reading",
+    premium: "Full reading + transits",
+    synastry: "Couple synastry reading",
+    synastry_launch: "Couple synastry reading (launch)",
+  },
 };
 
 function getCookie(name: string): string | undefined {
@@ -112,41 +130,69 @@ interface TrackOptions {
 const OFFER_VALUES: Record<string, number> = {
   base: MARKET.prices.base,
   premium: MARKET.prices.premium,
+  synastry: MARKET.prices.synastry,
+  synastry_launch: MARKET.prices.synastryLaunch,
 };
 
 const getOfferCustomData = (purchaseType?: string, extra?: Record<string, unknown>) => {
   if (!purchaseType) return extra;
+  const key: OfferKey = purchaseType in OFFER_VALUES ? (purchaseType as OfferKey) : "base";
   return {
     content_category: purchaseType,
-    content_name:
-      purchaseType === "premium"
-        ? OFFER_CONTENT_NAMES[MARKET.language].premium
-        : OFFER_CONTENT_NAMES[MARKET.language].base,
+    // content_ids/content_type servono al catalogo e alle campagne Advantage+:
+    // senza, Meta non sa che gli eventi del funnel parlano dello stesso prodotto.
+    content_ids: [key],
+    content_type: "product",
+    num_items: 1,
+    content_name: OFFER_CONTENT_NAMES[MARKET.language][key],
     currency: MARKET.currency,
-    value: OFFER_VALUES[purchaseType] ?? undefined,
+    value: OFFER_VALUES[key] ?? undefined,
     ...extra,
   };
 };
 
+/** Cookie Meta del browser, da allegare alla creazione del checkout. */
+export function getMetaBrowserIds(): { fbc?: string; fbp?: string } {
+  const ids: { fbc?: string; fbp?: string } = {};
+  const fbc = getStoredFbc();
+  const fbp = getCookie("_fbp");
+  if (fbc) ids.fbc = fbc;
+  if (fbp) ids.fbp = fbp;
+  return ids;
+}
+
 async function trackEvent(eventName: string, options: TrackOptions = {}) {
   const eventId = buildEventId(eventName, options.externalId, options.purchaseType);
 
-  // Server-side CAPI only — no client-side fbq("track") to avoid double-firing
-  // The base pixel in index.html handles PageView; all other events go through CAPI only.
+  // Doppio invio browser + CAPI con lo STESSO event_id, come raccomanda Meta:
+  // il pixel porta segnali che il server non ha (cookie di prima parte, sessione
+  // del browser), la CAPI copre chi ha ad-blocker o ITP, e la deduplica per
+  // event_id li fonde in una conversione sola. Il PageView resta a index.html.
   try {
-    const userData: Record<string, string> = {
+    window.fbq?.("track", eventName, options.customData ?? {}, { eventID: eventId });
+  } catch (err) {
+    console.warn(`Meta pixel ${eventName} failed (non-blocking):`, err);
+  }
+
+  try {
+    const userData: Record<string, string | string[]> = {
       client_user_agent: navigator.userAgent,
     };
 
-    const fbc = getStoredFbc();
-    const fbp = getCookie("_fbp");
+    const { fbc, fbp } = getMetaBrowserIds();
     if (fbc) userData.fbc = fbc;
     if (fbp) userData.fbp = fbp;
 
     if (options.email) userData.em = options.email;
     if (options.firstName) userData.fn = options.firstName;
     if (options.lastName) userData.ln = options.lastName;
-    if (options.externalId) userData.external_id = options.externalId;
+    // L'id di sessione cambia a ogni acquisto: da solo fa sembrare a Meta che un
+    // cliente di ritorno sia una persona nuova. L'id anonimo è stabile sul
+    // dispositivo e li ricuce (Meta accetta più external_id per evento).
+    const externalIds = [options.externalId, getAnonymousId()].filter(
+      (id): id is string => Boolean(id) && id !== "no-storage",
+    );
+    if (externalIds.length > 0) userData.external_id = externalIds;
     if (options.birthDate) {
       const { year, month, day } = options.birthDate;
       userData.db = `${year}${String(month).padStart(2, "0")}${String(day).padStart(2, "0")}`;

@@ -5,8 +5,10 @@ import {
   markSynastryFunnelStage,
   getSynastryFunnelStage,
   isBirthDateComplete,
+  toCompleteBirthDate,
 } from '@/context/SynastryContext';
 import { useSynastrySession } from '@/hooks/useSynastrySession';
+import { useMetaConversions } from '@/hooks/useMetaConversions';
 import { pollUntilStatus } from '@/hooks/useSynastryStatus';
 import { useI18n } from '@/i18n/I18nProvider';
 
@@ -16,6 +18,7 @@ export default function CoppiaProcessing() {
   const navigate = useNavigate();
   const { data, updateData } = useSynastry();
   const { createSession, triggerInsights } = useSynastrySession();
+  const { trackLead } = useMetaConversions();
   const { m, market } = useI18n();
   const cp = m.coppia.processing;
   const ranRef = useRef(false);
@@ -48,6 +51,14 @@ export default function CoppiaProcessing() {
         setErrorMessage(cp.errors.createSession);
         return;
       }
+
+      // Quiz coppia completato: stesso confine funnel del Lead sul natale.
+      trackLead({
+        firstName: data.personA.name || undefined,
+        sessionId,
+        purchaseType: 'synastry_launch',
+        birthDate: toCompleteBirthDate(data.personA.birthDate),
+      });
 
       await triggerInsights(sessionId).catch((e) =>
         console.warn('[CoppiaProcessing] triggerInsights failed:', e),
@@ -86,7 +97,7 @@ export default function CoppiaProcessing() {
     };
 
     void run();
-  }, [createSession, triggerInsights, data.personA.birthDate, data.personB.birthDate, data.sessionId, navigate, updateData]);
+  }, [createSession, triggerInsights, trackLead, data.personA.birthDate, data.personB.birthDate, data.sessionId, navigate, updateData]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
