@@ -33,7 +33,7 @@ serve(async (req) => {
       );
       const { data: row } = await supabaseAdmin
         .from("checkout_sessions")
-        .select("quiz_session_id, purchase_type, customer_email, payment_status, amount_total, currency, market")
+        .select("quiz_session_id, synastry_session_id, purchase_type, customer_email, payment_status, amount_total, currency, market")
         .eq("stripe_session_id", sessionId)
         .maybeSingle();
 
@@ -70,6 +70,9 @@ serve(async (req) => {
         JSON.stringify({
           email,
           quizSessionId: row.quiz_session_id || "",
+          // Serve al Purchase del funnel coppia: senza, l'event_id lato browser
+          // non coincide con quello del webhook e Meta conta due acquisti.
+          synastrySessionId: row.synastry_session_id || "",
           purchaseType,
           amountTotal,
           currency: row.currency || "EUR",
@@ -110,6 +113,7 @@ serve(async (req) => {
       JSON.stringify({
         email: session.customer_details?.email || session.customer_email || "",
         quizSessionId: session.metadata?.quiz_session_id || "",
+        synastrySessionId: session.metadata?.synastry_session_id || "",
         purchaseType,
         amountTotal,
         currency: session.currency?.toUpperCase() || "EUR",

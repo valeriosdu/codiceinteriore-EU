@@ -5,7 +5,9 @@ import {
   useSynastry,
   markSynastryFunnelStage,
   clearSynastryStorage,
+  toCompleteBirthDate,
 } from '@/context/SynastryContext';
+import { useMetaConversions } from '@/hooks/useMetaConversions';
 import Header from '@/components/Header';
 import { ArchetypeBadge } from '@/components/coppia/ArchetypeBadge';
 import { ScoreOverallRing } from '@/components/coppia/ScoreOverallRing';
@@ -102,6 +104,7 @@ export default function CoppiaTeaser() {
   const { m, market } = useI18n();
   const ct = m.coppia.teaser;
   const [reviewOpen, setReviewOpen] = useState(false);
+  const { trackViewContent, trackAddToCart, trackInitiateCheckout } = useMetaConversions();
 
   const isDevPreview = import.meta.env.DEV && searchParams.get('preview') === 'true';
   const data = isDevPreview
@@ -115,6 +118,31 @@ export default function CoppiaTeaser() {
     }
   }, [data.sessionId, data.archetype, navigate, isDevPreview]);
 
+  useEffect(() => {
+    if (!data.sessionId) return;
+    trackViewContent({
+      firstName: data.personA.name || undefined,
+      sessionId: data.sessionId,
+      purchaseType: 'synastry_launch',
+      birthDate: toCompleteBirthDate(data.personA.birthDate),
+    });
+  }, [data.sessionId, data.personA.name, data.personA.birthDate, trackViewContent]);
+
+  // AddToCart dopo 10s sul teaser: segnala interesse reale, non un rimbalzo
+  // (stessa convenzione del funnel natale).
+  useEffect(() => {
+    if (!data.sessionId) return;
+    const timer = setTimeout(() => {
+      trackAddToCart({
+        firstName: data.personA.name || undefined,
+        sessionId: data.sessionId,
+        purchaseType: 'synastry_launch',
+        birthDate: toCompleteBirthDate(data.personA.birthDate),
+      });
+    }, 10_000);
+    return () => clearTimeout(timer);
+  }, [data.sessionId, data.personA.name, data.personA.birthDate, trackAddToCart]);
+
   if (!isDevPreview && (!data.sessionId || !data.archetype)) return null;
 
   const scoresIt = mapScoresIt(data.scores);
@@ -125,6 +153,12 @@ export default function CoppiaTeaser() {
 
   const handleOpenCheckout = () => {
     markSynastryFunnelStage('offer');
+    trackInitiateCheckout({
+      firstName: data.personA.name || undefined,
+      sessionId: data.sessionId || undefined,
+      purchaseType: reviewPurchaseType,
+      birthDate: toCompleteBirthDate(data.personA.birthDate),
+    });
     setReviewOpen(true);
   };
 
@@ -346,6 +380,8 @@ export default function CoppiaTeaser() {
         purchaseType={reviewPurchaseType}
         sessionId={data.sessionId || ''}
         synastrySessionId={data.sessionId || ''}
+        firstName={data.personA.name || undefined}
+        birthDate={toCompleteBirthDate(data.personA.birthDate)}
         onClose={() => setReviewOpen(false)}
       />
     </div>

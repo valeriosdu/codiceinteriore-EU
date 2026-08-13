@@ -29,6 +29,14 @@ export function isBirthDateComplete(d: SynastryPersonData['birthDate']): boolean
   return d.day != null && d.month != null && d.year != null;
 }
 
+/** La data di nascita in forma completa, o null: serve al matching avanzato Meta. */
+export function toCompleteBirthDate(
+  d: SynastryPersonData['birthDate'],
+): { day: number; month: number; year: number } | null {
+  if (!isBirthDateComplete(d)) return null;
+  return { day: d.day as number, month: d.month as number, year: d.year as number };
+}
+
 /** True se entrambi i campi dell'ora sono valorizzati. */
 export function isBirthTimeComplete(t: SynastryPersonData['birthTime']): boolean {
   return t.hour != null && t.minute != null;

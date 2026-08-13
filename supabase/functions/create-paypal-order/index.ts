@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { createPaypalOrder, getPaypalOrder, paypalToOpaqueId, resolvePaypalCreds } from "../_shared/paypal.ts";
 import { getMarket, type Language } from "../_shared/markets.ts";
+import { captureBrowserContext } from "../_shared/browser-context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -215,6 +216,7 @@ serve(async (req) => {
           environment: creds.env,
           paypal_order_id: order.id,
           stage: "created",
+          browser_context: captureBrowserContext(req, body),
         },
       },
       { onConflict: "stripe_session_id" },

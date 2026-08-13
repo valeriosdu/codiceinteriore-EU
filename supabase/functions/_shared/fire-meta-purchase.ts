@@ -15,7 +15,7 @@
 // the webhook handler, same pattern as Brevo sync and generate-report.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { getMarket } from "./markets.ts";
+import { getMarket, type Language } from "./markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -24,7 +24,9 @@ const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
-export type ServerPurchaseType = "base" | "premium";
+export type ServerPurchaseType = "base" | "premium" | "synastry" | "synastry_launch";
+
+const SYNASTRY_TYPES = new Set(["synastry", "synastry_launch"]);
 
 export interface FireMetaPurchaseArgs {
   quizSessionId: string;
@@ -55,9 +57,28 @@ function buildEventId(quizSessionId: string, purchaseType: ServerPurchaseType): 
   return `purchase:${quizSessionId}:${purchaseType}`;
 }
 
-const PRODUCT_NAMES: Record<ServerPurchaseType, string> = {
-  base: "Lettura completa",
-  premium: "Lettura completa + transiti",
+// content_name inviato a Meta come segnale di catalogo/attribuzione (non mostrato
+// all'acquirente). Localizzato per lingua così un acquisto US riporta il nome
+// prodotto in inglese; it/es restano invariati byte-per-byte.
+const PRODUCT_NAMES: Record<Language, Record<ServerPurchaseType, string>> = {
+  it: {
+    base: "Lettura completa",
+    premium: "Lettura completa + transiti",
+    synastry: "Sinastria di coppia",
+    synastry_launch: "Sinastria di coppia (lancio)",
+  },
+  es: {
+    base: "Lettura completa",
+    premium: "Lettura completa + transiti",
+    synastry: "Sinastría de pareja",
+    synastry_launch: "Sinastría de pareja (lanzamiento)",
+  },
+  en: {
+    base: "Complete reading",
+    premium: "Complete reading + transits",
+    synastry: "Couple synastry reading",
+    synastry_launch: "Couple synastry reading (launch)",
+  },
 };
 
 export function firePurchaseEventBackground(args: FireMetaPurchaseArgs) {
@@ -81,9 +102,10 @@ export function firePurchaseEventBackground(args: FireMetaPurchaseArgs) {
 
 async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
   const eventId = buildEventId(args.quizSessionId, args.purchaseType);
+  const isSynastry = SYNASTRY_TYPES.has(args.purchaseType);
 
   // Mercato di default `it`; sovrascritto dalla riga sessione sotto. Determina
-  // event_source_url e country quando il chiamante non li passa esplicitamente.
+  // pixel di destinazione, event_source_url e country.
   let market = getMarket(null);
 
   const userData: Record<string, unknown> = {};
@@ -94,22 +116,92 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
   if (args.zip) userData.zp = args.zip;
   userData.external_id = args.quizSessionId;
 
-  if (SUPABASE_SERVICE_ROLE_KEY) {
+  const sb = SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    : null;
+
+  // Claim atomico PRIMA di sparare. Senza questo lo sweep A di
+  // recover-pending-reports (ogni ~9 min, finestra 30 giorni) ri-riconcilia ogni
+  // sessione pagata-non-reclamata e rispara lo stesso Purchase all'infinito:
+  // Meta deduplica per event_id solo entro 48h, dopo di che lo conta di nuovo.
+  // Se l'update non tocca righe la riga è già stata reclamata (o non esiste
+  // ancora: in quel caso si spara comunque, best effort come prima).
+  if (sb) {
+    const { data: claimed, error: claimErr } = await sb
+      .from("checkout_sessions")
+      .update({ meta_purchase_sent_at: new Date().toISOString() })
+      .eq("stripe_session_id", args.checkoutSessionId)
+      .is("meta_purchase_sent_at", null)
+      .select("stripe_session_id");
+    if (claimErr) {
+      console.warn("[fire-meta-purchase] claim update failed:", claimErr.message);
+    } else if (!claimed || claimed.length === 0) {
+      const { data: existing } = await sb
+        .from("checkout_sessions")
+        .select("meta_purchase_sent_at")
+        .eq("stripe_session_id", args.checkoutSessionId)
+        .maybeSingle();
+      if (existing?.meta_purchase_sent_at) {
+        console.log(
+          `[fire-meta-purchase] già inviato (${existing.meta_purchase_sent_at}) per ${args.checkoutSessionId}, skip`,
+        );
+        return;
+      }
+    }
+  }
+
+  if (sb) {
     try {
-      const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-      const { data: qs } = await sb
-        .from("quiz_sessions")
-        .select("birth_date, user_name, market")
+      // Contesto browser salvato al checkout: senza fbc/fbp/IP/UA il Purchase
+      // dal webhook arriva a Meta senza click id e l'attribuzione si perde.
+      const { data: checkout } = await sb
+        .from("checkout_sessions")
+        .select("market, provider_metadata")
+        .eq("stripe_session_id", args.checkoutSessionId)
+        .maybeSingle();
+      if (checkout?.market) market = getMarket(checkout.market as string);
+      const ctx = (checkout?.provider_metadata as Record<string, unknown> | null)?.browser_context as
+        | Record<string, string>
+        | undefined;
+      if (ctx?.fbc) userData.fbc = ctx.fbc;
+      if (ctx?.fbp) userData.fbp = ctx.fbp;
+      if (ctx?.ip) userData.client_ip_address = ctx.ip;
+      if (ctx?.ua) userData.client_user_agent = ctx.ua;
+    } catch (err) {
+      console.warn(
+        "[fire-meta-purchase] checkout lookup failed:",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+
+    try {
+      // Il funnel coppia passa l'id di synastry_sessions nello stesso campo.
+      const { data: session } = await sb
+        .from(isSynastry ? "synastry_sessions" : "quiz_sessions")
+        .select(
+          isSynastry
+            ? "person_a_name, person_a_birth_date, market"
+            : "birth_date, user_name, market",
+        )
         .eq("id", args.quizSessionId)
         .maybeSingle();
-      if (qs?.market) market = getMarket(qs.market as string);
-      if (qs?.birth_date) {
-        const bd = qs.birth_date as { day: number; month: number; year: number };
-        userData.db = `${bd.year}${String(bd.month).padStart(2, "0")}${String(bd.day).padStart(2, "0")}`;
+      const row = session as Record<string, unknown> | null;
+      if (row?.market) market = getMarket(row.market as string);
+
+      const birthDate = (isSynastry ? row?.person_a_birth_date : row?.birth_date) as
+        | { day: number; month: number; year: number }
+        | null
+        | undefined;
+      if (birthDate?.year) {
+        userData.db = `${birthDate.year}${String(birthDate.month).padStart(2, "0")}${String(birthDate.day).padStart(2, "0")}`;
       }
-      if (!userData.fn && qs?.user_name) userData.fn = qs.user_name;
+      const name = (isSynastry ? row?.person_a_name : row?.user_name) as string | null;
+      if (!userData.fn && name) userData.fn = name;
     } catch (err) {
-      console.warn("[fire-meta-purchase] quiz session lookup failed:", err instanceof Error ? err.message : String(err));
+      console.warn(
+        "[fire-meta-purchase] session lookup failed:",
+        err instanceof Error ? err.message : String(err),
+      );
     }
   }
 
@@ -119,15 +211,23 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
     value: args.value,
     currency: args.currency,
     content_category: args.purchaseType,
-    content_name: PRODUCT_NAMES[args.purchaseType],
+    content_ids: [args.purchaseType],
+    content_type: "product",
+    num_items: 1,
+    content_name:
+      PRODUCT_NAMES[market.language]?.[args.purchaseType] ?? PRODUCT_NAMES.en.base,
   };
 
+  const successPath = isSynastry ? "/coppia/success" : "/success";
   const body = {
     event_name: "Purchase",
     event_id: eventId,
-    event_source_url: args.sourceUrl || `${market.siteUrl}/success`,
+    event_source_url: args.sourceUrl || `${market.siteUrl}${successPath}`,
     user_data: userData,
     custom_data: customData,
+    // Senza questo ogni Purchase server finiva nel pixel IT: getMarket(undefined)
+    // ricade su `it`, quindi ES/US pagavano l'attribuzione di un altro mercato.
+    market: market.id,
     skip_request_ip: true,
   };
 
@@ -159,25 +259,15 @@ async function fireAndPersist(args: FireMetaPurchaseArgs): Promise<void> {
     );
   }
 
-  if (!invokeOk) return;
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn("[fire-meta-purchase] SERVICE_ROLE_KEY missing; cannot persist meta_purchase_sent_at");
-    return;
-  }
-
-  try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { error } = await supabase
+  // Il flag è già stato preso in carico prima dell'invio: se l'invio fallisce va
+  // rilasciato, altrimenti lo sweep di recupero non ritenterebbe mai più.
+  if (!invokeOk && sb) {
+    const { error } = await sb
       .from("checkout_sessions")
-      .update({ meta_purchase_sent_at: new Date().toISOString() })
+      .update({ meta_purchase_sent_at: null })
       .eq("stripe_session_id", args.checkoutSessionId);
     if (error) {
-      console.error("[fire-meta-purchase] meta_purchase_sent_at update failed:", error.message);
+      console.error("[fire-meta-purchase] claim release failed:", error.message);
     }
-  } catch (err) {
-    console.error(
-      "[fire-meta-purchase] DB update error:",
-      err instanceof Error ? err.message : String(err),
-    );
   }
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { useMetaConversions } from "@/hooks/useMetaConversions";
+import { useMetaConversions, getMetaBrowserIds } from "@/hooks/useMetaConversions";
 import { useI18n } from "@/i18n/I18nProvider";
 import visaLogo from "@/assets/payments/visa.svg";
 import mastercardLogo from "@/assets/payments/mastercard.svg";
@@ -78,9 +78,16 @@ const CheckoutReview = ({ open, purchaseType, sessionId, synastrySessionId, firs
     try {
       const fnName = method === "stripe" ? "create-checkout" : "create-paypal-order";
       const isSynastry = product?.sessionKind === "synastry";
-      const body = isSynastry
-        ? { purchaseType, synastrySessionId: synastrySessionId || sessionId }
-        : { purchaseType, sessionId };
+      // I cookie Meta viaggiano col checkout: sono l'unico modo per il Purchase
+      // sparato dal webhook (l'unico che vede tutti gli acquisti) di avere il
+      // click id del compratore.
+      const body = {
+        purchaseType,
+        ...(isSynastry
+          ? { synastrySessionId: synastrySessionId || sessionId }
+          : { sessionId }),
+        ...getMetaBrowserIds(),
+      };
       const { data, error } = await supabase.functions.invoke(fnName, { body });
 
       if (error || !data?.url) {
