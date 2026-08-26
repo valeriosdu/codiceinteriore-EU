@@ -260,11 +260,18 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Mercato/lingua della sessione: senza questi due campi la riga cade sul
+    // default 'it' e un cliente olandese ricreato a mano dall'admin riceve un
+    // report, un PDF e una mail in italiano.
+    const market = getMarket(typeof body.market === "string" ? body.market : null);
+
     const { data: inserted, error: insertErr } = await supabase
       .from("synastry_sessions")
       .insert({
         funnel_slug: "coppia",
         processing_status: "pending",
+        market: market.id,
+        language: market.language,
         relationship_duration: relationshipDuration,
         ...personInsertPayload("a", personA.person),
         ...personInsertPayload("b", personB.person),
@@ -286,9 +293,7 @@ Deno.serve(async (req) => {
     const profile = await resolveProfileByEmail(supabase, customerEmail);
 
     const stripeSessionIdComp = `admin_comp_synastry_${synastrySessionId}`;
-    const marketCurrency = getMarket(
-      typeof body.market === "string" ? body.market : null,
-    ).currency;
+    const marketCurrency = market.currency;
     const now = new Date().toISOString();
     const { error: checkoutErr } = await supabase
       .from("checkout_sessions")
@@ -305,6 +310,7 @@ Deno.serve(async (req) => {
         amount_total: 0,
         currency: marketCurrency,
         provider_metadata: { stage: "admin_comp" },
+        market: market.id,
         claimed_profile_id: profile?.id ?? null,
         claimed_at: profile?.id ? now : null,
       });

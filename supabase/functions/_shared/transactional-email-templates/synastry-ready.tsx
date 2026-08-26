@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface SynastryReadyProps {
   name?: string
@@ -47,16 +47,27 @@ const COPY = {
     closing: "From now on, you'll be able to find it in your personal space, whenever you want to come back to it.",
     subject: 'Your synastry is ready — sign in to your space',
   },
+  nl: {
+    preview: (siteName: string) => `Jullie synastrie voor koppels is klaar — ${siteName}`,
+    h1: 'Jullie synastrie is klaar',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    p1: 'jullie duiding voor koppels is klaar. Binnen vinden jullie het archetype van jullie relatie, compatibiliteitsscores op zes dimensies en acht analysedelen: van het portret van jullie samen tot de richting die de relatie inslaat.',
+    p2: 'Het is geen algemene horoscoop: het is een duiding die verankerd is in jullie echte planeten, geschreven in helder Nederlands, om in de loop van de tijd te herlezen.',
+    cta: 'Open jullie synastrie',
+    fallback: 'Werkt de knop niet, kopieer deze link dan naar je browser:',
+    closing: 'Vanaf nu vinden jullie hem terug in jullie persoonlijke ruimte, wanneer jullie er maar op terug willen komen.',
+    subject: 'Jullie synastrie is klaar — log in op jullie ruimte',
+  },
 } as const
 
 const SynastryReadyEmail = ({ name, sessionId, lang, market }: SynastryReadyProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
+  const t = COPY[resolveEmailLang(lang)]
   const reportUrl = sessionId
     ? `${theme.baseUrl}/coppia/activate?session_id=${encodeURIComponent(sessionId)}&intent=signin`
     : `${theme.baseUrl}/coppia/activate?intent=signin`
   return (
-    <Html lang={lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={resolveEmailLang(lang)} dir="ltr">
       <Head />
       <Preview>{t.preview(theme.siteName)}</Preview>
       <Body style={styles.main}>
@@ -95,7 +106,7 @@ const SynastryReadyEmail = ({ name, sessionId, lang, market }: SynastryReadyProp
 
 export const template = {
   component: SynastryReadyEmail,
-  subject: (data: Record<string, any>) => COPY[data?.lang === 'en' ? 'en' : data?.lang === 'es' ? 'es' : 'it'].subject,
+  subject: (data: Record<string, any>) => COPY[resolveEmailLang(data?.lang)].subject,
   displayName: 'Sinastria pronta',
   previewData: { name: 'Maria', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

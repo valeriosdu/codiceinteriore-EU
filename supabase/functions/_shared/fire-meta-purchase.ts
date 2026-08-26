@@ -79,6 +79,12 @@ const PRODUCT_NAMES: Record<Language, Record<ServerPurchaseType, string>> = {
     synastry: "Couple synastry reading",
     synastry_launch: "Couple synastry reading (launch)",
   },
+  nl: {
+    base: "Volledige duiding",
+    premium: "Volledige duiding + transits",
+    synastry: "Synastrie voor koppels",
+    synastry_launch: "Synastrie voor koppels (lancering)",
+  },
 };
 
 export function firePurchaseEventBackground(args: FireMetaPurchaseArgs) {

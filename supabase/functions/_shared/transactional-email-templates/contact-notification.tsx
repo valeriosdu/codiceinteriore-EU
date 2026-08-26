@@ -49,9 +49,22 @@ const COPY = {
     subject: (siteName: string, name?: string) =>
       `New message from the ${siteName} website${name ? ` — ${name}` : ''}`,
   },
+  nl: {
+    preview: (name: string, siteName: string) => `Nieuw bericht van ${name} — ${siteName}`,
+    h1: 'Nieuw bericht via de site',
+    name: 'Naam',
+    email: 'E-mail',
+    reason: 'Reden',
+    message: 'Bericht',
+    sentVia: (siteName: string) => `Verzonden via het contactformulier van ${siteName}`,
+    subject: (siteName: string, name?: string) =>
+      `Nieuw bericht van de site ${siteName}${name ? ` — ${name}` : ''}`,
+  },
 } as const
 
-const langFor = (market?: string) => (market === 'us' ? 'en' : market === 'es' ? 'es' : 'it')
+// La lingua della notifica segue il mercato da cui arriva il messaggio, letto
+// dalla config invece che da una catena di ternari.
+const langFor = (market?: string) => getMarket(market).language
 
 const ContactNotificationEmail = ({ name, email, reason, message, market }: ContactNotificationProps) => {
   const theme = getEmailTheme(market)

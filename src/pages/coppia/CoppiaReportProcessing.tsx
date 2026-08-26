@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchSynastrySessionPublic } from '@/lib/sessionAccess';
 import { useSynastry } from '@/context/SynastryContext';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 const POLL_INTERVAL = 3000;
 const TIMEOUT_MS = 180_000;
@@ -68,7 +69,7 @@ export default function CoppiaReportProcessing() {
             fullReport: s.full_report,
             processingStatus: s.processing_status,
           });
-          navigate('/coppia/report', { replace: true });
+          navigate(ROUTES.coupleReport, { replace: true });
           return;
         }
 

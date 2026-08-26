@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 type Mode = 'signup' | 'signin' | 'forgot';
 
@@ -32,7 +33,7 @@ export default function CoppiaActivate() {
   const [fetchingEmail, setFetchingEmail] = useState(true);
   const redirected = useRef(false);
 
-  const reportProcessingUrl = `/coppia/report-processing?session_id=${encodeURIComponent(sessionId)}`;
+  const reportProcessingUrl = `${ROUTES.coupleReportProcessing}?session_id=${encodeURIComponent(sessionId)}`;
 
   const doRedirect = async () => {
     if (redirected.current) return;
@@ -136,7 +137,7 @@ export default function CoppiaActivate() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin + '/coppia/activate' + window.location.search,
+          redirectTo: window.location.origin + ROUTES.coupleActivate + window.location.search,
         },
       });
       if (error) {

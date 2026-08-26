@@ -138,6 +138,22 @@ const ARCHETYPE_LABELS: Record<PromptLang, Record<SynastryArchetypeId, string>> 
     balanced_connection: "Conexión equilibrada",
     discordant_layout: "Configuración disonante",
   },
+  nl: {
+    soulmates: "Zielsverwanten",
+    kindred_spirits: "Verwante zielen",
+    opposites_attract: "Tegenpolen die aantrekken",
+    karmic_lesson: "Karmische les",
+    steady_rock: "Vaste rots",
+    intellectual_powerhouse: "Sterke mentale afstemming",
+    magnetic_attraction: "Magnetische aantrekking",
+    long_term_anchor: "Anker voor de lange termijn",
+    mental_synergy: "Mentale synergie",
+    volatile_spark: "Vluchtige vonk",
+    catalyst_for_change: "Katalysator voor verandering",
+    deep_bond: "Diepe band",
+    balanced_connection: "Evenwichtige verbinding",
+    discordant_layout: "Dissonante configuratie",
+  },
 };
 
 function resolveArchetypeId(id: string | null | undefined): SynastryArchetypeId {

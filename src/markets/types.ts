@@ -1,5 +1,5 @@
-export type MarketId = 'it' | 'es' | 'us';
-export type Language = 'it' | 'es' | 'en';
+export type MarketId = 'it' | 'es' | 'us' | 'nl';
+export type Language = 'it' | 'es' | 'en' | 'nl';
 
 export interface MarketPrices {
   base: number;

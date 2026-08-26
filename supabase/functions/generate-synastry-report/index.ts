@@ -162,6 +162,7 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     it: { a: "Persona A", b: "Persona B" },
     es: { a: "Persona A", b: "Persona B" },
     en: { a: "Person A", b: "Person B" },
+    nl: { a: "Persoon A", b: "Persoon B" },
   };
 
   // Costruisci brief italiano

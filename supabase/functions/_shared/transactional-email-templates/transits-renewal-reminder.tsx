@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface TransitsRenewalReminderProps {
   name?: string
@@ -44,11 +44,20 @@ const COPY = {
     nextCharge: (date: string) => `Your next charge ($9.90) is scheduled for ${date}. There's nothing you need to do; if you'd like, you can manage your subscription anytime.`,
     closing: 'If you need any help, just reply to this email.',
   },
+  nl: {
+    locale: 'nl-NL',
+    preview: 'Je nieuwe transits van de maand komen eraan',
+    h1: 'Binnenkort je nieuwe transitduiding',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    body: 'Je nieuwe maand transits gaat bijna beginnen: een frisse duiding over hoe de bewegingen aan de hemel de kernpunten van je geboortehoroscoop raken, met vier periodes om je week na week te oriënteren.',
+    cta: 'Abonnement beheren',
+    nextCharge: (date: string) => `De volgende afschrijving (€ 9,90) staat gepland voor ${date}. Je hoeft niets te doen; wil je toch iets wijzigen, dan kun je je abonnement op elk moment beheren.`,
+    closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
+  },
 } as const
 
 type Lang = keyof typeof COPY
-const resolveLang = (lang?: string): Lang =>
-  lang === 'es' || lang === 'en' ? lang : 'it'
+const resolveLang = (lang?: string): Lang => resolveEmailLang(lang)
 
 const TransitsRenewalReminderEmail = ({ name, renewalDate, lang, market }: TransitsRenewalReminderProps) => {
   const theme = getEmailTheme(market)

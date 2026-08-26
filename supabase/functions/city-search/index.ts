@@ -88,6 +88,16 @@ const IT_REGION_IT: Record<string, string> = {
   'south tyrol': 'Trentino-Alto Adige',
 }
 
+// freeastroapi indicizza L'Aia con l'esonimo inglese "The Hague": chi digita
+// "Den Haag" la trova comunque, ma se la vede proposta col nome inglese fin dal
+// terzo carattere. Le altre citta' olandesi tornano gia' con il nome corretto
+// (verificato su Rotterdam, Utrecht, Groningen, Eindhoven, Maastricht, Breda,
+// Arnhem, Nijmegen, Vlissingen, Leeuwarden, Middelburg, Enschede,
+// 's-Hertogenbosch), quindi la mappa resta di una voce sola.
+const NL_CITY_NL: Record<string, string> = {
+  'the hague': 'Den Haag',
+}
+
 const localizeIt = (val: string | null | undefined, map: Record<string, string>): string | null => {
   if (!val) return val ?? null
   const key = val.trim().toLowerCase()
@@ -103,6 +113,7 @@ const LANG_DEFAULT_COUNTRY: Record<string, string> = {
   it: 'IT',
   es: 'ES',
   en: 'US',
+  nl: 'NL',
 }
 
 const fetchUpstream = async (q: string, limit: number, country: string, lang: string) => {
@@ -228,15 +239,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Localizza nomi IT.
+    // Localizza nomi ed etichetta paese. Il confronto sul country a due lettere
+    // e' gia' avvenuto nel sort qui sopra, quindi riscriverlo ora non tocca
+    // l'ordinamento. Gli altri paesi passano invariati.
     const localized = head.map((r: any) => {
-      if (r?.country !== 'IT') return r
-      return {
-        ...r,
-        name: localizeIt(r.name, IT_CITY_IT),
-        state: localizeIt(r.state, IT_REGION_IT),
-        country: 'Italia',
+      if (r?.country === 'IT') {
+        return {
+          ...r,
+          name: localizeIt(r.name, IT_CITY_IT),
+          state: localizeIt(r.state, IT_REGION_IT),
+          country: 'Italia',
+        }
       }
+      if (r?.country === 'NL') {
+        return { ...r, name: localizeIt(r.name, NL_CITY_NL), country: 'Nederland' }
+      }
+      return r
     })
 
     const payload = { results: localized, count: localized.length }

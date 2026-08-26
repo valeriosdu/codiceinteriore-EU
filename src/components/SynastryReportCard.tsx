@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import type { SynastrySessionSummary } from "@/hooks/useSynastryReport";
 import { useI18n } from "@/i18n/I18nProvider";
+import { ROUTES } from "@/lib/routes";
 
 // Ordine e chiavi delle sezioni (contratto col backend); i titoli vivono nel
 // catalogo i18n (m.synastryCard.sections).
@@ -238,7 +239,7 @@ export default function SynastryReportCard({ sessions }: SynastryReportCardProps
             <span className="text-muted-foreground line-through text-sm lg:text-base">{m.common.priceLabel(market.prices.synastry)}</span>
             <span className="text-primary font-semibold text-xl lg:text-2xl">{m.common.priceLabel(market.prices.synastryLaunch)}</span>
           </div>
-          <Button variant="premium" size="lg" onClick={() => navigate("/coppia")} className="w-full lg:text-base lg:h-12">
+          <Button variant="premium" size="lg" onClick={() => navigate(ROUTES.couple)} className="w-full lg:text-base lg:h-12">
             {sc.upsell.cta}
           </Button>
           <p className="mt-2 text-xs lg:text-sm text-muted-foreground text-center">
@@ -279,7 +280,7 @@ export default function SynastryReportCard({ sessions }: SynastryReportCardProps
         <Button
           variant="premium"
           size="lg"
-          onClick={() => navigate("/coppia")}
+          onClick={() => navigate(ROUTES.couple)}
           className="mt-5 gap-2 w-full sm:w-auto"
         >
           <Heart className="h-4 w-4" />

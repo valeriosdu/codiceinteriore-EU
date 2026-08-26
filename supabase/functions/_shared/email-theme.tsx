@@ -9,16 +9,34 @@ export const SITE_NAME = 'Codice Interiore'
 export const BASE_URL = Deno.env.get('PUBLIC_SITE_URL') || 'https://codiceinteriore.it'
 export const LOGO_URL = `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object/public/email-assets/logo.png`
 
+// Lingua di un template email. Ogni template la risolveva con una catena di
+// ternari (lang === 'en' ? ... : 'it'), dove una lingua nuova cadeva in silenzio
+// sull italiano — e il subject, risolto a parte, poteva divergere dal corpo.
+export type EmailLang = 'it' | 'es' | 'en' | 'nl'
+const EMAIL_LANGS: readonly string[] = ['it', 'es', 'en', 'nl']
+export function resolveEmailLang(lang?: string | null): EmailLang {
+  return EMAIL_LANGS.includes(lang ?? '') ? (lang as EmailLang) : 'it'
+}
+
 export interface EmailTheme {
   siteName: string
   baseUrl: string
   logoUrl: string
 }
 
+// File del logo nel bucket email-assets, per mercato. es, us e nl condividono
+// il brand Carta Interior. Non derivare il nome da brandSlug: rinominerebbe
+// asset gia' caricati e in uso.
+const LOGO_FILE_BY_MARKET: Record<MarketId, string> = {
+  it: 'logo.png',
+  es: 'logo-es.png',
+  us: 'logo-es.png',
+  nl: 'logo-es.png',
+}
+
 export function getEmailTheme(marketId?: string | null): EmailTheme {
   const market = getMarket(marketId as MarketId | null | undefined)
-  // us riusa il brand Carta Interior (smoke test, stesso logo di es).
-  const logoFile = market.id === 'es' || market.id === 'us' ? 'logo-es.png' : 'logo.png'
+  const logoFile = LOGO_FILE_BY_MARKET[market.id] ?? 'logo.png'
   return {
     siteName: market.siteName,
     baseUrl: market.siteUrl,

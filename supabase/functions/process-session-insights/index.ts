@@ -287,6 +287,10 @@ Words like "sbloccare", "sblocco", "potenziale", "non parti", "mettersi in moto"
 manifest, abundance, vibration, universal energy, feminine energy, masculine energy, soulmate, higher self, frequencies, align, flow, destiny, your path, the real you, listen to your heart, you're ready for, inner wound, inner child, inner transformation, find your why, take the first step, everyone has their own timing.
 
 Words like "unblock", "get unstuck", "potential", "you don't get going", "get moving", "awareness" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
+  nl: `STYLE GUARD — never use any of these (or close paraphrases):
+manifesteren, overvloed, trilling, universele energie, vrouwelijke energie, mannelijke energie, zielsverwant, hoger zelf, frequenties, afstemmen, meestromen, lotsbestemming, jouw pad, de echte jij, luister naar je hart, je bent er klaar voor, innerlijke wond, innerlijk kind, innerlijke transformatie, vind je waarom, zet de eerste stap, ieder heeft zijn eigen tempo.
+
+Words like "deblokkeren", "vastzitten", "potentieel", "je komt niet op gang", "in beweging komen", "bewustzijn" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
 };
 
 const buildAttivazionePrompt = (lang: PromptLang): string => {

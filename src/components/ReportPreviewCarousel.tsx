@@ -28,13 +28,23 @@ import poesiaEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jp
 const SLIDE_IMAGES_IT = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
 const SLIDE_IMAGES_EN = [heroEn, identitaEn, emozioniEn, relazioniEn, lavoroEn, schemiEn, consigliEn, poesiaEn];
 
+// nl usa provvisoriamente gli screenshot inglesi: sono comunque sbagliati per un
+// compratore olandese, ma molto meno di quelli italiani. Da sostituire con gli
+// estratti di un report NL reale appena la pipeline ne produce uno.
+const SLIDE_IMAGES_BY_LANG: Record<string, typeof SLIDE_IMAGES_IT> = {
+  it: SLIDE_IMAGES_IT,
+  es: SLIDE_IMAGES_IT,
+  en: SLIDE_IMAGES_EN,
+  nl: SLIDE_IMAGES_EN,
+};
+
 const ReportPreviewCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const { m, market } = useI18n();
   const rp = m.social.reportPreview;
-  const SLIDE_IMAGES = market.language === "en" ? SLIDE_IMAGES_EN : SLIDE_IMAGES_IT;
+  const SLIDE_IMAGES = SLIDE_IMAGES_BY_LANG[market.language] ?? SLIDE_IMAGES_IT;
   const slides = SLIDE_IMAGES.map((src, i) => ({ src, alt: rp.slideAlts[i] ?? "" }));
 
   useEffect(() => {

@@ -20,6 +20,14 @@ import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
 // v16: la chart nel PDF è rasterizzata localmente dall'SVG (resvg) invece di
 // chiedere un PNG al provider, che andava in 504 sullo styling completo →
 // PDF senza chart. Vedi rasterizeChartSvg.
+// Nome di ripiego nel titolo del PDF quando la sessione non ha un nome.
+const FALLBACK_READER_NAME: Record<PromptLang, string> = {
+  it: "Lettura personale",
+  es: "Lectura personal",
+  en: "Personal reading",
+  nl: "Persoonlijke duiding",
+};
+
 export const PDF_VERSION = "v16-i18n";
 export const PDF_VERSION_TAG = `CI-PDF/${PDF_VERSION}`;
 
@@ -447,7 +455,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
   // Tag the PDF so we can detect its version when deciding whether a
   // cached copy is still valid. Title shows in PDF readers, but keywords
   // are what we use programmatically.
-  doc.setTitle(sanitizePdfText(S.metaTitle(userName || (lang === "es" ? "Lectura personal" : lang === "en" ? "Personal reading" : "Lettura personale"))));
+  doc.setTitle(sanitizePdfText(S.metaTitle(userName || FALLBACK_READER_NAME[lang])));
   doc.setSubject(S.metaSubject);
   doc.setProducer(PDF_VERSION_TAG);
   doc.setCreator(PDF_VERSION_TAG);

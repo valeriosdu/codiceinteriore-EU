@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface ReportReadyProps {
   name?: string
@@ -24,6 +24,7 @@ const COPY = {
     cta: 'Accedi e apri il tuo report',
     fallback: 'Se il pulsante non funziona, copia e incolla questo link nel browser:',
     closing: 'Da ora potrai ritrovarlo anche nel tuo spazio personale, ogni volta che vorrai tornarci.',
+    subject: 'La tua lettura è pronta — accedi al tuo spazio',
   },
   es: {
     preview: (siteName: string) => `Tu lectura está lista — ${siteName}`,
@@ -35,6 +36,7 @@ const COPY = {
     cta: 'Entra y abre tu informe',
     fallback: 'Si el botón no funciona, copia y pega este enlace en el navegador:',
     closing: 'A partir de ahora podrás encontrarlo también en tu espacio personal, cada vez que quieras volver.',
+    subject: 'Tu lectura está lista — entra en tu espacio',
   },
   en: {
     preview: (siteName: string) => `Your reading is ready — ${siteName}`,
@@ -46,13 +48,26 @@ const COPY = {
     cta: 'Sign in and open your report',
     fallback: "If the button doesn't work, copy and paste this link into your browser:",
     closing: 'From now on, you\'ll also be able to find it in your personal space, whenever you want to come back to it.',
+    subject: 'Your reading is ready — sign in to your space',
+  },
+  nl: {
+    preview: (siteName: string) => `Je duiding is klaar — ${siteName}`,
+    h1: 'Je duiding is klaar',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    p1: 'Binnen vind je een volledige duiding van je geboortehoroscoop: niet alleen de patronen die in je relaties blijven terugkomen, maar ook de emotionele dynamiek die je aanstuurt, de blokkades die er echt toe doen en de richting die vorm probeert te krijgen.',
+    p2: 'Het is geen verzameling losse inzichten, maar een samenhangende duiding van hoe je in elkaar zit, geschreven om je beter te laten herkennen wat je meemaakt, wat je zoekt en wat je steeds naar dezelfde plekken terugbrengt.',
+    p3: 'Het kan een eerste stap zijn om jezelf helderder te zien, en om preciezer te begrijpen waar je nu staat.',
+    cta: 'Log in en open je rapport',
+    fallback: 'Werkt de knop niet, kopieer deze link dan naar je browser:',
+    closing: 'Vanaf nu vind je hem ook terug in je persoonlijke ruimte, wanneer je er maar op terug wilt komen.',
+    subject: 'Je duiding is klaar — log in op je ruimte',
   },
 } as const
 
 const ReportReadyEmail = ({ name, sessionId, lang, market }: ReportReadyProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
-  const htmlLang = lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'
+  const t = COPY[resolveEmailLang(lang)]
+  const htmlLang = resolveEmailLang(lang)
   const reportUrl = sessionId
     ? `${theme.baseUrl}/activate?session_id=${encodeURIComponent(sessionId)}&intent=signin`
     : `${theme.baseUrl}/activate?intent=signin`
@@ -97,12 +112,7 @@ const ReportReadyEmail = ({ name, sessionId, lang, market }: ReportReadyProps) =
 
 export const template = {
   component: ReportReadyEmail,
-  subject: (data: Record<string, any>) =>
-    data?.lang === 'en'
-      ? 'Your reading is ready — sign in to your space'
-      : data?.lang === 'es'
-        ? 'Tu lectura está lista — entra en tu espacio'
-        : 'La tua lettura è pronta — accedi al tuo spazio',
+  subject: (data: Record<string, any>) => COPY[resolveEmailLang(data?.lang)].subject,
   displayName: 'Report pronto',
   previewData: { name: 'Giulia', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

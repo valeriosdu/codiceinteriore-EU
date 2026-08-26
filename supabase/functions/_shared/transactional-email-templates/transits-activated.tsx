@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface TransitsActivatedProps {
   name?: string
@@ -44,11 +44,20 @@ const COPY = {
     fallback: "If the button doesn't work, copy and paste this link into your browser:",
     closing: 'If you need any help, just reply to this email.',
   },
+  nl: {
+    headingRenewal: 'Je nieuwe transits van de maand staan klaar',
+    headingNew: 'Je transits zijn actief',
+    introRenewal: 'We hebben je transitduiding voor de nieuwe maand klaargezet, gebaseerd op de echte astrologische bewegingen berekend op je geboortehoroscoop, met vier periodes om je week na week te oriënteren.',
+    introNew: 'Je hebt het maandelijkse transits-abonnement geactiveerd (€ 9,90 per maand). Elke maand maken we een nieuwe duiding over hoe de bewegingen aan de hemel de kernpunten van je geboortehoroscoop raken, met vier periodes om je week na week te oriënteren. Je kunt het abonnement wanneer je wilt beheren of opzeggen vanuit je persoonlijke omgeving.',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    cta: 'Open je duiding',
+    fallback: 'Werkt de knop niet, kopieer deze link dan naar je browser:',
+    closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
+  },
 } as const
 
 type Lang = keyof typeof COPY
-const resolveLang = (lang?: string): Lang =>
-  lang === 'es' || lang === 'en' ? lang : 'it'
+const resolveLang = (lang?: string): Lang => resolveEmailLang(lang)
 
 const TransitsActivatedEmail = ({ name, isRenewal, lang, market }: TransitsActivatedProps) => {
   const theme = getEmailTheme(market)

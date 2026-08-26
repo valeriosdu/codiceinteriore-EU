@@ -31,7 +31,14 @@ const normalizers: Record<string, (raw: string) => string> = {
   // Solo cifre, prefisso internazionale incluso, senza zeri iniziali.
   ph: (v) => v.replace(/\D/g, "").replace(/^0+/, ""),
   db: (v) => v.replace(/\D/g, ""),
-  zp: (v) => v.trim().toLowerCase().replace(/\s+/g, "").slice(0, 5),
+  // Meta vuole le prime 5 cifre solo per gli ZIP statunitensi. CAP italiani e
+  // spagnoli sono 5 cifre (il taglio e' un no-op), ma un codice postale olandese
+  // e' "1234 AB": troncarlo a "1234a" produce un hash che non matchera' mai.
+  // Regola: taglia solo se i primi 5 caratteri sono cifre (copre ZIP e ZIP+4).
+  zp: (v) => {
+    const z = v.trim().toLowerCase().replace(/\s+/g, "");
+    return /^\d{5}/.test(z) ? z.slice(0, 5) : z;
+  },
   ct: (v) => v.trim().toLowerCase().replace(/[^a-zà-ÿ]/g, ""),
   st: (v) => v.trim().toLowerCase().replace(/[^a-zà-ÿ]/g, ""),
   country: (v) => v.trim().toLowerCase().slice(0, 2),

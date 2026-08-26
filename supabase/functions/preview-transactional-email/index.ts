@@ -41,11 +41,11 @@ Deno.serve(async (req) => {
   // COPY maps and per-market theme/sender resolve to the requested locale.
   const url = new URL(req.url)
   const langParam = url.searchParams.get('lang')
-  const previewLang =
-    langParam === 'es' ? 'es' : langParam === 'en' ? 'en' : undefined
+  const PREVIEW_LANGS = new Set(['it', 'es', 'en', 'nl'])
+  const previewLang = PREVIEW_LANGS.has(langParam ?? '') ? (langParam as string) : undefined
   const marketParam = url.searchParams.get('market')
-  const previewMarket =
-    marketParam === 'es' ? 'es' : marketParam === 'us' ? 'us' : undefined
+  const PREVIEW_MARKETS = new Set(['it', 'es', 'us', 'nl'])
+  const previewMarket = PREVIEW_MARKETS.has(marketParam ?? '') ? (marketParam as string) : undefined
 
   const templateNames = Object.keys(TEMPLATES)
   const results: Array<{

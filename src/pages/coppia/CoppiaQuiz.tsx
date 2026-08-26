@@ -27,6 +27,7 @@ import {
 import PickerField from '@/components/PickerField';
 import { type WheelItem } from '@/components/WheelPicker';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 // Wheel options, built once. Wheels open centered on these anchors while unset.
 // Minutes stay in 5-minute steps.
@@ -163,7 +164,7 @@ export default function CoppiaQuiz() {
 
     // Step finale: vai a /coppia/processing
     if (step === STEPS.length) {
-      navigate('/coppia/processing');
+      navigate(ROUTES.coupleProcessing);
       return;
     }
     setStep((s) => s + 1);

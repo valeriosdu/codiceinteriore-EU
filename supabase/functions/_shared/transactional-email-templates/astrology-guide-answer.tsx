@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, colors, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, colors, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface AstrologyGuideAnswerProps {
   name?: string
@@ -61,11 +61,22 @@ const COPY = {
     closing: 'If you need any help, just reply to this email.',
     subject: (q: string) => (q ? `About your question: ${truncate(q, 60)}` : 'Your answer is ready'),
   },
+  nl: {
+    h1: 'Het antwoord op je vraag',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    intro: 'Hier is de verdieping waar je om vroeg, gebaseerd op je geboortehoroscoop en je rapport.',
+    yourQuestion: 'Je vraag',
+    usefulQuestion: 'Had je iets aan dit antwoord?',
+    creditsLeft: (n: number) => `Je hebt nog ${n} ${n === 1 ? 'vraag' : 'vragen'} beschikbaar.`,
+    noCredits: 'Je hebt al je vragen gebruikt.',
+    cta: 'Open de Astrologiegids',
+    closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
+    subject: (q: string) => (q ? `Over je vraag: ${truncate(q, 60)}` : 'Je antwoord staat klaar'),
+  },
 } as const
 
 type Lang = keyof typeof COPY
-const resolveLang = (lang?: string): Lang =>
-  lang === 'es' || lang === 'en' ? lang : 'it'
+const resolveLang = (lang?: string): Lang => resolveEmailLang(lang)
 
 const AstrologyGuideAnswerEmail = ({
   name,
