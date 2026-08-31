@@ -222,9 +222,12 @@ Do NOT:
 - give equal weight to all listed aspects
 
 ASTROLOGICAL REFERENCE RULE
-You may include at most 2 explicit astrological reference across the full output, only if it adds credibility and clarity.
+Include at least 1 and at most 2 explicit chart references across the full output.
+This is mandatory, not optional: at least one of the 3 insights MUST name a concrete
+chart factor — a planet in a sign or a house, an angle, or an aspect between two planets.
+Weave it inside the sentence as the reason for the pattern, never as a label or an aside.
 No jargon, no lists, no textbook tone.
-Prefer lived psychological description over chart terminology.
+Outside those 1-2 references, prefer lived psychological description over chart terminology.
 
 TEASER RULE
 This is not the full reading.
@@ -365,8 +368,12 @@ For Uranus, Neptune, Pluto:
 - keep tight
 
 ASTROLOGICAL REFERENCE RULE
-Include at least 1 and at most 2 explicit chart references across the full output. No textbook tone.
-Prefer lived psychological description over chart terminology.
+Include at least 1 and at most 2 explicit chart references across the full output.
+This is mandatory, not optional: at least one of the 3 insights MUST name a concrete
+chart factor — a planet in a sign or a house, an angle, or an aspect between two planets.
+Weave it inside the sentence as the reason for the pattern, never as a label or an aside.
+No textbook tone.
+Outside those 1-2 references, prefer lived psychological description over chart terminology.
 
 ${ATTIVAZIONE_STYLE_GUARD[lang]}
 
@@ -707,7 +714,7 @@ async function generateInsights(
 ) {
   const systemPrompt = systemPromptFor(funnelSlug, lang);
   const userPrompt = buildUserPrompt(natalChart, funnelSlug, intake, userName);
-  const model = "gemini-3.1-flash-lite";
+  const model = "gemini-3.5-flash-lite";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-session-insights",
