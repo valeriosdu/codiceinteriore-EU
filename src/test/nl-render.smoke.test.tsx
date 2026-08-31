@@ -17,6 +17,7 @@ import IndexAttivazione from "@/pages/IndexAttivazione";
 import Terms from "@/pages/Terms";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CoppiaLanding from "@/pages/coppia/CoppiaLanding";
+import ReportPreviewCarousel from "@/components/ReportPreviewCarousel";
 import { ROUTES } from "@/lib/routes";
 import { getMessages } from "@/i18n";
 
@@ -74,6 +75,32 @@ suite("rendering mercato nl", () => {
     mount(<PrivacyPolicy />, "/privacy");
     expect(document.body.textContent).toMatch(/Privacy- en Cookieverklaring/i);
     expect(document.body.textContent).toMatch(/Autoriteit Persoonsgegevens/i);
+  });
+
+  it("il carosello mostra gli estratti NL, ognuno sotto la propria alt text", () => {
+    // I file sorgente sono numerati per ordine di download, non per sezione:
+    // product-example-nl (4) e' DEEL 02, il (5) e' DEEL 03. Rinominarli o
+    // riordinarli a occhio accoppia l'immagine sbagliata alla didascalia, e il
+    // difetto e' invisibile finche' non lo legge uno screen reader.
+    const atteso: [string, RegExp][] = [
+      ["hero-nl", /Volledige Rapport/i],
+      ["1-identita-nl", /diepere identiteit/i],
+      ["2-emozioni-nl", /Emotionele dynamiek/i],
+      ["3-relazioni-nl", /Relaties en liefde/i],
+      ["4-lavoro-nl", /Werk en richting/i],
+      ["5-schemi-nl", /Terugkerende patronen/i],
+      ["6-consigli-nl", /Praktische handvatten/i],
+      ["7-poesia-nl", /Transformerend gedicht/i],
+    ];
+
+    mount(<ReportPreviewCarousel />);
+    const imgs = [...document.querySelectorAll("img")];
+    expect(imgs).toHaveLength(atteso.length);
+    imgs.forEach((img, i) => {
+      const [file, alt] = atteso[i];
+      expect(img.getAttribute("src"), `slide ${i + 1}: asset sbagliato`).toContain(file);
+      expect(img.getAttribute("alt") ?? "", `slide ${i + 1}: alt text non corrisponde a ${file}`).toMatch(alt);
+    });
   });
 
   it("i prezzi sono formattati alla olandese: simbolo davanti, virgola decimale", () => {
