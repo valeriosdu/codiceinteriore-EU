@@ -27,13 +27,15 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "19.00",
       es: "19.00",
-      en: "19.99", // TODO: confirm USD price
+      en: "29.00",
+      nl: "19.00",
     },
     amountCents: 1900,
     description: {
       it: "Lettura Completa del Tema Natale",
       es: "Lectura Completa de la Carta Natal",
       en: "Complete Natal Chart Reading",
+      nl: "Volledige Duiding van je Geboortehoroscoop",
     },
     productCode: "natal_report_base",
     includesTransits: false,
@@ -44,13 +46,15 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "29.00",
       es: "29.00",
-      en: "29.99", // TODO: confirm USD price
+      en: "39.00",
+      nl: "29.00",
     },
     amountCents: 2900,
     description: {
       it: "Lettura Completa + 1 Mese di Transiti",
       es: "Lectura Completa + 1 Mes de Tránsitos",
       en: "Complete Reading + 1 Month of Transits",
+      nl: "Volledige Duiding + 1 Maand Transits",
     },
     productCode: "natal_report_plus_transits",
     includesTransits: true,
@@ -61,13 +65,15 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "19.00",
       es: "19.00",
-      en: "19.99", // TODO: confirm USD price
+      en: "19.00",
+      nl: "19.00",
     },
     amountCents: 1900,
     description: {
       it: "Sinastria di Coppia",
       es: "Sinastría de Pareja",
       en: "Couple Synastry Reading",
+      nl: "Synastrie voor Koppels",
     },
     productCode: "synastry_couple_report",
     includesTransits: false,
@@ -80,13 +86,15 @@ const PRODUCTS: Record<string, ProductDef> = {
     amount: {
       it: "14.90",
       es: "14.90",
-      en: "14.99", // TODO: confirm USD price
+      en: "14.90",
+      nl: "14.90",
     },
     amountCents: 1490,
     description: {
       it: "Sinastria di Coppia (Lancio)",
       es: "Sinastría de Pareja (Lanzamiento)",
       en: "Couple Synastry Reading (Launch)",
+      nl: "Synastrie voor Koppels (Lancering)",
     },
     productCode: "synastry_couple_report_launch",
     includesTransits: false,

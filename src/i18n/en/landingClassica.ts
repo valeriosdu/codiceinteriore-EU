@@ -1,18 +1,18 @@
 const landingClassica = {
   seo: {
-    title: 'Birth Chart & Relationships — Understand how you love | Codice Interiore',
+    title: 'Birth Chart & Relationships — Understand how you love | Carta Interior',
     description:
-      'Understand how you bond, choose, and protect yourself in relationships. A birth chart reading in English, descriptive and psychologically precise. Start free.',
+      'Understand how you bond, choose, and protect yourself in relationships. A birth chart reading that is descriptive and psychologically precise. Start free.',
     productName: 'Birth Chart Reading — Relationships',
     productDescription:
-      'A birth chart reading focused on relationship patterns: how you bond, what you look for, what gets triggered when you feel distance or ambiguity. Written in English.',
+      'A birth chart reading focused on relationship patterns: how you bond, what you look for, what gets triggered when you feel distance or ambiguity.',
   },
   hero: {
     titlePre: 'Your',
     titleEm: 'Birth Chart',
     titlePost: ' and the way you love',
     subtitle:
-      'See what emerges from your emotional and relational makeup, starting from your birth data. Free, no sign-up required.',
+      'See what emerges from your emotional and relational makeup, based on your birth data. Free, no sign-up required.',
     cta: 'Start the quiz',
     microcopy: '2-minute quiz · No prior knowledge needed',
     socialProof: 'Over 10,000 people have already discovered their birth chart',

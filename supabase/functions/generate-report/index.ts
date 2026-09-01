@@ -8,6 +8,8 @@ import {
   OUTPUT_LANGUAGE_NAME,
   planetName,
   aspectName,
+  salienceLabels,
+  type PromptLang,
 } from "../_shared/prompts/lang.ts";
 import { getMarket } from "../_shared/markets.ts";
 import {
@@ -240,29 +242,30 @@ const buildSalienceMap = (natalChart: any): SalienceMap => {
   return result;
 };
 
-const formatSalienceMap = (m: SalienceMap, lang: "it" | "es"): string => {
+const formatSalienceMap = (m: SalienceMap, lang: PromptLang): string => {
+  const labels = salienceLabels(lang);
   const lines: string[] = [];
   if (m.angularPlanets.length > 0) {
     const parts = m.angularPlanets.map((p) => `${planetName(lang, p.name)} (${p.house}H)`);
-    lines.push(`Pianeti angolari: ${parts.join(", ")}`);
+    lines.push(`${labels.angularPlanets}: ${parts.join(", ")}`);
   }
   if (m.planetsOnAxes.length > 0) {
     const parts = m.planetsOnAxes.map((p) => `${planetName(lang, p.planet)}-${p.axis} (orb ${p.orb}°)`);
-    lines.push(`Pianeti su assi (orb<=8°): ${parts.join(", ")}`);
+    lines.push(`${labels.planetsOnAxes}: ${parts.join(", ")}`);
   }
   if (m.keyAspects.length > 0) {
     const parts = m.keyAspects.map((a) => {
       const orbStr = a.orb !== null ? ` (orb ${a.orb}°)` : "";
       return `${planetName(lang, a.p1)} ${aspectName(lang, a.type)} ${planetName(lang, a.p2)}${orbStr}`;
     });
-    lines.push(`Aspetti chiave: ${parts.join(", ")}`);
+    lines.push(`${labels.keyAspects}: ${parts.join(", ")}`);
   }
   if (m.retrogradePersonal.length > 0) {
     const parts = m.retrogradePersonal.map((n) => `${planetName(lang, n)} R`);
-    lines.push(`Retrogradazioni personali: ${parts.join(", ")}`);
+    lines.push(`${labels.retrogradePersonal}: ${parts.join(", ")}`);
   }
   if (lines.length === 0) return "";
-  return `PRIORITY MARKERS (calcolati dalla carta — usa SEMPRE in interpretazione):\n${lines.join("\n")}`;
+  return `${labels.header}\n${lines.join("\n")}`;
 };
 
 // System prompt for the "attivazione" angle (blocco/movimento). Same scaffolding

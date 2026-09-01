@@ -36,6 +36,14 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 
+// Mercati da interrogare. NON e' semplicemente la union MarketId: la chiave di
+// idempotenza dei ticket e' UNIQUE(market, zoho_message_id), quindi due mercati
+// che puntano alla STESSA cartella Zoho creerebbero due ticket e due bozze LLM
+// per ogni messaggio. nl condivide oggi info@cartainterior.com con es (vedi
+// ZOHO_ENV_SUFFIX in _shared/zoho.ts) ed e' quindi escluso: le mail olandesi
+// entrano come ticket es e support-draft firma nella lingua rilevata. Per dare
+// a nl una casella propria: creare i secret ZOHO_*__NL con un ZOHO_FOLDER_ID__NL
+// dedicato, mettere nl: "__NL" in zoho.ts e aggiungere "nl" qui.
 const MARKETS: MarketId[] = ["it", "es", "us"];
 const LIST_LIMIT = 25;
 const MAX_NEW_PER_RUN = 10; // cap content fetches / drafts per market per tick

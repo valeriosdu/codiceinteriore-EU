@@ -29,14 +29,43 @@ const SITE_URL = (env("VITE_SITE_URL", "https://www.codiceinteriore.it")).replac
 const MARKET = env("VITE_MARKET", "it");
 const hasEditorial = MARKET === "it";
 
+// Slug localizzati per mercato, allineati a SLUGS_BY_LANG in src/lib/routes.ts
+// (il test market-parity verifica che le due tabelle non divergano).
+const SLUGS_IT = {
+  lpClassica: "/lp/classica",
+  lpAttivazione: "/lp/attivazione",
+  contact: "/contatti",
+  terms: "/termini",
+  gift: "/regalo",
+};
+const SLUGS_BY_MARKET = {
+  it: SLUGS_IT,
+  es: SLUGS_IT,
+  us: {
+    lpClassica: "/lp/classic",
+    lpAttivazione: "/lp/activation",
+    contact: "/contact",
+    terms: "/terms",
+    gift: "/gift",
+  },
+  nl: {
+    lpClassica: "/lp/klassiek",
+    lpAttivazione: "/lp/activatie",
+    contact: "/contact",
+    terms: "/voorwaarden",
+    gift: "/cadeau",
+  },
+};
+const slug = SLUGS_BY_MARKET[MARKET] || SLUGS_IT;
+
 // Route base, presenti in tutti i mercati.
 const baseRoutes = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/lp/classica", changefreq: "weekly", priority: "0.9" },
-  { path: "/lp/attivazione", changefreq: "weekly", priority: "0.9" },
-  { path: "/contatti", changefreq: "monthly", priority: "0.4" },
+  { path: slug.lpClassica, changefreq: "weekly", priority: "0.9" },
+  { path: slug.lpAttivazione, changefreq: "weekly", priority: "0.9" },
+  { path: slug.contact, changefreq: "monthly", priority: "0.4" },
   { path: "/privacy", changefreq: "yearly", priority: "0.2" },
-  { path: "/termini", changefreq: "yearly", priority: "0.2" },
+  { path: slug.terms, changefreq: "yearly", priority: "0.2" },
 ];
 
 // Route editoriali (guide + glossario): solo nei mercati con editorialContent.
@@ -84,7 +113,9 @@ ${routes
 `;
 
 const funnelDisallow = [
-  "/quiz", "/regalo", "/processing", "/teaser", "/offer", "/checkout",
+  // slug.gift, non "/regalo" fisso: il robots.txt us vietava una rotta che li
+  // non esiste e lasciava /gift indicizzabile.
+  "/quiz", slug.gift, "/processing", "/teaser", "/offer", "/checkout",
   "/success", "/activate", "/report-processing", "/report",
 ];
 

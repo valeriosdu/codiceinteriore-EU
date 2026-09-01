@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { MARKET } from "@/markets";
 
 export type FunnelEventName =
   | "landing_viewed"
@@ -70,6 +71,9 @@ export const trackEvent = async (
       event_name: eventName,
       event_properties: properties as never,
       page_path,
+      // page_path non basta a dedurre il mercato: "/quiz" e "/teaser" sono
+      // identici in tutti i mercati. MARKET e' risolto al build da VITE_MARKET.
+      market: MARKET.id,
     });
 
     if (error) {

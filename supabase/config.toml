@@ -107,3 +107,44 @@ project_id = "sefjuhxxbiehqjewoqpp"
     verify_jwt = false
   [functions.admin-support-action]
     verify_jwt = false
+
+  # Funzioni che erano assenti da questo file: il default della CLI le mette
+  # comunque a verify_jwt = true, che e' il valore che hanno in produzione.
+  # Elencarle esplicitamente serve a non doverlo piu' dedurre: se un giorno
+  # una di queste va aperta, si cambia qui e il deploy non la richiude.
+  [functions.astrology-guide-feedback]
+    verify_jwt = true
+  [functions.capture-paypal-order]
+    verify_jwt = true
+  [functions.city-search]
+    verify_jwt = true
+  [functions.create-checkout]
+    verify_jwt = true
+  [functions.create-paypal-order]
+    verify_jwt = true
+  [functions.create-transit-checkout]
+    verify_jwt = true
+  [functions.create-transit-portal-session]
+    verify_jwt = true
+  [functions.generate-report]
+    verify_jwt = true
+  [functions.generate-report-pdf]
+    verify_jwt = true
+  [functions.generate-synastry-report]
+    verify_jwt = true
+  [functions.generate-synastry-report-pdf]
+    verify_jwt = true
+  [functions.generate-transit-pdf]
+    verify_jwt = true
+  [functions.get-checkout-email]
+    verify_jwt = true
+  [functions.meta-conversions]
+    verify_jwt = true
+  [functions.process-session-insights]
+    verify_jwt = true
+  [functions.process-synastry-insights]
+    verify_jwt = true
+  [functions.synastry-chart]
+    verify_jwt = true
+  [functions.sync-checkout-session]
+    verify_jwt = true

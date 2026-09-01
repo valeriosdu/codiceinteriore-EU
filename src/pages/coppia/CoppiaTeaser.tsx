@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import CheckoutReview, { type PurchaseType } from '@/components/CheckoutReview';
 import { useI18n } from '@/i18n/I18nProvider';
 import type { Messages } from '@/i18n';
+import { ROUTES } from '@/lib/routes';
 
 
 
@@ -114,7 +115,7 @@ export default function CoppiaTeaser() {
   useEffect(() => {
     document.title = m.coppia.titles.teaser(market.siteName);
     if (!isDevPreview && !data.sessionId || !isDevPreview && !data.archetype) {
-      navigate('/coppia/quiz', { replace: true });
+      navigate(ROUTES.coupleQuiz, { replace: true });
     }
   }, [data.sessionId, data.archetype, navigate, isDevPreview]);
 
@@ -165,7 +166,7 @@ export default function CoppiaTeaser() {
   const handleEditData = () => {
     clearSynastryStorage();
     resetForNewPurchase();
-    navigate('/coppia/quiz');
+    navigate(ROUTES.coupleQuiz);
   };
 
   return (

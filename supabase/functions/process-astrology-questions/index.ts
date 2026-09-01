@@ -318,7 +318,49 @@ What's happening now adds an element: Saturn is touching your natal Mars, and th
 
 The restlessness, in this period, has less to do with the volume of work than with a quiet test of meaning running underneath. Part of you is realizing that the way you work right now isn't sustainable for the years ahead, and Mars under Saturn won't let you ignore that.»`;
 
-const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES, en: QA_EXAMPLES_EN };
+// Locale per la data corrente iniettata nel contesto della domanda.
+const QA_DATE_LOCALE: Record<PromptLang, string> = {
+  it: "it-IT",
+  es: "es-ES",
+  en: "en-US",
+  nl: "nl-NL",
+};
+
+const QA_EXAMPLES_NL = `Voorbeeld 0 — eenvoudige/algemene vraag, KORTE band, 1-2 verwijzingen, volledige afsluiting.
+Q: «Pas ik bij een Vissen?»
+A: «Compatibiliteit op zonneteken is het meest oppervlakkige wat astrologie te bieden heeft, en meestal ook het minst zeggende. Tussen jouw Zon in Maagd en een Zon in Vissen zit een klassieke oppositie: de ander droomt terwijl jij ordent, de ander voelt terwijl jij analyseert. Dat is een polariteit die prachtig kan werken of juist snel opbrandt, afhankelijk van wat de respectievelijke Manen en Venussen doen. Jouw Maan in Steenbok wil bijvoorbeeld emotionele stevigheid, en met een Zon in Vissen is die vastheid geen gegeven. Wat echt telt is niet het etiket van het teken, maar wat jij zoekt in een relatie. Jouw horoscoop zegt daar al iets heel precies over: dat is waarschijnlijk een betere plek om te beginnen.»
+
+Voorbeeld 1 — structurele vraag, afsluiting met een impliciete vraag.
+Q: «Waarom voel ik me vaak alleen, zelfs als ik een relatie heb?»
+A: «Je Maan in Schorpioen in het achtste huis beschrijft een emotionele behoefte die op een andere drempel werkt dan die van de mensen om je heen. Je bent afgestemd op een niveau van intimiteit dat je altijd al kent — gemaakt van dichte emoties, onuitgesproken maar wel gevoeld, een aanwezigheid die de ander heel vraagt, niet alleen zijn beschikbaarheid.
+
+Als je in een relatie zit, is weten dat de ander er is niet genoeg. Je moet voelen dat diegene er echt is, dat hij niet terugdeinst op de ongemakkelijkste punten. En precies daar ontstaat een eenzaamheid die niet objectief is: de ander is er misschien wel, maar op een niveau dat voor jou aan de oppervlakte blijft. Van buitenaf lijkt het een vraag om "meer liefde", maar dat is het niet. Het is een vraag om diepte.
+
+De eenzaamheid die je voelt is geen gebrek dat je moet repareren. Het is een fijne thermometer. Hij vertelt je wanneer een relatie op de diepte werkt die je echt nodig hebt, en wanneer niet. Het probleem is niet dat je te veel voelt. Het probleem begint waar je de fysieke aanwezigheid van de ander verwart met wat je werkelijk zoekt.
+
+De vraag die eronder ligt is hoe bereid je echt bent om die diepte hardop te vragen, in plaats van te wachten tot de ander hem raadt.»
+
+Voorbeeld 2 — vraag met tijdslading, hasTransits=false, afsluiting met een zachte upsell.
+Q: «Ik heb het gevoel dat ik in een fase van verwarring zit — wat gebeurt er?»
+A: «Je geboortehoroscoop vertelt je niet wat er nu gebeurt, maar wel hoe je gebouwd bent om momenten van verwarring door te komen. En dat is vaak de nuttigere informatie.
+
+Jouw verwarring heeft, als ze komt, een herkenbare kwaliteit. Je Mercurius in Vissen houdt te veel mogelijkheden tegelijk open, en zolang je er vijf in leven houdt zie je er geen enkele scherp. Dat is geen gebrek. Het is een manier van denken die tijd nodig heeft voordat ze het veld versmalt. Het gaat meestal mis op het moment dat je helderheid eist voordat het proces zijn gang heeft kunnen gaan: het voelt alsof je vastzit, maar je wacht alleen op een signaal dat er nog niet is.
+
+Wat deze fase waarschijnlijk van je vraagt, is stoppen met de helderheid forceren en opmerken welke mogelijkheid van allemaal steeds terugkomt — ook stilletjes. Niet die waarvan je denkt dat je hem moet kiezen, maar die welke blijft aandringen.
+
+Om het huidige moment echt te lezen zou ik je geboortehoroscoop moeten kruisen met de actuele transits, en zonder die gegevens kan ik je de tijdsdimensie niet geven. In je persoonlijke omgeving vind je het pakket Transits van de maand, dat maand na maand wordt geactiveerd: zodra dat loopt, kan ik je ook op het "wanneer" antwoorden.»
+
+Voorbeeld 3 — vraag met tijdslading, hasTransits=true, sobere afsluiting.
+Q: «Waarom ben ik de laatste tijd zo onrustig op mijn werk?»
+A: «Er is een structureel deel en een contextueel deel die over elkaar heen schuiven.
+
+Het structurele deel: jouw Mars in Maagd heeft een heel precieze manier om werk te benaderen. Het gaat hem om de kwaliteit van de uitvoering, niet om de hoeveelheid afgevinkte dingen. Als je onrustig wordt, komt dat meestal niet doordat je te veel te doen hebt. Het komt doordat je dingen doet die volgens jou slecht verzorgd zijn — gehaast, gedaan voor iemand anders. Mars in Maagd draait op precisie, en zodra hij in de stand "gooi het er snel in" moet werken, bouwt hij een spanning op die nergens heen kan.
+
+Wat er nu speelt voegt daar iets aan toe: Saturnus raakt je natale Mars, en dat is precies een professionele druk. Saturnus zet je manier van werken onder de loep en vraagt je: dit tempo dat je hebt opgebouwd — is dat echt van jou, of hou je het overeind omdat "het zo wel goed is"?
+
+De onrust heeft in deze periode minder te maken met de hoeveelheid werk dan met een stille toets op betekenis die eronder loopt. Een deel van jou ziet in dat de manier waarop je nu werkt niet houdbaar is voor de jaren die komen, en Mars onder Saturnus laat je dat niet negeren.»`;
+
+const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES, en: QA_EXAMPLES_EN, nl: QA_EXAMPLES_NL };
 
 const QA_FINAL_EN = `Always respond by invoking the "return_answer" tool with the "answer" field containing your final answer (in the output language set above, length calibrated to the SHORT/MEDIUM/ARTICULATED/EXTENDED band defined above, never under 110 words). Do not add any text outside the tool.`;
 
@@ -429,7 +471,7 @@ const buildCurrentDateContext = (lang: PromptLang) => {
     month: "2-digit",
     day: "2-digit",
   }).format(now);
-  const localized = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : lang === "en" ? "en-US" : "it-IT", {
+  const localized = new Intl.DateTimeFormat(QA_DATE_LOCALE[lang], {
     timeZone: "Europe/Rome",
     weekday: "long",
     day: "numeric",

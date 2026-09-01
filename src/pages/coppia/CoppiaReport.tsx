@@ -7,6 +7,7 @@ import { ScoreOverallRing } from '@/components/coppia/ScoreOverallRing';
 import { ScoreRadar } from '@/components/coppia/ScoreRadar';
 import { SynastryReportSection } from '@/components/coppia/SynastryReportSection';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 function compressScore(raw: number): number {
   return Math.round(30 + (raw / 100) * 67);
@@ -50,7 +51,7 @@ export default function CoppiaReport() {
       // preservando il session_id cosi' report-processing puo' risolvere la sessione
       // e ricaricare il report invece di morire in "sessione non trovata".
       const sid = params.get('session_id');
-      navigate(sid ? `/coppia/report-processing?session_id=${encodeURIComponent(sid)}` : '/coppia/report-processing', { replace: true });
+      navigate(sid ? `${ROUTES.coupleReportProcessing}?session_id=${encodeURIComponent(sid)}` : ROUTES.coupleReportProcessing, { replace: true });
     }
   }, [data.fullReport, navigate, params]);
 

@@ -19,7 +19,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
 import { getMarket, type MarketId } from "../_shared/markets.ts";
-import { resolvePromptLang } from "../_shared/prompts/lang.ts";
+import { resolvePromptLang, type PromptLang } from "../_shared/prompts/lang.ts";
 import {
   supportSystemPrompt,
   CUSTOMER_EMAIL_OPEN,
@@ -51,6 +51,7 @@ function normalizeLang(v: string | null | undefined): string {
   const map: Record<string, string> = {
     spanish: "es", "español": "es", espanol: "es", castellano: "es",
     italian: "it", italiano: "it", english: "en", inglese: "en", "inglés": "en",
+    dutch: "nl", nederlands: "nl", olandese: "nl", "neerlandés": "nl", neerlandes: "nl",
   };
   return map[s] || s.slice(0, 2);
 }
@@ -205,10 +206,18 @@ function sanitizeAccessLinks(text: string, recoveryUrl: string): string {
 // mention of the team is left untouched.
 function sanitizeSignaturePlaceholder(text: string, signer: string): string {
   if (!text || !signer) return text;
-  let out = text.replace(/\[[^\]\n]*(nombre|name|equipo|team|firma|signature)[^\]\n]*\]/gi, signer);
+  let out = text.replace(
+    /\[[^\]\n]*(nombre|name|naam|equipo|team|firma|signature|handtekening)[^\]\n]*\]/gi,
+    signer,
+  );
   out = out.replace(
-    /((?:^|\n)[ \t]*(?:Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo)[,.!]?[ \t]*\n+[ \t]*)(?:el |El )?(?:equipo|Equipo)(?: de Carta Interior)?\.?/g,
-    (_m, lead) => `${lead}${signer}`,
+    new RegExp(
+      "((?:^|\\n)[ \\t]*(?:" + FAREWELL_WORDS + ")[,.!]?[ \\t]*\\n+[ \\t]*)" +
+        "(?:el |El |het |Het |the |The |il |Il )?(?:equipo|Equipo|team|Team|squadra|Squadra)" +
+        "(?: (?:de|van|of|di) Carta Interior)?\\.?",
+      "g",
+    ),
+    (_m: string, lead: string) => lead + signer,
   );
   return out;
 }
@@ -217,13 +226,40 @@ function sanitizeSignaturePlaceholder(text: string, signer: string): string {
 // inconsistent — it sometimes drops the name entirely and ends on a bare "Un
 // saludo,". If the signer is not already in the closing, add it (after an existing
 // farewell line, or with a fresh farewell when there is none).
-const FAREWELL_END = /(Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo)[,.!]?$/i;
-function ensureSigner(text: string, signer: string): string {
+// Chiusura e firma seguono la lingua in cui il modello ha davvero scritto la
+// bozza, non quella del mercato: piu' mercati condividono una sola casella di
+// supporto, quindi una mail olandese puo' arrivare su un ticket marcato es.
+// Prima il saluto era "Un saludo," fisso, e una bozza inglese usciva firmata in
+// spagnolo. it resta senza firma: il supporto italiano gira su software esterno
+// e con signer vuoto il testo passa invariato, esattamente come prima.
+const SIGNER_BY_LANG: Record<PromptLang, string> = {
+  it: "",
+  es: "María",
+  en: "Emma",
+  nl: "Sanne",
+};
+
+const FAREWELL_BY_LANG: Record<PromptLang, string> = {
+  it: "Un caro saluto,",
+  es: "Un saludo,",
+  en: "Best,",
+  nl: "Hartelijke groet,",
+};
+
+const FAREWELL_WORDS =
+  "Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo|" +
+  "Best regards|Kind regards|Warm regards|All the best|Warmly|Best|" +
+  "Met vriendelijke groet|Met hartelijke groet|Hartelijke groet|Vriendelijke groet|Groetjes|" +
+  "Un caro saluto|Cordiali saluti|A presto";
+
+const FAREWELL_END = new RegExp("(" + FAREWELL_WORDS + ")[,.!]?" + "$", "i");
+
+function ensureSigner(text: string, signer: string, farewell: string): string {
   if (!text || !signer) return text;
   const trimmed = text.replace(/\s+$/, "");
   if (trimmed.slice(-60).toLowerCase().includes(signer.toLowerCase())) return trimmed;
-  if (FAREWELL_END.test(trimmed)) return `${trimmed}\n${signer}`;
-  return `${trimmed}\n\nUn saludo,\n${signer}`;
+  if (FAREWELL_END.test(trimmed)) return trimmed + "\n" + signer;
+  return trimmed + "\n\n" + farewell + "\n" + signer;
 }
 
 type DraftResult = {
@@ -561,10 +597,12 @@ serve(async (req) => {
         : result.summary;
 
     const recoveryUrl = `${market.siteUrl}/activate?intent=forgot`;
-    const signer = lang === "es" ? "María" : lang === "en" ? "Emma" : "";
+    const replyLang = resolvePromptLang(normalizeLang(result.reply_language) || lang);
+    const signer = SIGNER_BY_LANG[replyLang];
     const cleanDraft = ensureSigner(
       sanitizeSignaturePlaceholder(sanitizeAccessLinks(result.draft, recoveryUrl), signer),
       signer,
+      FAREWELL_BY_LANG[replyLang],
     );
 
     // Attachment policy: default is to guide the customer to the website (log in /
@@ -587,7 +625,7 @@ serve(async (req) => {
         status: "drafted",
         category: "support",
         draft_body: cleanDraft,
-        reply_language: normalizeLang(result.reply_language) || lang,
+        reply_language: replyLang,
         ai_confidence: result.confidence,
         flag_for_human: result.flagForHuman || !compact.matched || isRepeat || (forceSupport && !result.draft),
         ai_note: aiNote || null,

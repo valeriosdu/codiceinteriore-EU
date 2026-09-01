@@ -14,7 +14,7 @@ The owner has a Python/R/data-science background, not a frontend specialist — 
 - **Auth**: Supabase Auth, Google OAuth only; transactional/auth email via Brevo (`auth-email-hook` is the optional per-user localized path)
 - **Payments**: Stripe (primary), PayPal (secondary)
 - **AI**: Google Gemini (`gemini-3.1-pro-preview`) called directly at `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` (OpenAI-compat endpoint), secret `GEMINI_API_KEY`. Prompts are per-language in `supabase/functions/_shared/prompts/`.
-- **Markets / languages**: multi-market app — `it` (default) and `es`, designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
+- **Markets / languages**: multi-market app — markets `it` (default), `es`, `us`, `nl`; languages `it`, `es`, `en`, `nl`. Designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
 
 ## Multi-market architecture (read this first)
 
@@ -33,9 +33,9 @@ VITE_MARKET=es (Vercel env, build-time)
 ```
 
 - **Column default is `'it'`** so any un-migrated path produces Italian; the `es` frontend passes `'es'` explicitly.
-- **Per-market secret convention `<NAME>__ES`** (e.g. `STRIPE_SECRET_KEY__ES`). Market `it` uses the unsuffixed names. For a new market, a **missing payment secret is an explicit error — never a silent fallback** to another market's account.
+- **Per-market secret convention `<NAME>__<MARKET>`** (e.g. `STRIPE_SECRET_KEY__ES`, `STRIPE_PRICE_BASE__NL`). Market `it` uses the unsuffixed names. For a new market, a **missing payment secret is an explicit error — never a silent fallback** to another market's account.
 - **Expandable by design**: adding a market = a new entry in `supabase/functions/_shared/markets.ts` (backend) + `src/markets/` (frontend) + catalogs in `src/i18n/`. Helpers `getMarket / getStripeKey / getStripePrice / getPayPalCreds / brandSlug / docNoun` (in `markets.ts`) avoid hard-coded `es ? … : it` branches — `brandSlug` derives from `siteName`, `docNoun` is keyed by `Language`. Don't add binary market branches; route through these helpers.
-- Backend config: [supabase/functions/_shared/markets.ts](supabase/functions/_shared/markets.ts). Frontend: [src/markets/index.ts](src/markets/index.ts). Language catalogs: `src/i18n/{it,es}/` (it is the source of the `Messages` type — a missing `es` key is a compile error), provider [src/i18n/I18nProvider.tsx](src/i18n/I18nProvider.tsx).
+- Backend config: [supabase/functions/_shared/markets.ts](supabase/functions/_shared/markets.ts). Frontend: [src/markets/index.ts](src/markets/index.ts). Language catalogs: `src/i18n/{it,es,en,nl}/` (it is the source of the `Messages` type — a missing key in another language is a compile error), provider [src/i18n/I18nProvider.tsx](src/i18n/I18nProvider.tsx).
 
 ## Commands
 
@@ -43,7 +43,11 @@ From the repo root:
 
 ```bash
 npm run dev        # Vite dev server (default http://localhost:5173, configured 8080)
-npm run build      # production build (also type-checks)
+npm run build      # production build (runs `typecheck` first, then vite build)
+npm run typecheck  # tsc --noEmit; ALSO covers the pure _shared/ backend modules
+                   # (pulled in by src/test/backend-bridge.test.ts) — the only
+                   # compile-time check the Deno code ever gets
+npm run verify     # typecheck + tests, the pre-push ritual
 npm run build:dev  # build with development mode
 npm run preview    # serve the production build locally
 npm run lint       # eslint
@@ -73,7 +77,7 @@ src/
   context/QuizContext.tsx # quiz state across pages
   context/SynastryContext.tsx # coppia/sinastria state
   markets/                # per-market frontend config; export MARKET, resolveMarket()
-  i18n/                   # typed message catalogs {it,es}/ + I18nProvider (it = source of type)
+  i18n/                   # typed message catalogs {it,es,en,nl}/ + I18nProvider (it = source of type)
   funnels/registry.ts     # funnel structure (section ids/type/order — the backend contract; ids NOT translated)
   hooks/                  # custom React hooks
   integrations/supabase/  # client + auto-generated DB types (don't hand-edit types.ts)
@@ -119,7 +123,7 @@ Many of these are market-aware: they read `market` from the session/checkout row
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENV`
 - `META_PIXEL_ID`, `META_CONVERSIONS_API_TOKEN`
 - `ADMIN_SECRET` — gates admin bypass endpoints
-- **Per-market variants** with `__ES` suffix exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`.
+- **Per-market variants** with a `__<MARKET>` suffix (`__ES`, `__US`, `__NL`) exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`.
 
 If a secret is missing, edge functions tend to fail silently — check function logs (MCP `get_logs` or the dashboard) before assuming the code is broken.
 
@@ -135,6 +139,18 @@ These are the pieces where a small mistake is expensive (lost payments, leaked P
 6. **System prompts inside `generate-report` / `_shared/prompts/`** — per-language (it/es); they concatenate user fields (`userName`, `focusArea`, `attachmentResponse`) without sanitization. Be aware when editing.
 7. **Race conditions in report generation** — webhook + `/report-processing` polling can both trigger Gemini. The `.is("full_report", null)` guard helps but isn't a true lock.
 8. **Funnel idempotency (`/processing`)** — `Processing.tsx` skips creating a new `quiz_sessions` row when `getFunnelStage()` is `'teaser' | 'offer'`, to avoid burning another freeastroapi + Gemini cycle when the user navigates back from `/teaser`. Any flow that legitimately needs a fresh session (e.g. the "I dati non sono giusti?" edit button on the teaser) must call `clearFunnelStorage()` before navigating to `/quiz`. Invariant lives across `Processing.tsx`, `TeaserResult.tsx`, and `QuizContext.tsx`.
+
+### Adding a market — the guard rails
+
+Two test files make the "silent fallback to Italian" class of bug impossible to ship:
+
+- **[src/test/backend-bridge.test.ts](src/test/backend-bridge.test.ts)** imports the *pure* backend modules (`_shared/prompts/lang.ts`, `pdf-i18n.ts`, `prompts/support.ts`, `synastry-archetypes.ts`, `markets.ts`, …) so `tsc` pulls them into the program. Widening `PromptLang`/`Language` then produces hard errors listing every unfilled `Record<PromptLang, …>` slot. This is the ONLY compile-time check the Deno code gets — `supabase functions deploy` does not type-check.
+- **[src/test/market-parity.test.ts](src/test/market-parity.test.ts)** scans the sources for what the compiler can't reach: every object literal with ≥2 language/market keys must carry the new one; `isMarketId` must cover the union in *both* codebases; the new market's `*Env` names must all carry its own suffix (a copy-pasted block would bill the wrong Stripe account); `support-poll`'s hand-maintained `MARKETS` array; slug parity between `src/lib/routes.ts` and `scripts/generate-seo-files.mjs`.
+
+Start a new market by widening `MARKETS`/`LANGUAGES` in `market-parity.test.ts` and the two unions: the failing output is the worklist.
+
+Syntax-check edited edge functions before deploying (there is no other gate):
+`./node_modules/.bin/esbuild --outfile=/dev/null supabase/functions/<path>`.
 
 ### Recurring pitfalls (from past fixes)
 
@@ -152,7 +168,7 @@ These are the pieces where a small mistake is expensive (lost payments, leaked P
 ## Workflow rules
 
 - **Default to small, scoped changes.** Don't bundle refactors with feature work or vice versa.
-- **Edit existing files in preference to creating new ones.** Localized copy lives in `src/i18n/{it,es}/` (it = source of the type); add new strings there, never inline a hard-coded string in a component.
+- **Edit existing files in preference to creating new ones.** Localized copy lives in `src/i18n/{it,es,en,nl}/` (it = source of the type); add new strings there, never inline a hard-coded string in a component.
 - **No new dependencies without approval** — the stack is already chosen; reach for what's installed first.
 - **No comments unless the *why* is non-obvious.** Identifiers should explain *what*.
 - **Never commit unless the user asks.** When asked, write a real commit message (not "Changes" — recent history has too many of those already). End commit messages with the Co-Authored-By trailer.

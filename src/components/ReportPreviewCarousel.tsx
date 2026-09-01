@@ -14,16 +14,47 @@ import schemi from "@/assets/report-preview/5-schemi.webp";
 import consigli from "@/assets/report-preview/6-consigli.webp";
 import poesia from "@/assets/report-preview/7-poesia.webp";
 
-// Screenshot del report italiano: asset per-lingua, da sostituire quando un
-// nuovo mercato avrà i propri estratti.
-const SLIDE_IMAGES = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
+import heroEn from "@/assets/report-preview/hero-US.webp";
+import identitaEn from "@/assets/report-preview/1-identita-en.webp";
+import emozioniEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0005.webp";
+import relazioniEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0006_11zon.webp";
+import lavoroEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0008.webp";
+import schemiEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0009.webp";
+import consigliEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0010.webp";
+import poesiaEn from "@/assets/report-preview/carta-interior-valerio_pages-to-jpg-0011.webp";
+
+import heroNl from "@/assets/report-preview/hero-nl.webp";
+import identitaNl from "@/assets/report-preview/1-identita-nl.webp";
+import emozioniNl from "@/assets/report-preview/2-emozioni-nl.webp";
+import relazioniNl from "@/assets/report-preview/3-relazioni-nl.webp";
+import lavoroNl from "@/assets/report-preview/4-lavoro-nl.webp";
+import schemiNl from "@/assets/report-preview/5-schemi-nl.webp";
+import consigliNl from "@/assets/report-preview/6-consigli-nl.webp";
+import poesiaNl from "@/assets/report-preview/7-poesia-nl.webp";
+
+// Screenshot del report: asset per-lingua, da sostituire quando un nuovo
+// mercato avrà i propri estratti (es oggi riusa ancora quelli italiani).
+const SLIDE_IMAGES_IT = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
+const SLIDE_IMAGES_EN = [heroEn, identitaEn, emozioniEn, relazioniEn, lavoroEn, schemiEn, consigliEn, poesiaEn];
+// Estratti di un report NL reale (Sanne de Vries), filigranati "Voorbeelddata".
+// L'ordine segue slideAlts di src/i18n/nl/social.ts: ogni immagine sta nello slot
+// il cui alt text porta lo stesso titolo di sezione.
+const SLIDE_IMAGES_NL = [heroNl, identitaNl, emozioniNl, relazioniNl, lavoroNl, schemiNl, consigliNl, poesiaNl];
+
+const SLIDE_IMAGES_BY_LANG: Record<string, typeof SLIDE_IMAGES_IT> = {
+  it: SLIDE_IMAGES_IT,
+  es: SLIDE_IMAGES_IT,
+  en: SLIDE_IMAGES_EN,
+  nl: SLIDE_IMAGES_NL,
+};
 
 const ReportPreviewCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
-  const { m } = useI18n();
+  const { m, market } = useI18n();
   const rp = m.social.reportPreview;
+  const SLIDE_IMAGES = SLIDE_IMAGES_BY_LANG[market.language] ?? SLIDE_IMAGES_IT;
   const slides = SLIDE_IMAGES.map((src, i) => ({ src, alt: rp.slideAlts[i] ?? "" }));
 
   useEffect(() => {

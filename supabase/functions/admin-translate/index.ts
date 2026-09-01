@@ -17,7 +17,7 @@ const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
 const MODEL = "gemini-3.1-flash-lite";
 
-const LANG_NAME: Record<string, string> = { it: "Italian", es: "Spanish", en: "English" };
+const LANG_NAME: Record<string, string> = { it: "Italian", es: "Spanish", en: "English", nl: "Dutch" };
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

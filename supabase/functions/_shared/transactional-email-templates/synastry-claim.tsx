@@ -4,7 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
-import { BrandFooter, BrandHeader, getEmailTheme, styles } from '../email-theme.tsx'
+import { BrandFooter, BrandHeader, getEmailTheme, resolveEmailLang, styles } from '../email-theme.tsx'
 
 interface SynastryClaimProps {
   name?: string
@@ -44,14 +44,24 @@ const COPY = {
     closing: 'If you need any help, simply reply to this email.',
     subject: "Your payment is confirmed — activate your couple's synastry",
   },
+  nl: {
+    preview: 'Jullie betaling is bevestigd — activeer jullie duiding voor koppels',
+    h1: 'Jullie betaling is bevestigd',
+    greeting: (name?: string) => (name ? `Hoi ${name},` : 'Hoi,'),
+    body: 'We hebben jullie bestelling goed ontvangen. Om bij jullie synastrie te komen en hem altijd terug te vinden, maken jullie met dit e-mailadres jullie persoonlijke ruimte aan: jullie duiding wordt er automatisch aan gekoppeld.',
+    cta: 'Activeer en open jullie synastrie',
+    fallback: 'Werkt de knop niet, kopieer deze link dan naar je browser:',
+    closing: 'Hebben jullie hulp nodig, antwoord dan gewoon op deze mail.',
+    subject: 'Jullie betaling is bevestigd — activeer jullie synastrie voor koppels',
+  },
 } as const
 
 const SynastryClaimEmail = ({ name, sessionId, lang, market }: SynastryClaimProps) => {
   const theme = getEmailTheme(market)
-  const t = COPY[lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it']
+  const t = COPY[resolveEmailLang(lang)]
   const claimUrl = `${theme.baseUrl}/coppia/activate?session_id=${encodeURIComponent(sessionId)}`
   return (
-    <Html lang={lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'it'} dir="ltr">
+    <Html lang={resolveEmailLang(lang)} dir="ltr">
       <Head />
       <Preview>{t.preview}</Preview>
       <Body style={styles.main}>
@@ -89,7 +99,7 @@ const SynastryClaimEmail = ({ name, sessionId, lang, market }: SynastryClaimProp
 
 export const template = {
   component: SynastryClaimEmail,
-  subject: (data: Record<string, any>) => COPY[data?.lang === 'en' ? 'en' : data?.lang === 'es' ? 'es' : 'it'].subject,
+  subject: (data: Record<string, any>) => COPY[resolveEmailLang(data?.lang)].subject,
   displayName: 'Recupero sinastria (claim)',
   previewData: { name: 'Maria', sessionId: 'cs_live_example' },
 } satisfies TemplateEntry

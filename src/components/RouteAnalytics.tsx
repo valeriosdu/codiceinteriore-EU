@@ -8,13 +8,13 @@ declare global {
   }
 }
 
-const GA_MEASUREMENT_ID = "G-T3B5BDSD3Y";
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA4_ID;
 
 const RouteAnalytics = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+    if (!GA_MEASUREMENT_ID || typeof window === "undefined" || typeof window.gtag !== "function") return;
     const path = location.pathname + location.search;
     window.gtag("event", "page_view", {
       page_path: path,

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_customer_merges: {
@@ -510,6 +535,7 @@ export type Database = {
           event_name: string
           event_properties: Json
           id: string
+          market: string | null
           page_path: string | null
           user_id: string | null
         }
@@ -519,6 +545,7 @@ export type Database = {
           event_name: string
           event_properties?: Json
           id?: string
+          market?: string | null
           page_path?: string | null
           user_id?: string | null
         }
@@ -528,6 +555,7 @@ export type Database = {
           event_name?: string
           event_properties?: Json
           id?: string
+          market?: string | null
           page_path?: string | null
           user_id?: string | null
         }
@@ -748,6 +776,123 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_tickets: {
+        Row: {
+          ai_confidence: string | null
+          ai_note: string | null
+          answered_at: string | null
+          answered_by: string | null
+          attachment_count: number
+          attachments: Json
+          body_plain: string | null
+          candidate_matches: Json
+          category: string | null
+          created_at: string
+          data_summary: Json | null
+          draft_body: string | null
+          error: string | null
+          flag_for_human: boolean
+          force_support: boolean
+          from_email: string
+          from_name: string | null
+          id: string
+          manually_linked: boolean
+          market: string
+          model_used: string | null
+          received_at: string | null
+          reply_language: string | null
+          resolved_email: string | null
+          resolved_profile_id: string | null
+          retry_count: number
+          sent_body: string | null
+          status: string
+          subject: string | null
+          triage_reason: string | null
+          updated_at: string
+          zoho_account_id: string
+          zoho_folder_id: string | null
+          zoho_message_id: string
+          zoho_sent_message_id: string | null
+          zoho_thread_id: string | null
+        }
+        Insert: {
+          ai_confidence?: string | null
+          ai_note?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          attachment_count?: number
+          attachments?: Json
+          body_plain?: string | null
+          candidate_matches?: Json
+          category?: string | null
+          created_at?: string
+          data_summary?: Json | null
+          draft_body?: string | null
+          error?: string | null
+          flag_for_human?: boolean
+          force_support?: boolean
+          from_email: string
+          from_name?: string | null
+          id?: string
+          manually_linked?: boolean
+          market?: string
+          model_used?: string | null
+          received_at?: string | null
+          reply_language?: string | null
+          resolved_email?: string | null
+          resolved_profile_id?: string | null
+          retry_count?: number
+          sent_body?: string | null
+          status?: string
+          subject?: string | null
+          triage_reason?: string | null
+          updated_at?: string
+          zoho_account_id: string
+          zoho_folder_id?: string | null
+          zoho_message_id: string
+          zoho_sent_message_id?: string | null
+          zoho_thread_id?: string | null
+        }
+        Update: {
+          ai_confidence?: string | null
+          ai_note?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          attachment_count?: number
+          attachments?: Json
+          body_plain?: string | null
+          candidate_matches?: Json
+          category?: string | null
+          created_at?: string
+          data_summary?: Json | null
+          draft_body?: string | null
+          error?: string | null
+          flag_for_human?: boolean
+          force_support?: boolean
+          from_email?: string
+          from_name?: string | null
+          id?: string
+          manually_linked?: boolean
+          market?: string
+          model_used?: string | null
+          received_at?: string | null
+          reply_language?: string | null
+          resolved_email?: string | null
+          resolved_profile_id?: string | null
+          retry_count?: number
+          sent_body?: string | null
+          status?: string
+          subject?: string | null
+          triage_reason?: string | null
+          updated_at?: string
+          zoho_account_id?: string
+          zoho_folder_id?: string | null
+          zoho_message_id?: string
+          zoho_sent_message_id?: string | null
+          zoho_thread_id?: string | null
+        }
+        Relationships: []
       }
       suppressed_emails: {
         Row: {
@@ -1481,6 +1626,7 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: boolean
       }
+      watchdog_collect: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -1609,6 +1755,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

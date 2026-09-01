@@ -1,30 +1,30 @@
 import type { MarketConfig } from './types';
-// TODO: swap to US brand logo/OG assets once the US brand is finalized. For now
-// this reuses the existing IT logo asset (and the IT OG image path below).
-import logo from '@/assets/logo.webp';
+// Smoke test: brand = Carta Interior → riusa logo/OG di Carta Interior.
+// TODO: sostituire con logo/OG del brand US al lancio.
+import logo from '@/assets/logo.es.webp';
 
-// US market config — placeholders pending brand/legal/pricing decisions.
+// US market config — smoke test su us.cartainterior.com; prezzi/legali US da
+// confermare al lancio.
 export const US_MARKET: MarketConfig = {
   id: 'us',
   language: 'en',
   locale: 'en-US',
-  // TODO: confirm production domain.
-  siteUrl: 'https://us.example.com',
-  // TODO: confirm production hostnames.
-  hostnames: ['us.example.com'],
-  // TODO: confirm US brand name.
-  siteName: 'US Brand (TODO)',
+  // Smoke test: sottodominio in prestito di Carta Interior. Migrerà al
+  // dominio .com US dedicato quando comprato (basta cambiare questi due valori).
+  siteUrl: 'https://us.cartainterior.com',
+  hostnames: ['us.cartainterior.com'],
+  // Brand temporaneo per lo smoke test = "Carta Interior" (stesso brand del
+  // dominio). TODO: sostituire col brand US reale al lancio (header/email/PDF).
+  siteName: 'Carta Interior',
   logo,
   // TODO: swap to US brand OG asset.
-  ogImage: '/og/codice-interiore-1x1.webp',
-  // TODO: confirm US contact email.
-  contactEmail: 'info@us.example.com',
+  ogImage: '/og/carta-interior-1x1.webp',
+  contactEmail: 'info@cartainterior.com',
   currency: 'USD',
   countryCode: 'US',
   prices: {
-    // TODO: confirm USD prices — these mirror the es/it numeric values as USD placeholders.
-    base: 19,
-    premium: 29,
+    base: 29,
+    premium: 39,
     synastry: 19,
     synastryLaunch: 14.9,
     transitOneTime: 10,
@@ -32,10 +32,13 @@ export const US_MARKET: MarketConfig = {
     astroPack: 7.9,
   },
   legal: {
-    // TODO: confirm US legal entity / company fields before launch.
-    companyName: 'US Company LLC (TODO)',
-    address: 'TODO US registered address',
-    regNumber: 'TODO',
+    companyName: 'VSD Green Commerce FZE LLC',
+    address: 'Business Centre, Sharjah Publishing City Free Zone, Sharjah, United Arab Emirates',
+    regNumber: '4418567',
   },
   editorialContent: false,
+  // US: nessun obbligo di opt-in style GDPR (CCPA/CPRA usa un modello
+  // opt-out, gestito nella Privacy Policy). Il banner attuale è comunque
+  // cosmetico (non blocca i tracker), quindi qui non toglie protezione reale.
+  cookieBanner: false,
 };

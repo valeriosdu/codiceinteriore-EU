@@ -4,6 +4,7 @@
 
 import { MARKET } from "@/markets";
 import { getMessages } from "@/i18n";
+import { ROUTES } from "@/lib/routes";
 
 const SITE_URL = MARKET.siteUrl;
 const LOCALE = MARKET.locale;
@@ -111,7 +112,7 @@ export const contactPageJsonLd = () => ({
   "@context": "https://schema.org",
   "@type": "ContactPage",
   name: `${M.seo.contactPageName} — ${SITE_NAME}`,
-  url: `${SITE_URL}/contatti`,
+  url: `${SITE_URL}${ROUTES.contact}`,
   inLanguage: LOCALE,
 });
 

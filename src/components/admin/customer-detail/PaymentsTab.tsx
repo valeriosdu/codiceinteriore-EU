@@ -28,7 +28,10 @@ const toneClasses: Record<"success" | "warning" | "danger" | "muted", string> = 
 };
 
 export default function PaymentsTab({ detail, actions }: PaymentsTabProps) {
-  if (detail.checkouts.length === 0) {
+  // Un abbonato senza acquisti una tantum aveva "Nessun checkout": l'abbonamento
+  // vive in transit_subscriptions, non in checkout_sessions, e senza questo
+  // controllo la scheda diceva che non aveva mai pagato nulla.
+  if (detail.checkouts.length === 0 && !detail.transit_subscription) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-muted-foreground">
         Nessun checkout per questa email.
@@ -56,8 +59,43 @@ export default function PaymentsTab({ detail, actions }: PaymentsTabProps) {
     }
   }
 
+  const sub = detail.transit_subscription;
+  const subAttivo = sub ? ["active", "trialing", "past_due"].includes(sub.status) : false;
+
   return (
     <div className="space-y-3">
+      {/* L'abbonamento transiti NON produce righe in checkout_sessions: lo crea
+          Stripe come Subscription e il webhook scrive solo su
+          transit_subscriptions. Senza questo riquadro la lista pagamenti di un
+          abbonato mostra i soli report, e sembra che l'abbonamento non esista
+          (o peggio, che a generarlo sia stato il report da 29€). */}
+      {sub && (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <CreditCard className="h-4 w-4 text-emerald-700" />
+            <span className="font-medium text-sm">Abbonamento transiti · € 9,90/mese</span>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-xs ${
+                subAttivo ? toneClasses.success : toneClasses.muted
+              }`}
+            >
+              {sub.status}
+              {sub.cancel_at_period_end ? " · in disdetta" : ""}
+            </span>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Attivo dal {formatDate(sub.created_at)}
+            {detail.subscription_cycles_count > 0
+              ? ` · ${detail.subscription_cycles_count} cicli generati`
+              : ""}
+            {sub.current_period_end ? ` · prossimo rinnovo ${formatDate(sub.current_period_end)}` : ""}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            I rinnovi non compaiono qui sotto: non passano da checkout_sessions. Il dettaglio è nel tab Transiti.
+          </p>
+        </div>
+      )}
+
       {oneTimeCheckouts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
           Nessun pagamento una tantum.

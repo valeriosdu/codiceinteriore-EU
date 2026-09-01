@@ -11,6 +11,7 @@ import { useSynastrySession } from '@/hooks/useSynastrySession';
 import { useMetaConversions } from '@/hooks/useMetaConversions';
 import { pollUntilStatus } from '@/hooks/useSynastryStatus';
 import { useI18n } from '@/i18n/I18nProvider';
+import { ROUTES } from '@/lib/routes';
 
 const TIMEOUT_MS = 90_000;
 
@@ -31,13 +32,13 @@ export default function CoppiaProcessing() {
     // esiste e i dati sono pronti), salta la creazione di una nuova sessione.
     const stage = getSynastryFunnelStage();
     if (stage === 'teaser' || stage === 'offer') {
-      navigate('/coppia/teaser', { replace: true });
+      navigate(ROUTES.coupleTeaser, { replace: true });
       return;
     }
 
     if (ranRef.current) return;
     if (!isBirthDateComplete(data.personA.birthDate) || !isBirthDateComplete(data.personB.birthDate)) {
-      navigate('/coppia/quiz', { replace: true });
+      navigate(ROUTES.coupleQuiz, { replace: true });
       return;
     }
     ranRef.current = true;
@@ -93,7 +94,7 @@ export default function CoppiaProcessing() {
         processingStatus: snap.processing_status,
       });
       markSynastryFunnelStage('teaser');
-      navigate('/coppia/teaser', { replace: true });
+      navigate(ROUTES.coupleTeaser, { replace: true });
     };
 
     void run();
@@ -110,7 +111,7 @@ export default function CoppiaProcessing() {
             <p className="text-sm text-muted-foreground mb-6">{errorMessage}</p>
             <button
               type="button"
-              onClick={() => navigate('/coppia/quiz')}
+              onClick={() => navigate(ROUTES.coupleQuiz)}
               className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90"
             >
               {cp.backToQuiz}

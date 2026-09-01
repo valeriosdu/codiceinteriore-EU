@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useMetaConversions } from '@/hooks/useMetaConversions';
 import { useSynastry, toCompleteBirthDate } from '@/context/SynastryContext';
+import { ROUTES } from '@/lib/routes';
 
 export default function CoppiaSuccess() {
   const navigate = useNavigate();
@@ -120,7 +121,7 @@ export default function CoppiaSuccess() {
   useEffect(() => {
     if (!sessionId || paypalCapturing) return;
     const t = setTimeout(() => {
-      navigate(`/coppia/activate?session_id=${encodeURIComponent(sessionId)}`, { replace: true });
+      navigate(`${ROUTES.coupleActivate}?session_id=${encodeURIComponent(sessionId)}`, { replace: true });
     }, 1200);
     return () => clearTimeout(t);
   }, [navigate, sessionId, paypalCapturing]);

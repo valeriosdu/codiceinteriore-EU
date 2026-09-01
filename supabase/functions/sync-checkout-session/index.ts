@@ -318,7 +318,7 @@ serve(async (req) => {
             const rowMarket = getMarket((effectiveRow as { market?: string | null }).market);
             const fallbackAmount =
               rowMarket.currency === "USD"
-                ? (purchaseType === "premium" ? "29.99" : "19.99") // TODO: confirm USD prices
+                ? (purchaseType === "premium" ? "39.00" : "29.00")
                 : (purchaseType === "premium" ? "29.00" : "19.00");
             const captureAmountStr =
               (capture as any)?.amount?.value ||

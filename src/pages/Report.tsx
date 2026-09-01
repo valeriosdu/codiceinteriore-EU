@@ -39,6 +39,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { toast } from "sonner";
 import { useSynastryReport } from "@/hooks/useSynastryReport";
 import SynastryReportCard from "@/components/SynastryReportCard";
+import { ROUTES } from "@/lib/routes";
 
 type UserReportOption = {
   id: string;
@@ -947,7 +948,7 @@ const Report = () => {
                       {r.header.readMonthlyTransits}
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onSelect={() => navigate("/contatti")}>
+                  <DropdownMenuItem onSelect={() => navigate(ROUTES.contact)}>
                     <Mail className="mr-2 h-4 w-4" />
                     {r.header.contactSupport}
                   </DropdownMenuItem>

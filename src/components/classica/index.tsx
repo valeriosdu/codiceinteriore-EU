@@ -83,12 +83,52 @@ export const PaperGrain = () => (
   </>
 );
 
+// Glifi zodiacali disegnati a mano in stile incisione editoriale, in viewBox
+// 14x14 centrato (origin 0,0, range -7..7). Sostituiscono i caratteri Unicode
+// (♈♉…) che vengono renderizzati "quadrati" da EB Garamond come testo.
+const ZODIAC_GLYPHS: React.ReactNode[] = [
+  // 0 Ariete — due corna che si aprono e si arricciano verso l'alto
+  <path d="M -6 5 Q -7 -4 -2 -5 Q 0 -5 0 -2 M 0 -2 Q 0 -5 2 -5 Q 7 -4 6 5" />,
+  // 1 Toro — testa (cerchio) con corna a falce sopra
+  <g>
+    <circle cx="0" cy="2" r="3.2" />
+    <path d="M -2.7 -0.8 Q -6 -5 0 -4.5 Q 6 -5 2.7 -0.8" />
+  </g>,
+  // 2 Gemelli — due pilastri con serif (II romano)
+  <path d="M -3.5 -5 V 5 M 3.5 -5 V 5 M -5.5 -5 H -1.5 M 1.5 -5 H 5.5 M -5.5 5 H -1.5 M 1.5 5 H 5.5" />,
+  // 3 Cancro — paisley 69 con due punti pieni
+  <g>
+    <circle cx="-3" cy="-1.5" r="1.2" fill="currentColor" stroke="none" />
+    <path d="M -1.8 -0.7 Q 4 -0.7 4 3" />
+    <circle cx="3" cy="1.5" r="1.2" fill="currentColor" stroke="none" />
+    <path d="M 1.8 0.7 Q -4 0.7 -4 -3" />
+  </g>,
+  // 4 Leone — testa + coda fluente
+  <g>
+    <circle cx="-2" cy="-2" r="2.2" />
+    <path d="M 0.2 -1.8 Q 5 -3 5 3 Q 5 6 2 6 Q -1 6 -1 3" />
+  </g>,
+  // 5 Vergine — M con coda ad anello (la "M" della Madonna)
+  <path d="M -6 5 V -3 Q -6 -5 -4 -5 Q -2 -5 -2 -3 V 5 M -2 -3 Q -2 -5 0 -5 Q 2 -5 2 -3 V 5 M 2 -3 Q 2 -5 4 -5 Q 6 -5 6 -3 V 4 Q 6 6 4 6 Q 2 6 2 4" />,
+  // 6 Bilancia — base orizzontale + arco sopra (piatti della bilancia)
+  <path d="M -6 4 H 6 M -4 4 V 1 M -4 1 Q -4 -3 0 -3 Q 4 -3 4 1 M 4 1 V 4" />,
+  // 7 Scorpione — M con coda a punta di freccia
+  <path d="M -6 5 V -3 Q -6 -5 -4 -5 Q -2 -5 -2 -3 V 5 M -2 -3 Q -2 -5 0 -5 Q 2 -5 2 -3 V 5 M 2 -3 Q 2 -5 4 -5 Q 6 -5 6 -3 V 4 L 7.5 4 M 7.5 4 L 6 2.5 M 7.5 4 L 6 5.5" />,
+  // 8 Sagittario — freccia diagonale con tacca trasversale
+  <path d="M -6 6 L 6 -6 M 6 -6 L 3 -5 M 6 -6 L 5 -3 M -3 1 L 1 -3" />,
+  // 9 Capricorno — V acuto (corno) + coda ad anello (pesce)
+  <path d="M -5 -5 L -1 4 L 2 -3 Q 2 5 5 5 Q 7 5 7 3 Q 7 0 4 0" />,
+  // 10 Acquario — due onde a zigzag parallele
+  <path d="M -6 -2 L -4 -1 L -2 -3 L 0 -1 L 2 -3 L 4 -1 L 6 -3 M -6 2 L -4 3 L -2 1 L 0 3 L 2 1 L 4 3 L 6 1" />,
+  // 11 Pesci — due archi a parentesi con sbarra centrale
+  <path d="M -5 -5 Q -2 0 -5 5 M 5 -5 Q 2 0 5 5 M -3 0 H 3" />,
+];
+
 // Engraving-style wheel: triple outer ring, zodiac glyph band, 360 ticks
 // (1°/5°/30° hierarchy), house spokes, decorative outer dots, compass-rose
 // center. Rendered at low opacity behind the hero text; cropped at the right
 // edge of the viewport.
 export const ChartWheel = ({ className = "" }: { className?: string }) => {
-  const ZODIAC = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"];
   return (
     <svg aria-hidden="true" viewBox="0 0 400 400" className={className} style={{ color: INK }}>
       <defs>
@@ -149,15 +189,22 @@ export const ChartWheel = ({ className = "" }: { className?: string }) => {
         })}
       </g>
 
-      <g fill="currentColor" fillOpacity="0.6" fontFamily="'EB Garamond', Georgia, serif" fontSize="15" textAnchor="middle" dominantBaseline="central">
-        {ZODIAC.map((g, i) => {
+      <g
+        stroke="currentColor"
+        strokeWidth="0.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        strokeOpacity="0.7"
+      >
+        {ZODIAC_GLYPHS.map((glyph, i) => {
           const a = ((i * 30 + 15) * Math.PI) / 180;
           const x = 200 + Math.cos(a) * 139;
           const y = 200 + Math.sin(a) * 139;
           return (
-            <text key={g} x={x} y={y}>
-              {g}
-            </text>
+            <g key={i} transform={`translate(${x} ${y})`}>
+              {glyph}
+            </g>
           );
         })}
       </g>

@@ -13,6 +13,7 @@ import {
   productJsonLd,
 } from "@/lib/seo-jsonld";
 import { useI18n } from "@/i18n/I18nProvider";
+import { ROUTES } from "@/lib/routes";
 import {
   ChapterHeading,
   ChartWheel,
@@ -45,12 +46,12 @@ const IndexClassica = () => {
       <SEO
         title={lc.seo.title}
         description={lc.seo.description}
-        path="/lp/classica"
+        path={ROUTES.lpClassica}
         jsonLd={[
           productJsonLd({
             name: lc.seo.productName,
             description: lc.seo.productDescription,
-            url: `${market.siteUrl}/lp/classica`,
+            url: `${market.siteUrl}${ROUTES.lpClassica}`,
           }),
           faqJsonLd(DEFAULT_FAQS),
         ]}

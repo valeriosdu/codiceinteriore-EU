@@ -1,15 +1,15 @@
 const landing = {
   seo: {
-    title: 'Your Birth Chart online, a reading in English',
+    title: 'Your Birth Chart, explained clearly — free reading online',
     description:
-      'A reading of your birth chart, written in English and personalized to your birth data. First part free, no sign-up required.',
+      'A birth chart reading personalized to your exact birth data — psychological, not predictive. The first part is free, no sign-up required.',
   },
   hero: {
     titlePre: 'Your',
     titleEm: 'Birth Chart',
-    titlePost: ', explained clearly',
+    titlePost: ' explained clearly',
     subtitle:
-      'See what emerges from your inner makeup, starting from your birth data. Free, no sign-up required.',
+      'See what emerges from your inner makeup, based on your birth data. Free, no sign-up required.',
     cta: 'Start the quiz',
     microcopy: '2-minute quiz · No prior knowledge needed',
     socialProof: 'Over 10,000 people have already discovered their birth chart',

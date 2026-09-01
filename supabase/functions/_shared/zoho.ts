@@ -26,8 +26,22 @@ export interface ZohoMarketConfig {
   refreshToken: string;
 }
 
+// Suffisso dei secret Zoho per mercato. NON e' meccanicamente "__" + id: piu'
+// mercati condividono una sola casella. Oggi es, us e nl scrivono e leggono
+// tutti da info@cartainterior.com, quindi puntano agli stessi secret __ES —
+// prima era un fallback implicito (market !== "it" ? "__ES"), che nascondeva la
+// condivisione e avrebbe silenziosamente agganciato anche il quinto mercato.
+// Per dare a nl una casella propria: creare i 6 secret ZOHO_*__NL, poi mettere
+// nl: "__NL" qui e aggiungere "nl" all'array MARKETS di support-poll.
+const ZOHO_ENV_SUFFIX: Record<MarketId, string> = {
+  it: "",
+  es: "__ES",
+  us: "__ES",
+  nl: "__ES",
+};
+
 function envName(base: string, market: MarketId): string {
-  return market === "it" ? base : `${base}__ES`;
+  return `${base}${ZOHO_ENV_SUFFIX[market] ?? ""}`;
 }
 
 function requireZohoEnv(base: string, market: MarketId): string {

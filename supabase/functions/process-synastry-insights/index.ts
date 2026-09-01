@@ -241,7 +241,7 @@ async function generateTeaserHighlight(
     `Return via the return_synastry_teaser tool call.`,
   ].join("\n");
 
-  const model = "gemini-3.1-flash-lite";
+  const model = "gemini-3.5-flash-lite";
   const t0 = Date.now();
   const metricBase = {
     functionName: "process-synastry-insights",

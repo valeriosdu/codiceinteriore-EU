@@ -18,8 +18,8 @@ import {
 } from "./transit-products.ts";
 import { ASTROLOGY_GUIDE_PACK_PRICE_ID } from "./astrology-products.ts";
 
-export type MarketId = "it" | "es" | "us";
-export type Language = "it" | "es" | "en";
+export type MarketId = "it" | "es" | "us" | "nl";
+export type Language = "it" | "es" | "en" | "nl";
 
 export type StripeProduct =
   | "base"
@@ -145,16 +145,19 @@ const ES_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__ES",
 };
 
-// TODO: real US brand/domain values go here once the US listing is live.
+// Smoke test: sottodominio in prestito di Carta Interior (us.cartainterior.com).
+// Migrerà al dominio .com US dedicato quando comprato.
 const US_MARKET: BackendMarketConfig = {
   id: "us",
   language: "en",
   locale: "en-US",
-  siteUrl: "https://us.example.com", // TODO: real US site URL
-  siteName: "US Brand (TODO)", // TODO: real US brand name
-  senderDomain: "notifiche.us.example.com", // TODO: real US sender domain
-  fromDomain: "us.example.com", // TODO: real US from domain
-  contactEmail: "info@us.example.com", // TODO: real US contact email
+  siteUrl: "https://us.cartainterior.com",
+  // Smoke test: brand + mittente email = Carta Interior (dominio già verificato
+  // in Brevo, così le email arrivano). TODO: brand/sender US reali al lancio.
+  siteName: "Carta Interior",
+  senderDomain: "notifiche.cartainterior.com",
+  fromDomain: "cartainterior.com",
+  contactEmail: "info@cartainterior.com",
   currency: "USD",
   countryCode: "US",
   stripe: {
@@ -185,14 +188,67 @@ const US_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__US",
 };
 
+// Mercato olandese. Condivide con Carta Interior il brand, il dominio mittente
+// (gia verificato in Brevo) e l'account Stripe/PayPal ES: i secret __NL puntano
+// alle stesse chiavi, ma i 7 price ID sono prodotti NUOVI con nome e descrizione
+// in olandese. Nessun webhook dedicato: Stripe consegna ogni evento a OGNI
+// endpoint dell'account, quindi un secondo endpoint ?market=nl processerebbe due
+// volte anche i pagamenti ES. L'endpoint ?market=es serve entrambi — il mercato
+// reale viene letto dalla riga DB, non dall'URL. Per questo
+// STRIPE_WEBHOOK_SECRET*__NL e BREVO_API_KEY__NL non sono valorizzati (il
+// dispatcher email usa una sola BREVO_API_KEY globale).
+const NL_MARKET: BackendMarketConfig = {
+  id: "nl",
+  language: "nl",
+  locale: "nl-NL",
+  siteUrl: "https://nl.cartainterior.com",
+  siteName: "Carta Interior",
+  senderDomain: "notifiche.cartainterior.com",
+  fromDomain: "cartainterior.com",
+  contactEmail: "info@cartainterior.com",
+  currency: "EUR",
+  countryCode: "NL",
+  stripe: {
+    secretKeyEnv: "STRIPE_SECRET_KEY__NL",
+    secretKeyTestEnv: "STRIPE_SECRET_KEY_TEST__NL",
+    webhookSecretEnv: "STRIPE_WEBHOOK_SECRET__NL",
+    webhookSecretTestEnv: "STRIPE_WEBHOOK_SECRET_TEST__NL",
+    subscriptionWebhookSecretEnv: "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__NL",
+    priceEnv: {
+      base: "STRIPE_PRICE_BASE__NL",
+      premium: "STRIPE_PRICE_PREMIUM__NL",
+      synastry: "STRIPE_PRICE_SYNASTRY__NL",
+      synastryLaunch: "STRIPE_PRICE_SYNASTRY_LAUNCH__NL",
+      transitOneTime: "STRIPE_PRICE_TRANSIT_ONE_TIME__NL",
+      transitSubscription: "STRIPE_PRICE_TRANSIT_SUBSCRIPTION__NL",
+      astroPack: "STRIPE_PRICE_ASTRO_PACK__NL",
+    },
+    priceDefaults: {},
+  },
+  paypal: {
+    envEnv: "PAYPAL_ENV__NL",
+    clientIdEnv: "PAYPAL_CLIENT_ID__NL",
+    clientSecretEnv: "PAYPAL_CLIENT_SECRET__NL",
+    webhookIdEnv: "PAYPAL_WEBHOOK_ID__NL",
+  },
+  brevoApiKeyEnv: "BREVO_API_KEY__NL",
+  metaPixelIdEnv: "META_PIXEL_ID__NL",
+  metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__NL",
+};
+
 const MARKETS: Record<MarketId, BackendMarketConfig> = {
   it: IT_MARKET,
   es: ES_MARKET,
   us: US_MARKET,
+  nl: NL_MARKET,
 };
 
+// Ogni membro della union deve comparire qui: TypeScript non verifica che la
+// catena di || la copra, e un mercato dimenticato NON da errore — getMarket
+// cade silenziosamente su MARKETS.it (report, email e conto Stripe italiani).
+// Protetto dal test di parita mercati.
 export function isMarketId(value: unknown): value is MarketId {
-  return value === "it" || value === "es" || value === "us";
+  return value === "it" || value === "es" || value === "us" || value === "nl";
 }
 
 export function getMarket(id?: string | null): BackendMarketConfig {
@@ -273,6 +329,7 @@ const DOC_NOUN: Record<Language, { couple: string; transits: string }> = {
   it: { couple: "coppia", transits: "transiti" },
   es: { couple: "pareja", transits: "transitos" },
   en: { couple: "couple", transits: "transits" },
+  nl: { couple: "koppel", transits: "transits" },
 };
 
 export function docNoun(

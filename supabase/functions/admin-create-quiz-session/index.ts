@@ -223,6 +223,11 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Mercato/lingua della sessione: senza questi due campi la riga cade sul
+    // default 'it' e un cliente olandese ricreato a mano dall'admin riceve un
+    // report, un PDF e una mail in italiano.
+    const market = getMarket(typeof body.market === "string" ? body.market : null);
+
     const { data: inserted, error: insertErr } = await supabase
       .from("quiz_sessions")
       .insert({
@@ -236,6 +241,8 @@ Deno.serve(async (req) => {
         focus_area: focusArea,
         attachment_response: attachmentResponse,
         processing_status: skipGeneration ? "draft" : "pending",
+        market: market.id,
+        language: market.language,
       })
       .select("id")
       .single();
@@ -252,9 +259,7 @@ Deno.serve(async (req) => {
     if (customerEmail) {
       const profile = await resolveProfileByEmail(supabase, customerEmail);
 
-      const marketCurrency = getMarket(
-        typeof body.market === "string" ? body.market : null,
-      ).currency;
+      const marketCurrency = market.currency;
       const now = new Date().toISOString();
       // skipGeneration: a non-paid "registration" marker so the customer shows up
       // in the CRM list (which aggregates any checkout with an email) without
@@ -272,6 +277,7 @@ Deno.serve(async (req) => {
             amount_total: 0,
             currency: marketCurrency,
             provider_metadata: { stage: "admin_manual_registration" },
+            market: market.id,
             claimed_profile_id: profile?.id ?? null,
             claimed_at: profile?.id ? now : null,
           }
@@ -287,6 +293,7 @@ Deno.serve(async (req) => {
             amount_total: 0,
             currency: marketCurrency,
             provider_metadata: { stage: "admin_comp" },
+            market: market.id,
             claimed_profile_id: profile?.id ?? null,
             claimed_at: profile?.id ? now : null,
           };

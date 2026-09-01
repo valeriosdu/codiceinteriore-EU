@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +9,7 @@ import { QuizProvider } from "@/context/QuizContext";
 import { SynastryProvider } from "@/context/SynastryContext";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { MARKET } from "@/markets";
+import { ROUTES, LEGACY_SLUGS, SLUGS_LOCALIZED } from "@/lib/routes";
 import Index from "./pages/Index.tsx";
 // Funnel-conversion path (Quiz → Processing → Teaser → Checkout → Success →
 // Activate → ReportProcessing → Report) is loaded eagerly: every drop-off
@@ -68,6 +69,15 @@ import { captureFbclid } from "./hooks/useMetaConversions";
 
 const queryClient = new QueryClient();
 
+// Redirect 301 dai vecchi slug italiani ai nuovi slug inglesi, preservando
+// sottopath e query (usato per il sottoalbero /coppia/* → /couple/*). Registrato
+// solo nel mercato en (vedi SLUGS_LOCALIZED).
+const LegacyRedirect = ({ from, to }: { from: string; to: string }) => {
+  const { pathname, search } = useLocation();
+  const rest = pathname.startsWith(from) ? pathname.slice(from.length) : "";
+  return <Navigate to={`${to}${rest}${search}`} replace />;
+};
+
 const App = () => {
   useEffect(() => {
     captureFbclid();
@@ -88,10 +98,10 @@ const App = () => {
           <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/lp/classica" element={<IndexClassica />} />
-            <Route path="/lp/attivazione" element={<IndexAttivazione />} />
+            <Route path={ROUTES.lpClassica} element={<IndexClassica />} />
+            <Route path={ROUTES.lpAttivazione} element={<IndexAttivazione />} />
             <Route path="/quiz" element={<Quiz />} />
-            <Route path="/regalo" element={<Quiz />} />
+            <Route path={ROUTES.gift} element={<Quiz />} />
             <Route path="/processing" element={<Processing />} />
             <Route path="/teaser" element={<TeaserResult />} />
             <Route path="/offer" element={<TeaserResult />} />
@@ -100,20 +110,32 @@ const App = () => {
             <Route path="/activate" element={<Activate />} />
             <Route path="/report-processing" element={<ReportProcessing />} />
             <Route path="/report" element={<Report />} />
-            {/* Funnel sinastria coppia */}
-            <Route path="/coppia" element={<CoppiaLanding />} />
-            <Route path="/coppia/quiz" element={<CoppiaQuiz />} />
-            <Route path="/coppia/processing" element={<CoppiaProcessing />} />
-            <Route path="/coppia/teaser" element={<CoppiaTeaser />} />
-            <Route path="/coppia/offer" element={<CoppiaTeaser />} />
-            <Route path="/coppia/success" element={<CoppiaSuccess />} />
-            <Route path="/coppia/activate" element={<CoppiaActivate />} />
-            <Route path="/coppia/report-processing" element={<CoppiaReportProcessing />} />
-            <Route path="/coppia/report" element={<CoppiaReport />} />
+            {/* Funnel sinastria coppia (slug localizzato: /couple in en, /coppia altrove) */}
+            <Route path={ROUTES.couple} element={<CoppiaLanding />} />
+            <Route path={ROUTES.coupleQuiz} element={<CoppiaQuiz />} />
+            <Route path={ROUTES.coupleProcessing} element={<CoppiaProcessing />} />
+            <Route path={ROUTES.coupleTeaser} element={<CoppiaTeaser />} />
+            <Route path={ROUTES.coupleOffer} element={<CoppiaTeaser />} />
+            <Route path={ROUTES.coupleSuccess} element={<CoppiaSuccess />} />
+            <Route path={ROUTES.coupleActivate} element={<CoppiaActivate />} />
+            <Route path={ROUTES.coupleReportProcessing} element={<CoppiaReportProcessing />} />
+            <Route path={ROUTES.coupleReport} element={<CoppiaReport />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/contatti" element={<Contatti />} />
+            <Route path={ROUTES.contact} element={<Contatti />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/termini" element={<Terms />} />
+            <Route path={ROUTES.terms} element={<Terms />} />
+            {/* Redirect 301 dai vecchi slug italiani ai nuovi (solo mercato en) */}
+            {SLUGS_LOCALIZED && (
+              <>
+                <Route path={LEGACY_SLUGS.lpClassica} element={<LegacyRedirect from={LEGACY_SLUGS.lpClassica} to={ROUTES.lpClassica} />} />
+                <Route path={LEGACY_SLUGS.lpAttivazione} element={<LegacyRedirect from={LEGACY_SLUGS.lpAttivazione} to={ROUTES.lpAttivazione} />} />
+                <Route path={LEGACY_SLUGS.gift} element={<LegacyRedirect from={LEGACY_SLUGS.gift} to={ROUTES.gift} />} />
+                <Route path={LEGACY_SLUGS.contact} element={<LegacyRedirect from={LEGACY_SLUGS.contact} to={ROUTES.contact} />} />
+                <Route path={LEGACY_SLUGS.terms} element={<LegacyRedirect from={LEGACY_SLUGS.terms} to={ROUTES.terms} />} />
+                <Route path={LEGACY_SLUGS.couple} element={<LegacyRedirect from={LEGACY_SLUGS.couple} to={ROUTES.couple} />} />
+                <Route path={`${LEGACY_SLUGS.couple}/*`} element={<LegacyRedirect from={LEGACY_SLUGS.couple} to={ROUTES.couple} />} />
+              </>
+            )}
             {/* Contenuti editoriali solo nei mercati che li hanno (per ora IT);
                 negli altri mercati queste route cadono sul NotFound. */}
             {MARKET.editorialContent && (
@@ -146,7 +168,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
-          <CookieBanner />
+          {MARKET.cookieBanner && <CookieBanner />}
         </BrowserRouter>
         </SynastryProvider>
       </QuizProvider>

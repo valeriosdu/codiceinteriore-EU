@@ -154,14 +154,25 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     throw new Error("synastry_data missing: synastry-chart must run first");
   }
 
+  const lang = resolvePromptLang(session.language);
+
+  // Nomi di ripiego localizzati (rispecchiano SYNASTRY_PDF_STRINGS.personA/personB):
+  // finiscono nel contenuto del report e nel PDF, quindi devono seguire la lingua.
+  const fallbackNames: Record<typeof lang, { a: string; b: string }> = {
+    it: { a: "Persona A", b: "Persona B" },
+    es: { a: "Persona A", b: "Persona B" },
+    en: { a: "Person A", b: "Person B" },
+    nl: { a: "Persoon A", b: "Persoon B" },
+  };
+
   // Costruisci brief italiano
   const personA: BirthData = {
-    name: session.person_a_name || "Persona A",
+    name: session.person_a_name || fallbackNames[lang].a,
     birthDate: session.person_a_birth_date ?? { day: 1, month: 1, year: 1990 },
     timeKnown: session.person_a_time_known !== false,
   };
   const personB: BirthData = {
-    name: session.person_b_name || "Persona B",
+    name: session.person_b_name || fallbackNames[lang].b,
     birthDate: session.person_b_birth_date ?? { day: 1, month: 1, year: 1990 },
     timeKnown: session.person_b_time_known !== false,
   };
@@ -174,7 +185,6 @@ async function generateReportJob(synastrySessionId: string, skipEmail = false): 
     relationshipDuration: session.relationship_duration,
   });
 
-  const lang = resolvePromptLang(session.language);
   const langName = OUTPUT_LANGUAGE_NAME[lang];
   const systemPrompt = outputLanguageDirective(lang) + buildSynastrySystemPrompt(brief, langName);
   const userPrompt = buildSynastryUserPrompt(brief, langName);

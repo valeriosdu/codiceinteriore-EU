@@ -9,6 +9,7 @@ import { useAuthReady } from "@/hooks/useAuthReady";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
 import { useI18n } from "@/i18n/I18nProvider";
+import { ROUTES } from "@/lib/routes";
 
 const POLL_INTERVAL_MS = 5000;
 // Show a gentle "taking a bit longer" hint after ~75 s of processing.
@@ -286,7 +287,7 @@ const ReportProcessing = () => {
           <AlertCircle className="mx-auto h-8 w-8 text-primary" />
           <h1 className="font-display text-2xl font-semibold text-foreground">{rp.errorScreen.title}</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">{error}</p>
-          <Button variant="premium" size="quiz" onClick={() => navigate("/contatti")}>
+          <Button variant="premium" size="quiz" onClick={() => navigate(ROUTES.contact)}>
             {rp.errorScreen.cta}
           </Button>
         </div>
