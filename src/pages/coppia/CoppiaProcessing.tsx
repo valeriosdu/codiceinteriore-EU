@@ -44,10 +44,13 @@ export default function CoppiaProcessing() {
     ranRef.current = true;
 
     const run = async () => {
-      let sessionId = data.sessionId;
-      if (!sessionId) {
-        sessionId = await createSession();
-      }
+      // Sempre una sessione nuova, come fa Processing.tsx sul funnel natale.
+      // Riusare data.sessionId era pericoloso: clearSynastryStorage() ripulisce
+      // il localStorage ma non lo stato React gia' montato, quindi un id vecchio
+      // poteva sopravvivere e legare una coppia nuova alla sessione precedente.
+      // Arrivare qui significa che la guardia di stage sopra ha gia' escluso il
+      // ritorno dal teaser, cioe' che questa e' davvero una lettura nuova.
+      const sessionId = await createSession();
       if (!sessionId) {
         setErrorMessage(cp.errors.createSession);
         return;
@@ -98,7 +101,7 @@ export default function CoppiaProcessing() {
     };
 
     void run();
-  }, [createSession, triggerInsights, trackLead, data.personA.birthDate, data.personB.birthDate, data.sessionId, navigate, updateData]);
+  }, [createSession, triggerInsights, trackLead, data.personA.birthDate, data.personB.birthDate, navigate, updateData]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">

@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { ArrowRight } from 'lucide-react';
 import { useI18n } from '@/i18n/I18nProvider';
+import { useSynastry } from '@/context/SynastryContext';
 import { ROUTES } from '@/lib/routes';
 import {
   ChapterHeading,
@@ -24,8 +25,19 @@ import {
 export default function CoppiaLanding() {
   const navigate = useNavigate();
   const { m, market } = useI18n();
+  const { resetForNewPurchase } = useSynastry();
   const cl = m.coppia.landing;
-  const startQuiz = () => navigate(ROUTES.coupleQuiz);
+
+  // Entrare nel funnel dalla landing significa "voglio una sinastria nuova",
+  // quindi si riparte da zero. Senza questo azzeramento il funnelStage salvato
+  // resta 'teaser' e CoppiaProcessing rimbalza subito alla coppia precedente:
+  // chi inseriva un'altra coppia rivedeva quella vecchia e, se pagava, pagava
+  // una seconda volta lo stesso report (successo davvero il 2026-09-01).
+  // Stessa cosa che fa gia' handleEditData nel teaser.
+  const startQuiz = () => {
+    resetForNewPurchase();
+    navigate(ROUTES.coupleQuiz);
+  };
 
   useEffect(() => {
     document.title = m.coppia.titles.landing(market.siteName);
