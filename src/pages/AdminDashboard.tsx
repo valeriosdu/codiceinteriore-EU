@@ -25,12 +25,35 @@ import { clearAdminSecret, getAdminSecret, setAdminSecret } from "@/hooks/admin/
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-dashboard`;
 const AI_METRICS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-metrics`;
 
+type MarketId = "it" | "es" | "us" | "nl";
+type MarketChoice = "all" | MarketId;
+
+// Etichette dei mercati. Il dominio serve a ricordare quale sito si sta
+// guardando: "es" da solo non dice granche' a colpo d'occhio.
+const MARKETS: Array<{ key: MarketChoice; label: string; host: string }> = [
+  { key: "all", label: "Tutti", host: "" },
+  { key: "it", label: "Italia", host: "codiceinteriore.it" },
+  { key: "es", label: "Spagna", host: "cartainterior.com" },
+  { key: "us", label: "Stati Uniti", host: "us.cartainterior.com" },
+  { key: "nl", label: "Paesi Bassi", host: "nl.cartainterior.com" },
+];
+
 type DashboardData = {
   range: { from: string; to: string; tz?: string };
+  market?: MarketChoice;
+  by_market?: Array<{
+    market: string;
+    currency: string;
+    revenue: number;
+    order_count: number;
+    unique_customers: number;
+    avg_order: number | null;
+  }>;
   meta?: {
     generated_at: string;
     dedup_removed: number;
     orders_with_missing_amount: number;
+    funnel_events_unattributed?: number;
   };
   revenue: {
     total_eur: number;
@@ -353,6 +376,13 @@ const AdminDashboard = () => {
   const [authError, setAuthError] = useState(false);
 
   const [preset, setPreset] = useState<Preset>("today");
+  // Il mercato vive nella query string: cosi' una dashboard filtrata si puo'
+  // mandare per link (/admin/dashboard?market=nl) e sopravvive a un refresh.
+  const [market, setMarket] = useState<MarketChoice>(() => {
+    if (typeof window === "undefined") return "all";
+    const raw = new URLSearchParams(window.location.search).get("market");
+    return MARKETS.some((m) => m.key === raw) ? (raw as MarketChoice) : "all";
+  });
   const [customFrom, setCustomFrom] = useState<string>(() => toRomeDateString(new Date()));
   const [customTo, setCustomTo] = useState<string>(() => toRomeDateString(new Date()));
 
@@ -415,6 +445,7 @@ const AdminDashboard = () => {
         from_date: range.fromDate,
         to_date: range.toDate,
         tz: APP_TZ,
+        market,
       });
       const res = await fetch(`${FUNCTION_URL}?${params.toString()}`, {
         headers: { "x-admin-secret": secret },
@@ -487,7 +518,19 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadGlobal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secret, preset, customFrom, customTo]);
+  }, [secret, preset, customFrom, customTo, market]);
+
+  // Tiene l'URL allineato al mercato scelto, senza aggiungere voci alla
+  // cronologia: il tasto Indietro deve uscire dalla dashboard, non sfogliare
+  // i mercati uno per uno.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (market === "all") params.delete("market");
+    else params.set("market", market);
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [market]);
 
   useEffect(() => {
     loadAiMetrics();
@@ -647,6 +690,27 @@ const AdminDashboard = () => {
       </header>
 
       <div className="container max-w-7xl mx-auto py-6 space-y-6">
+        {/* Market filter */}
+        <div className="flex flex-wrap items-center gap-2 border-b pb-4">
+          <span className="text-sm font-medium text-muted-foreground mr-1">Mercato</span>
+          {MARKETS.map((mk) => (
+            <Button
+              key={mk.key}
+              size="sm"
+              variant={market === mk.key ? "default" : "outline"}
+              onClick={() => setMarket(mk.key)}
+              title={mk.host || "Tutti i mercati sommati"}
+            >
+              {mk.label}
+            </Button>
+          ))}
+          {market !== "all" && (
+            <span className="text-xs text-muted-foreground ml-2">
+              {MARKETS.find((mk) => mk.key === market)?.host}
+            </span>
+          )}
+        </div>
+
         {/* Period filter */}
         <div className="flex flex-wrap items-center gap-2">
           {presets.map((p) => (
@@ -688,6 +752,11 @@ const AdminDashboard = () => {
                 · {data.meta.orders_with_missing_amount} ordin{data.meta.orders_with_missing_amount === 1 ? "e" : "i"} senza importo
               </span>
             ) : null}
+            {market !== "all" && (data?.meta?.funnel_events_unattributed ?? 0) > 0 ? (
+              <span className="ml-2 text-amber-600">
+                · {formatNumber(data!.meta!.funnel_events_unattributed!)} eventi di funnel senza mercato, esclusi
+              </span>
+            ) : null}
           </span>
         </div>
 
@@ -699,6 +768,66 @@ const AdminDashboard = () => {
           <p className="text-sm text-muted-foreground">Nessun dato disponibile.</p>
         ) : (
           <>
+            {/* Ripartizione per mercato — solo nella vista aggregata, dove serve
+                confrontare. Ogni riga porta la propria valuta: sommarle in un
+                totale unico sarebbe corretto solo finche' sono tutte in EUR. */}
+            {market === "all" && (data.by_market?.length ?? 0) > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Per mercato</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="text-xs text-muted-foreground border-b">
+                        <tr>
+                          <th className="text-left font-medium px-4 py-2">Mercato</th>
+                          <th className="text-right font-medium px-4 py-2">Incasso</th>
+                          <th className="text-right font-medium px-4 py-2">Ordini</th>
+                          <th className="text-right font-medium px-4 py-2">Clienti</th>
+                          <th className="text-right font-medium px-4 py-2">Ticket medio</th>
+                          <th className="px-4 py-2" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.by_market!.map((row) => {
+                          const known = MARKETS.find((mk) => mk.key === row.market);
+                          return (
+                            <tr key={row.market} className="border-b last:border-0">
+                              <td className="px-4 py-2 font-medium">
+                                {known?.label ?? row.market}
+                                {known?.host && (
+                                  <span className="ml-2 text-xs text-muted-foreground">{known.host}</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2 text-right tabular-nums">
+                                {formatNumber(row.revenue)}{" "}
+                                <span className={row.currency === "MISTA" ? "text-amber-600 font-medium" : "text-muted-foreground"}>
+                                  {row.currency}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2 text-right tabular-nums">{formatNumber(row.order_count)}</td>
+                              <td className="px-4 py-2 text-right tabular-nums">{formatNumber(row.unique_customers)}</td>
+                              <td className="px-4 py-2 text-right tabular-nums">
+                                {row.avg_order === null ? "—" : formatNumber(row.avg_order)}
+                              </td>
+                              <td className="px-4 py-2 text-right">
+                                {known && known.key !== "all" && (
+                                  <Button size="sm" variant="ghost" onClick={() => setMarket(known.key)}>
+                                    Apri
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Top KPI — i 4 numeri che riassumono il periodo */}
             <section className="space-y-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

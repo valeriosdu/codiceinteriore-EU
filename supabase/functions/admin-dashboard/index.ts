@@ -22,10 +22,11 @@ const FUNNEL_EVENTS = [
 
 type FunnelEventName = (typeof FUNNEL_EVENTS)[number];
 
-// TODO(multi-market): these reference prices and labels are IT/EUR only. The
-// dashboard aggregates checkout_sessions across all markets into a single total
-// with no per-market split in scope here, so labels/symbols/currency below stay
-// EUR until the dashboard is made market-aware (group rows by market.currency).
+// Reference prices in EUR. Valid for it/es/nl, which share the same price list;
+// a market on another currency (us/USD) would need its own table here. Used only
+// as a fallback when a row has no amount_total — the real figures always come
+// from checkout_sessions.amount_total, which carries its own currency. The
+// per-market split lives in `by_market` in the response.
 const PRODUCT_PRICE_EUR: Record<string, number> = {
   natal_report_base: 19,
   natal_report_plus_transits: 29,
@@ -116,6 +117,27 @@ function parseRange(url: URL): { from: string; to: string; tz: string } {
   return { from: from.toISOString(), to: to.toISOString(), tz };
 }
 
+// Mercato selezionato. Assente o "all" = comportamento storico, cioe' tutti i
+// mercati sommati: la dashboard esistente continua a rispondere identica a
+// prima per chi non passa il parametro.
+const MARKET_IDS = ["it", "es", "us", "nl"] as const;
+type MarketFilter = (typeof MARKET_IDS)[number] | null;
+
+function parseMarket(url: URL): MarketFilter {
+  const raw = url.searchParams.get("market");
+  if (!raw || raw === "all") return null;
+  if (!(MARKET_IDS as readonly string[]).includes(raw)) {
+    throw new Error(`Unknown market: ${raw}`);
+  }
+  return raw as MarketFilter;
+}
+
+// Applica .eq("market", ...) solo quando un mercato e' selezionato, cosi' la
+// stessa query serve entrambi i casi senza duplicarla.
+function scoped<T>(q: T, market: MarketFilter): T {
+  return market ? ((q as any).eq("market", market) as T) : q;
+}
+
 function pct(numerator: number, denominator: number): number | null {
   if (!denominator || denominator <= 0) return null;
   return Math.round((numerator / denominator) * 1000) / 10; // one decimal
@@ -138,6 +160,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     const { from, to, tz } = parseRange(url);
+    const market = parseMarket(url);
 
     // Prior window of the same length, used for vs-previous-period deltas.
     const fromMs = new Date(from).getTime();
@@ -150,36 +173,56 @@ Deno.serve(async (req) => {
     // transit_subscriptions and transit_cycles are pulled lifetime (no date
     // filter): we need every cycle to identify which is the initial signup
     // (already in checkout_sessions) vs renewals (invisible to checkout_sessions).
-    const [paidQ, funnelQ, allSubsQ, allSubCyclesQ, prevPaidQ] = await Promise.all([
-      supabase
-        .from("checkout_sessions")
-        .select(
-          "id, customer_email, payment_provider, amount_total, currency, product_code, purchase_type, payment_status, payment_completed_at, provider_payment_id, quiz_session_id, stripe_session_id, created_at",
-        )
-        .eq("payment_status", "paid")
-        .gte("payment_completed_at", from)
-        .lte("payment_completed_at", to)
-        .order("payment_completed_at", { ascending: false }),
-      supabase
-        .from("funnel_events")
-        .select("event_name, anonymous_id")
-        .gte("created_at", from)
-        .lte("created_at", to),
-      supabase
-        .from("transit_subscriptions")
-        .select(
-          "profile_id, stripe_subscription_id, status, cancel_at_period_end, canceled_at, current_period_start, current_period_end, created_at",
-        ),
+    const [paidQ, funnelQ, allSubsQ, allSubCyclesQ, prevPaidQ, orphanFunnelQ] = await Promise.all([
+      scoped(
+        supabase
+          .from("checkout_sessions")
+          .select(
+            "id, customer_email, payment_provider, amount_total, currency, product_code, purchase_type, payment_status, payment_completed_at, provider_payment_id, quiz_session_id, stripe_session_id, created_at, market",
+          )
+          .eq("payment_status", "paid")
+          .gte("payment_completed_at", from)
+          .lte("payment_completed_at", to),
+        market,
+      ).order("payment_completed_at", { ascending: false }),
+      scoped(
+        supabase
+          .from("funnel_events")
+          .select("event_name, anonymous_id")
+          .gte("created_at", from)
+          .lte("created_at", to),
+        market,
+      ),
+      scoped(
+        supabase
+          .from("transit_subscriptions")
+          .select(
+            "profile_id, stripe_subscription_id, status, cancel_at_period_end, canceled_at, current_period_start, current_period_end, created_at, market",
+          ),
+        market,
+      ),
       supabase
         .from("transit_cycles")
         .select("profile_id, stripe_session_id, created_at")
         .like("stripe_session_id", "sub_%"),
+      scoped(
+        supabase
+          .from("checkout_sessions")
+          .select("customer_email, amount_total, payment_completed_at")
+          .eq("payment_status", "paid")
+          .gte("payment_completed_at", prevFrom)
+          .lte("payment_completed_at", prevTo),
+        market,
+      ),
+      // Eventi del periodo senza mercato: sono quelli anteriori al 2026-09-01,
+      // quando la colonna non esisteva. Filtrando per mercato scompaiono, e un
+      // funnel a zero sembra un guasto invece che uno storico non attribuibile.
       supabase
-        .from("checkout_sessions")
-        .select("customer_email, amount_total, payment_completed_at")
-        .eq("payment_status", "paid")
-        .gte("payment_completed_at", prevFrom)
-        .lte("payment_completed_at", prevTo),
+        .from("funnel_events")
+        .select("id", { count: "exact", head: true })
+        .is("market", null)
+        .gte("created_at", from)
+        .lte("created_at", to),
     ]);
 
     if (paidQ.error) throw paidQ.error;
@@ -235,6 +278,7 @@ Deno.serve(async (req) => {
       current_period_start: string | null;
       current_period_end: string | null;
       created_at: string;
+      market: string | null;
     };
     type CycleRow = {
       profile_id: string | null;
@@ -244,11 +288,20 @@ Deno.serve(async (req) => {
     const subRows = (allSubsQ.data || []) as SubRow[];
     const subCycleRows = (allSubCyclesQ.data || []) as CycleRow[];
 
+    // transit_cycles non ha la colonna market, quindi il filtro per mercato non
+    // puo' essere applicato alla query. Lo si eredita dagli abbonamenti, che
+    // invece ce l'hanno: quando un mercato e' selezionato si contano solo i
+    // cicli di un abbonamento presente in subRows (gia' filtrato).
+    const subIdsInScope = market
+      ? new Set(subRows.map((r) => r.stripe_subscription_id).filter(Boolean) as string[])
+      : null;
+
     const cyclesBySubId: Record<string, CycleRow[]> = {};
     for (const c of subCycleRows) {
       const m = c.stripe_session_id?.match(/^sub_(.+?)__/);
       if (!m) continue;
       const subId = m[1];
+      if (subIdsInScope && !subIdsInScope.has(subId)) continue;
       if (!cyclesBySubId[subId]) cyclesBySubId[subId] = [];
       cyclesBySubId[subId].push(c);
     }
@@ -516,12 +569,14 @@ Deno.serve(async (req) => {
             .not("full_report", "is", null)
         : noop,
       allCustomerEmails.length > 0
-        ? supabase
-            .from("checkout_sessions")
-            .select("customer_email, payment_completed_at, amount_total, product_code")
-            .eq("payment_status", "paid")
-            .in("customer_email", allCustomerEmails)
-            .order("payment_completed_at", { ascending: true })
+        ? scoped(
+            supabase
+              .from("checkout_sessions")
+              .select("customer_email, payment_completed_at, amount_total, product_code")
+              .eq("payment_status", "paid")
+              .in("customer_email", allCustomerEmails),
+            market,
+          ).order("payment_completed_at", { ascending: true })
         : noop,
     ]);
 
@@ -843,20 +898,92 @@ Deno.serve(async (req) => {
       lifetime_customer_count: lifetimeCustomerCount,
     };
 
+    // ----- Ripartizione per mercato -----
+    // Calcolata dalle righe gia' caricate, quindi non costa una query in piu'.
+    // Ogni riga tiene la PROPRIA valuta: sommare EUR e USD in un totale unico
+    // era il difetto che questa dashboard si portava dietro. Con un mercato
+    // selezionato resta una riga sola, ed e' comunque utile come conferma.
+    const marketAgg: Record<
+      string,
+      { currency: string; revenue_cents: number; order_count: number; emails: Set<string> }
+    > = {};
+    for (const row of paid as any[]) {
+      const key = row.market || "sconosciuto";
+      if (!marketAgg[key]) {
+        marketAgg[key] = {
+          currency: (row.currency || "eur").toUpperCase(),
+          revenue_cents: 0,
+          order_count: 0,
+          emails: new Set<string>(),
+        };
+      }
+      const b = marketAgg[key];
+      b.revenue_cents += typeof row.amount_total === "number" ? row.amount_total : 0;
+      b.order_count += 1;
+      if (row.customer_email) b.emails.add(String(row.customer_email).toLowerCase());
+      // Un mercato che incassasse in due valute e' un errore di configurazione:
+      // va visto, non nascosto dietro una media.
+      if (row.currency && b.currency !== String(row.currency).toUpperCase()) {
+        b.currency = "MISTA";
+      }
+    }
+    // I rinnovi di abbonamento non passano da checkout_sessions (li crea
+    // invoice.paid in transit_cycles), quindi vanno aggiunti a mano al loro
+    // mercato: senza, le righe non sommerebbero al totale in testa alla pagina.
+    // Il mercato arriva dall'abbonamento, l'unico dei due ad averlo.
+    const marketByProfile: Record<string, string> = {};
+    for (const r of subRows) {
+      if (r.profile_id && r.market) marketByProfile[r.profile_id] = r.market;
+    }
+    for (const [pid, cents] of Object.entries(renewalCentsInRangeByProfile)) {
+      const key = marketByProfile[pid] || "sconosciuto";
+      if (!marketAgg[key]) {
+        marketAgg[key] = {
+          currency: "EUR",
+          revenue_cents: 0,
+          order_count: 0,
+          emails: new Set<string>(),
+        };
+      }
+      marketAgg[key].revenue_cents += cents;
+      // Il rinnovo conta come ordine anche nel totale in testa alla pagina:
+      // se non lo contassi qui, la riga direbbe 19 dove il filtro dice 20.
+      marketAgg[key].order_count += renewalCountInRangeByProfile[pid] || 0;
+      const email = emailByProfile[pid];
+      if (email) marketAgg[key].emails.add(email.toLowerCase());
+    }
+
+    const byMarket = Object.entries(marketAgg)
+      .map(([id, v]) => ({
+        market: id,
+        currency: v.currency,
+        revenue: Math.round((v.revenue_cents / 100) * 100) / 100,
+        order_count: v.order_count,
+        unique_customers: v.emails.size,
+        avg_order: v.order_count > 0
+          ? Math.round((v.revenue_cents / 100 / v.order_count) * 100) / 100
+          : null,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
     return new Response(
       JSON.stringify({
         range: { from, to, tz },
+        market: market ?? "all",
+        by_market: byMarket,
         meta: {
           generated_at: new Date().toISOString(),
           dedup_removed: dedupedRemoved,
           orders_with_missing_amount: ordersWithMissingAmount,
+          funnel_events_unattributed: orphanFunnelQ.count ?? 0,
         },
         revenue: {
           total_eur: Math.round((totalRevenueCents / 100) * 100) / 100,
-          // TODO(multi-market): revenue is summed across markets without a
-          // per-market currency split; hardcoded EUR until the dashboard groups
-          // by market.currency. See note on PRODUCT_PRICE_EUR.
-          currency: "EUR",
+          // Con un mercato selezionato la valuta e' quella delle sue righe. Su
+          // "all" resta un totale sommato fra valute: e' esatto solo finche' i
+          // mercati attivi sono tutti in EUR, e by_market lo mostra riga per
+          // riga proprio per rendere visibile il momento in cui non lo sono.
+          currency: byMarket.length === 1 ? byMarket[0].currency : "EUR",
           order_count: orderCount,
           unique_customers: uniqueCustomers,
           avg_order_eur: orderCount > 0

@@ -31,6 +31,7 @@ interface RequestBody {
   page?: number;
   page_size?: number;
   hide_empty?: boolean;
+  market?: string;
 }
 
 const ALLOWED_FILTERS: Filter[] = ["all", "orphan", "error", "subscriber", "no_report", "has_transits", "has_synastry", "has_guide"];
@@ -75,6 +76,7 @@ serve(async (req) => {
           ? Number(u.searchParams.get("page_size"))
           : undefined,
         hide_empty: u.searchParams.get("hide_empty") === "true",
+        market: u.searchParams.get("market") ?? undefined,
       };
     }
 
@@ -93,6 +95,12 @@ serve(async (req) => {
         ? Math.min(Math.floor(raw.page_size as number), 200)
         : 50;
     const hideEmpty = raw.hide_empty === true;
+    // Allowlist esplicita: il valore finisce in una RPC, e "all"/vuoto devono
+    // significare nessun filtro, non un mercato chiamato "all".
+    const ALLOWED_MARKETS = ["it", "es", "us", "nl"];
+    const market = ALLOWED_MARKETS.includes(String(raw.market))
+      ? String(raw.market)
+      : null;
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -103,6 +111,7 @@ serve(async (req) => {
       p_page: page,
       p_page_size: pageSize,
       p_hide_empty: hideEmpty,
+      p_market: market,
     });
 
     if (error) {

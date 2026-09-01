@@ -33,6 +33,7 @@ export interface UseAdminCustomersListParams {
   page: number;
   pageSize: number;
   hideEmpty: boolean;
+  market: string;
   onAuthError?: () => void;
 }
 
@@ -46,10 +47,11 @@ export function useAdminCustomersList({
   page,
   pageSize,
   hideEmpty,
+  market,
   onAuthError,
 }: UseAdminCustomersListParams) {
   return useQuery<CustomersListResponse>({
-    queryKey: ["admin", "customers", { q, filter, sort, page, pageSize, hideEmpty }],
+    queryKey: ["admin", "customers", { q, filter, sort, page, pageSize, hideEmpty, market }],
     enabled: Boolean(secret),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
@@ -67,6 +69,7 @@ export function useAdminCustomersList({
           page,
           page_size: pageSize,
           hide_empty: hideEmpty,
+          market: market === "all" ? undefined : market,
         }),
       });
 

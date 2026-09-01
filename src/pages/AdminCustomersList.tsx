@@ -25,6 +25,15 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
+// Mercati selezionabili. Etichette allineate a quelle della dashboard.
+const CUSTOMER_MARKETS: Array<{ key: string; label: string }> = [
+  { key: "all", label: "Tutti" },
+  { key: "it", label: "Italia" },
+  { key: "es", label: "Spagna" },
+  { key: "us", label: "Stati Uniti" },
+  { key: "nl", label: "Paesi Bassi" },
+];
+
 export default function AdminCustomersList() {
   const { secret, isAuthed, login, logout, clearOnAuthError } = useAdminAuth();
   const navigate = useNavigate();
@@ -35,6 +44,13 @@ export default function AdminCustomersList() {
   const [sort, setSort] = useState<CustomerSort>("last_activity");
   const [page, setPage] = useState(1);
   const [hideEmpty, setHideEmpty] = useState(false);
+  // Stesso schema della dashboard: il mercato vive nella query string, cosi'
+  // /admin/clienti?market=nl e' un link condivisibile e regge il refresh.
+  const [market, setMarket] = useState<string>(() => {
+    if (typeof window === "undefined") return "all";
+    const raw = new URLSearchParams(window.location.search).get("market");
+    return CUSTOMER_MARKETS.some((m) => m.key === raw) ? raw! : "all";
+  });
   const [createOpen, setCreateOpen] = useState(false);
 
   const debouncedQ = useDebounced(q, 250);
@@ -42,7 +58,16 @@ export default function AdminCustomersList() {
   // Reset alla pagina 1 quando cambiano i criteri di ricerca/filtro/sort
   useEffect(() => {
     setPage(1);
-  }, [debouncedQ, filter, sort, hideEmpty]);
+  }, [debouncedQ, filter, sort, hideEmpty, market]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (market === "all") params.delete("market");
+    else params.set("market", market);
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [market]);
 
   useEffect(() => {
     document.title = "Clienti · Admin · Codice Interiore";
@@ -56,6 +81,7 @@ export default function AdminCustomersList() {
     page,
     pageSize: PAGE_SIZE,
     hideEmpty,
+    market,
     onAuthError: clearOnAuthError,
   });
 
@@ -120,6 +146,20 @@ export default function AdminCustomersList() {
         </header>
 
         <main className="mx-auto max-w-7xl px-6 py-6 space-y-5">
+          <div className="flex flex-wrap items-center gap-2 border-b pb-4">
+            <span className="text-sm font-medium text-muted-foreground mr-1">Mercato</span>
+            {CUSTOMER_MARKETS.map((mk) => (
+              <Button
+                key={mk.key}
+                size="sm"
+                variant={market === mk.key ? "default" : "outline"}
+                onClick={() => setMarket(mk.key)}
+              >
+                {mk.label}
+              </Button>
+            ))}
+          </div>
+
           <CustomerSearchBar
             q={q}
             onQChange={setQ}
