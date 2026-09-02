@@ -1005,8 +1005,14 @@ const AdminDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.funnel.steps.map((s, i) => {
-                        const conv = i === 0 ? null : data.funnel.step_conversions[i - 1];
+                      {data.funnel.steps.map((s) => {
+                        // La conversione si aggancia al passo PER NOME, non per
+                        // posizione: i passi sono 8, le conversioni 5, e legarli
+                        // per indice metteva le percentuali sulle righe sbagliate
+                        // appena l'elenco cambiava. Le tappe fuori sequenza
+                        // (report generato/fallito) non hanno un "precedente" e
+                        // restano a trattino da sole.
+                        const conv = data.funnel.step_conversions.find((c) => c.to === s.event);
                         const max = Math.max(...data.funnel.steps.map((x) => x.unique_visitors), 1);
                         const widthPct = (s.unique_visitors / max) * 100;
                         return (

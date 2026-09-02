@@ -143,6 +143,21 @@ function pct(numerator: number, denominator: number): number | null {
   return Math.round((numerator / denominator) * 1000) / 10; // one decimal
 }
 
+// Conversione fra due tappe del funnel. Ritorna null — cioe' "non misurabile" —
+// quando piu' persone hanno fatto la tappa DOPO che quella PRIMA: significa che
+// le due non sono in sequenza causale per questo traffico, non che la
+// conversione e' del 2100%.
+//
+// Succede sistematicamente sulla riga "Landing vista": gli annunci portano
+// direttamente a /quiz (il 2026-09-02, 20 visitatori olandesi su 20 avevano
+// /quiz come primo evento), quindi la landing non e' l'ingresso dell'imbuto e
+// qualunque percentuale calcolata su di essa e' rumore.
+function stepPct(numerator: number, denominator: number): number | null {
+  if (!denominator || denominator <= 0) return null;
+  if (numerator > denominator) return null;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -318,8 +333,18 @@ Deno.serve(async (req) => {
       cycles.sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
-      // Skip cycles[0] — initial signup, already counted in checkout_sessions.
-      for (let i = 1; i < cycles.length; i++) {
+      // Si contano TUTTI i cicli, compreso il primo. Qui c'era uno skip di
+      // cycles[0] con la motivazione "initial signup, already counted in
+      // checkout_sessions": e' falsa. La riga di checkout di un abbonamento
+      // (purchase_type='transits_subscription') resta payment_status='unpaid',
+      // perche' stripe-reconcile delega le sessioni mode=subscription al
+      // subscription webhook, che non torna a chiuderla. Quindi l'attivazione
+      // non era contata da nessuna parte e sparivano 9,90 per abbonato.
+      // Verificato contro Stripe il 2026-09-02: i cicli corrispondono uno a uno
+      // alle fatture con amount_paid > 0 (4 cicli = 39,60 incassati davvero), e
+      // la fattura a 0 del primo mese gratuito NON genera un ciclo, quindi
+      // contarli tutti non gonfia nulla.
+      for (let i = 0; i < cycles.length; i++) {
         const c = cycles[i];
         const pid = c.profile_id;
         if (!pid) continue;
@@ -490,8 +515,21 @@ Deno.serve(async (req) => {
       report_generation_completed: new Set(),
       report_generation_failed: new Set(),
     };
+    // Le tre landing sono la stessa tappa del funnel, non tre tappe: la
+    // homepage e le due landing degli annunci sono ingressi alternativi allo
+    // stesso imbuto. Si fondono qui, cosi' "Landing vista" e' l'unione dei
+    // visitatori unici e la tabella resta a passi sequenziali.
+    // quiz_intent_selected non e' una tappa (e' una risposta dentro il quiz):
+    // il vincolo del database ora lo accetta, ma non entra nel funnel.
+    const LANDING_ALIASES: Record<string, FunnelEventName> = {
+      landing_viewed: "landing_viewed",
+      landing_classica_viewed: "landing_viewed",
+      landing_attivazione_viewed: "landing_viewed",
+    };
+
     for (const r of (funnelRows || []) as any[]) {
-      const name = r.event_name as FunnelEventName;
+      const raw = r.event_name as string;
+      const name = (LANDING_ALIASES[raw] ?? raw) as FunnelEventName;
       if (!FUNNEL_EVENTS.includes(name)) continue;
       funnelCounts[name] += 1;
       if (r.anonymous_id) funnelUniques[name].add(r.anonymous_id);
@@ -511,26 +549,28 @@ Deno.serve(async (req) => {
       { from: "checkout_started", to: "purchase_completed" },
     ].map((step) => ({
       ...step,
-      pct: pct(
+      pct: stepPct(
         funnelUniques[step.to as FunnelEventName].size,
         funnelUniques[step.from as FunnelEventName].size,
       ),
     }));
 
     const headlineConversions = {
-      landing_to_purchase: pct(
-        funnelUniques.purchase_completed.size,
-        funnelUniques.landing_viewed.size,
-      ),
-      quiz_completed_to_purchase: pct(
+      // Stessa regola: se dal quiz sono passate piu' persone che dalla landing,
+      // la landing non e' l'ingresso e il rapporto non significa nulla.
+      landing_to_purchase:
+        funnelUniques.landing_viewed.size >= funnelUniques.quiz_started.size
+          ? stepPct(funnelUniques.purchase_completed.size, funnelUniques.landing_viewed.size)
+          : null,
+      quiz_completed_to_purchase: stepPct(
         funnelUniques.purchase_completed.size,
         funnelUniques.quiz_completed.size,
       ),
-      paywall_to_purchase: pct(
+      paywall_to_purchase: stepPct(
         funnelUniques.purchase_completed.size,
         funnelUniques.paywall_viewed.size,
       ),
-      checkout_to_purchase: pct(
+      checkout_to_purchase: stepPct(
         funnelUniques.purchase_completed.size,
         funnelUniques.checkout_started.size,
       ),
