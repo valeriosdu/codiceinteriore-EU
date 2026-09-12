@@ -227,11 +227,16 @@ const Report = () => {
       .eq("status", "active")
       .order("ends_at", { ascending: false });
 
-    // Subscription is per-profile (not per quiz session) — load latest active.
+    // Un abbonamento copre UNA lettura: entitlement, cicli e abbonamento vanno
+    // letti tutti con lo stesso quiz_session_id. Finche' qui il filtro era solo
+    // su profile_id, chi aveva due letture vedeva "abbonamento attivo" anche su
+    // quella scoperta — e li' il ramo subActive nascondeva la card di acquisto,
+    // lasciandola senza transiti e senza modo di comprarli.
     const { data: subscription } = await (supabase as any)
       .from("transit_subscriptions")
       .select("status, cancel_at_period_end, current_period_end")
       .eq("profile_id", profileId)
+      .eq("quiz_session_id", quizSessionId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -304,7 +309,9 @@ const Report = () => {
   const openTransitPortal = async () => {
     setPortalLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-transit-portal-session");
+      const { data, error } = await supabase.functions.invoke("create-transit-portal-session", {
+        body: { quizSessionId: selectedQuizSessionId },
+      });
       if (error) throw error;
       if (!data?.url) throw new Error(r.transits.portalUnavailable);
       window.open(data.url, "_blank", "noopener,noreferrer");
@@ -1316,10 +1323,16 @@ const Report = () => {
               );
             }
             if (transitState.hasAccess) {
-              return <TransitsUpsellCard subscriptionOnly accessEndsAt={transitState.entitlementEndsAt} />;
+              return (
+                <TransitsUpsellCard
+                  subscriptionOnly
+                  accessEndsAt={transitState.entitlementEndsAt}
+                  quizSessionId={selectedQuizSessionId}
+                />
+              );
             }
             if (!transitState.hasAccess) {
-              return <TransitsUpsellCard />;
+              return <TransitsUpsellCard quizSessionId={selectedQuizSessionId} />;
             }
             return null;
           })()}

@@ -14,6 +14,10 @@ import {
   type TransitCheckoutMode,
 } from "../_shared/transit-products.ts";
 import { getMarket, getStripeKey, getStripePrice } from "../_shared/markets.ts";
+import {
+  findActiveTransitSubscription,
+  resolveTransitQuizSession,
+} from "../_shared/transit-session.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,20 +77,32 @@ serve(async (req) => {
       });
     }
 
-    // Pick the most recent active quiz session linked to a paid report.
-    const { data: reports } = await supabaseAdmin
-      .from("user_reports")
-      .select("quiz_session_id, is_active, created_at")
-      .eq("profile_id", profile.id)
-      .order("is_active", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    const quizSessionId = reports?.[0]?.quiz_session_id || profile.quiz_session_id;
+    // La lettura che il cliente sta guardando, validata contro le sue.
+    const quizSessionId = await resolveTransitQuizSession(
+      supabaseAdmin,
+      profile.id,
+      profile.quiz_session_id,
+      body?.quizSessionId,
+    );
     if (!quizSessionId) {
       return new Response(JSON.stringify({ error: "No paid report found" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Un abbonamento per lettura: un secondo sulla stessa addebiterebbe due
+    // volte lo stesso mese. Su un'altra lettura e' invece legittimo.
+    if (mode === "subscription") {
+      const liveSub = await findActiveTransitSubscription(supabaseAdmin, profile.id, quizSessionId);
+      if (liveSub?.id) {
+        return new Response(
+          JSON.stringify({
+            error: "already_subscribed",
+            message: "Hai gia' un abbonamento ai transiti attivo per questa lettura.",
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     // Il market si legge dalla sessione quiz della riga, mai dal body.
@@ -120,6 +136,7 @@ serve(async (req) => {
         .from("user_entitlements")
         .select("ends_at")
         .eq("profile_id", profile.id)
+        .eq("quiz_session_id", quizSessionId)
         .eq("entitlement_type", "monthly_transits")
         .eq("status", "active")
         .not("ends_at", "is", null)
