@@ -113,6 +113,9 @@ const astrologyGuide: Messages['astrologyGuide'] = {
     submitError: 'We konden je vraag niet versturen. Probeer het opnieuw.',
     noUrl: 'URL niet beschikbaar',
     checkoutError: 'We konden de betaling niet openen. Probeer het zo opnieuw.',
+    sessionExpired: 'Je sessie is verlopen. Log opnieuw in en probeer het nog eens.',
+    notAllowed: 'Deze gids hoort bij een ander rapport. Open het juiste rapport en probeer het opnieuw.',
+    questionTooLong: 'Je vraag moet tussen 1 en 250 tekens lang zijn.',
   },
 };
 

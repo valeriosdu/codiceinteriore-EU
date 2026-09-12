@@ -45,6 +45,10 @@ const activate: Messages['activate'] = {
       description: 'Te hemos enviado un enlace para confirmar tu cuenta y acceder enseguida a tu informe.',
     },
     authError: 'Error de autenticación',
+    wrongCredentials: 'Correo o contraseña incorrectos.',
+    alreadyRegistered: 'Ya existe una cuenta con este correo. Inicia sesión.',
+    passwordSameAsOld: 'La nueva contraseña debe ser distinta de la anterior.',
+    tooManyAttempts: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
     welcomeBack: {
       title: '¡Bienvenido de nuevo!',
       description: 'Empieza aquí tu Carta Interior: bastan unos minutos.',

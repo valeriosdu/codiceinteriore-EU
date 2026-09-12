@@ -12,6 +12,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { MARKET } from "@/markets";
 import { I18nProvider } from "@/i18n/I18nProvider";
+import { SynastryProvider } from "@/context/SynastryContext";
 import IndexClassica from "@/pages/IndexClassica";
 import IndexAttivazione from "@/pages/IndexAttivazione";
 import Terms from "@/pages/Terms";
@@ -24,11 +25,16 @@ import { getMessages } from "@/i18n";
 const isNl = MARKET.id === "nl";
 const suite = isNl ? describe : describe.skip;
 
+// SynastryProvider serve perché CoppiaLanding azzera la sessione di coppia
+// all'ingresso nel funnel (useSynastry). Come in App.tsx, che avvolge tutte le
+// rotte: montare senza provider fa fallire la pagina, non il test.
 const mount = (ui: React.ReactElement, path = "/") =>
   render(
     <HelmetProvider>
       <MemoryRouter initialEntries={[path]}>
-        <I18nProvider>{ui}</I18nProvider>
+        <I18nProvider>
+          <SynastryProvider>{ui}</SynastryProvider>
+        </I18nProvider>
       </MemoryRouter>
     </HelmetProvider>,
   );

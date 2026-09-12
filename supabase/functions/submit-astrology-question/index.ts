@@ -134,7 +134,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "").trim();
     if (!token) {
-      return new Response(JSON.stringify({ error: "Authentication required" }), {
+      return new Response(JSON.stringify({ error: "Authentication required", code: "auth_required" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -146,14 +146,14 @@ serve(async (req) => {
     const sectionId = body?.sectionId ? String(body.sectionId).slice(0, 64) : null;
 
     if (!quizSessionId) {
-      return new Response(JSON.stringify({ error: "quizSessionId required" }), {
+      return new Response(JSON.stringify({ error: "quizSessionId required", code: "missing_session" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (!question || question.length > 250) {
       return new Response(
-        JSON.stringify({ error: "question must be between 1 and 250 characters" }),
+        JSON.stringify({ error: "question must be between 1 and 250 characters", code: "invalid_question" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ serve(async (req) => {
     });
     const { data: authData, error: authError } = await supabaseAuth.auth.getUser(token);
     if (authError || !authData.user?.id) {
-      return new Response(JSON.stringify({ error: "Invalid session" }), {
+      return new Response(JSON.stringify({ error: "Invalid session", code: "invalid_session" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -181,7 +181,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!profile?.id) {
-      return new Response(JSON.stringify({ error: "Profile not found" }), {
+      return new Response(JSON.stringify({ error: "Profile not found", code: "profile_not_found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -196,7 +196,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!report?.id) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
+      return new Response(JSON.stringify({ error: "Forbidden", code: "forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -219,6 +219,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "duplicate_question",
+          code: "duplicate_question",
           message:
             "Hai già fatto questa domanda di recente. Vai a leggere la risposta nel pannello.",
           existing_id: (duplicate as { id: string }).id,
@@ -239,7 +240,7 @@ serve(async (req) => {
     if (consumeErr) throw consumeErr;
     if (!consumed) {
       return new Response(
-        JSON.stringify({ error: "no_credits", message: "Hai esaurito le tue domande." }),
+        JSON.stringify({ error: "no_credits", code: "no_credits", message: "Hai esaurito le tue domande." }),
         {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -306,7 +307,7 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[submit-astrology-question] error:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: msg, code: "server_error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

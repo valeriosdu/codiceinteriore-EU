@@ -11,6 +11,7 @@ import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
 import { isLovablePreview, DEMO_EMAIL } from "@/lib/preview-mode";
 import { useI18n } from "@/i18n/I18nProvider";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { MARKET } from "@/markets";
 
 const Activate = () => {
@@ -320,7 +321,7 @@ const Activate = () => {
     if (mode === "reset") {
       const { data, error } = await supabase.auth.updateUser({ password });
       if (error) {
-        toast({ title: error.message, variant: "destructive" });
+        toast({ title: authErrorMessage(error.message, a.toasts), variant: "destructive" });
         setLoading(false);
         return;
       }
@@ -337,7 +338,7 @@ const Activate = () => {
     if (mode === "signin") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast({ title: error.message, variant: "destructive" });
+        toast({ title: authErrorMessage(error.message, a.toasts), variant: "destructive" });
         setLoading(false);
         return;
       }
@@ -368,7 +369,7 @@ const Activate = () => {
     });
 
     if (error) {
-      toast({ title: error.message, variant: "destructive" });
+      toast({ title: authErrorMessage(error.message, a.toasts), variant: "destructive" });
       setLoading(false);
       return;
     }

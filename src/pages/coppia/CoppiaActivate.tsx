@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/i18n/I18nProvider';
+import { authErrorMessage } from '@/lib/auth-errors';
 import { ROUTES } from '@/lib/routes';
 
 type Mode = 'signup' | 'signin' | 'forgot';
@@ -159,12 +160,14 @@ export default function CoppiaActivate() {
     setLoading(true);
 
     if (mode === 'forgot') {
+      // ROUTES, non '/coppia/activate': con gli slug olandesi il link di
+      // reset punterebbe a una rotta che esiste solo come redirect legacy.
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/coppia/activate?session_id=${encodeURIComponent(sessionId)}`,
+        redirectTo: `${window.location.origin}${ROUTES.coupleActivate}?session_id=${encodeURIComponent(sessionId)}`,
       });
       setLoading(false);
       if (error) {
-        toast({ title: error.message, variant: 'destructive' });
+        toast({ title: authErrorMessage(error.message, a.toasts), variant: 'destructive' });
         return;
       }
       toast(ca.toasts.checkEmailReset);
@@ -196,7 +199,7 @@ export default function CoppiaActivate() {
           toast({ title: ca.toasts.alreadyRegistered, variant: 'destructive' });
           setMode('signin');
         } else {
-          toast({ title: signUpErr.message, variant: 'destructive' });
+          toast({ title: authErrorMessage(signUpErr.message, a.toasts), variant: 'destructive' });
         }
         setLoading(false);
         return;

@@ -112,6 +112,9 @@ const astrologyGuide = {
     submitError: 'Non siamo riusciti a inviare la domanda. Riprova.',
     noUrl: 'URL non disponibile',
     checkoutError: 'Non siamo riusciti ad aprire il pagamento. Riprova tra un istante.',
+    sessionExpired: 'La tua sessione è scaduta. Rientra e riprova.',
+    notAllowed: 'Questa guida è legata a un altro report. Apri il report giusto e riprova.',
+    questionTooLong: 'La domanda deve essere tra 1 e 250 caratteri.',
   },
 };
 

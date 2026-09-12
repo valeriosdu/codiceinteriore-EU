@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PACK_CREDITS } from "./constants";
 import { useI18n } from "@/i18n/I18nProvider";
+import type { Messages } from "@/i18n";
 
 export type AstrologyGuideQuestion = {
   id: string;
@@ -78,6 +79,19 @@ export const AstrologyGuideContext = createContext<AstrologyGuideContextValue | 
 
 const TABLE_QUESTIONS = "astrology_guide_questions";
 const TABLE_CREDITS = "astrology_guide_credits";
+
+type GuideToasts = Messages["astrologyGuide"]["toasts"];
+
+// Codici stabili restituiti da submit-astrology-question → stringa localizzata.
+// `no_credits` e `duplicate_question` sono gestiti a parte perché hanno un
+// tono diverso (offerta e informazione, non errore).
+const SUBMIT_ERROR_MESSAGE: Record<string, (t: GuideToasts) => string> = {
+  auth_required: (t) => t.sessionExpired,
+  invalid_session: (t) => t.sessionExpired,
+  profile_not_found: (t) => t.sessionExpired,
+  forbidden: (t) => t.notAllowed,
+  invalid_question: (t) => t.questionTooLong,
+};
 
 interface AstrologyGuideProviderProps {
   quizSessionId: string | null;
@@ -379,18 +393,20 @@ export const AstrologyGuideProvider = ({
           { body: { quizSessionId, question, sectionId } },
         );
         if (error) {
-          const ctx = (error as { context?: { body?: { error?: string } } })?.context;
-          const message =
-            // FunctionsHttpError exposes the response body on `context`
-            ctx?.body?.error ||
-            (error as Error)?.message ||
-            gt.sendError;
-          if (message === "no_credits") {
+          const ctx = (error as { context?: { body?: { error?: string; code?: string } } })
+            ?.context;
+          // FunctionsHttpError espone il body della risposta su `context`.
+          // `code` è il contratto stabile; `error` resta come fallback per le
+          // due condizioni che già usavano il codice come messaggio.
+          const code = ctx?.body?.code || ctx?.body?.error || "";
+          if (code === "no_credits") {
             toast.error(gt.noCredits(PACK_CREDITS, packPrice));
-          } else if (message === "duplicate_question") {
+          } else if (code === "duplicate_question") {
             toast.info(gt.duplicate);
           } else {
-            toast.error(message);
+            // Mai il testo grezzo del backend: è in inglese e tecnico.
+            console.error("[astrology-guide] submit failed:", code || error);
+            toast.error(SUBMIT_ERROR_MESSAGE[code]?.(gt) ?? gt.submitError);
           }
           return { success: false };
         }
@@ -424,7 +440,7 @@ export const AstrologyGuideProvider = ({
       window.location.href = data.url;
     } catch (e) {
       console.error("[astrology-guide] checkout error:", e);
-      toast.error(e instanceof Error ? e.message : gt.checkoutError);
+      toast.error(gt.checkoutError);
       setBuyingPack(false);
     }
   }, [quizSessionId, gt]);

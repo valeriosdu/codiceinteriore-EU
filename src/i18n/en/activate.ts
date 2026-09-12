@@ -43,6 +43,10 @@ const activate = {
       description: 'We sent you a link to confirm your account and access your report right away.',
     },
     authError: 'Authentication error',
+    wrongCredentials: 'Incorrect email or password.',
+    alreadyRegistered: 'An account with this email already exists. Sign in.',
+    passwordSameAsOld: 'The new password must be different from the old one.',
+    tooManyAttempts: 'Too many attempts. Wait a few minutes and try again.',
     welcomeBack: {
       title: 'Welcome back!',
       description: 'Start your Inner Code here: it only takes a few minutes.',

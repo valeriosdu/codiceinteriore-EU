@@ -43,6 +43,10 @@ const activate = {
       description: 'Ti abbiamo inviato un link per confermare il tuo account e accedere subito al tuo report.',
     },
     authError: 'Errore di autenticazione',
+    wrongCredentials: 'Email o password non corretti.',
+    alreadyRegistered: 'Esiste già un account con questa email. Accedi.',
+    passwordSameAsOld: 'La nuova password deve essere diversa da quella precedente.',
+    tooManyAttempts: 'Troppi tentativi. Aspetta qualche minuto e riprova.',
     welcomeBack: {
       title: 'Bentornato!',
       description: 'Inizia da qui il tuo Codice Interiore: bastano pochi minuti.',

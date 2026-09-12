@@ -113,6 +113,9 @@ const astrologyGuide: Messages['astrologyGuide'] = {
     submitError: 'No hemos podido enviar la pregunta. Inténtalo de nuevo.',
     noUrl: 'URL no disponible',
     checkoutError: 'No hemos podido abrir el pago. Inténtalo de nuevo en un instante.',
+    sessionExpired: 'Tu sesión ha caducado. Vuelve a entrar e inténtalo de nuevo.',
+    notAllowed: 'Esta guía pertenece a otro informe. Abre el informe correcto e inténtalo de nuevo.',
+    questionTooLong: 'La pregunta debe tener entre 1 y 250 caracteres.',
   },
 };
 

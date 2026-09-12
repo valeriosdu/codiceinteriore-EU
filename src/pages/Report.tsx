@@ -320,6 +320,29 @@ const Report = () => {
     if (authReady) setUserEmail(user?.email || null);
   }, [authReady, user]);
 
+  // Ritorno dai pollici della mail di risposta della Guida: la edge function
+  // astrology-guide-feedback registra il voto e rimanda qui con
+  // ?guideFeedback=up|down. Senza conferma il cliente atterra sul report e non
+  // vede accadere nulla, quindi non ha modo di sapere che il voto è arrivato.
+  // Sta qui e non nel provider della Guida perché il provider non viene montato
+  // quando la pagina mostra il muro di accesso: il voto è già stato registrato
+  // comunque, e il ringraziamento non deve dipendere dalla sessione.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get("guideFeedback");
+    if (value !== "up" && value !== "down") return;
+    toast.success(m.astrologyGuide.message.thanksFeedback);
+    params.delete("guideFeedback");
+    const search = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (search ? `?${search}` : "") + window.location.hash,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Lovable preview short-circuit: render demo report instead of hitting DB/auth.
   useEffect(() => {
     if (!isLovablePreview()) return;

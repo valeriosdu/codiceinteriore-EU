@@ -45,6 +45,10 @@ const activate: Messages['activate'] = {
       description: 'We hebben je een link gestuurd om je account te bevestigen en meteen bij je rapport te komen.',
     },
     authError: 'Er ging iets mis bij het inloggen',
+    wrongCredentials: 'E-mailadres of wachtwoord klopt niet.',
+    alreadyRegistered: 'Er bestaat al een account met dit e-mailadres. Log in.',
+    passwordSameAsOld: 'Je nieuwe wachtwoord moet anders zijn dan je vorige.',
+    tooManyAttempts: 'Te veel pogingen. Wacht een paar minuten en probeer het opnieuw.',
     welcomeBack: {
       title: 'Fijn dat je er weer bent!',
       description: 'Hier begint je Carta Interior: een paar minuten is genoeg.',

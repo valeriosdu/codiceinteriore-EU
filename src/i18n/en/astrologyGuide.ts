@@ -114,6 +114,9 @@ const astrologyGuide: Messages['astrologyGuide'] = {
     submitError: "We couldn't send the question. Please try again.",
     noUrl: 'URL unavailable',
     checkoutError: "We couldn't open the payment. Please try again in a moment.",
+    sessionExpired: 'Your session has expired. Sign in again and retry.',
+    notAllowed: 'This guide belongs to a different report. Open the right report and try again.',
+    questionTooLong: 'The question must be between 1 and 250 characters.',
   },
 };
 
