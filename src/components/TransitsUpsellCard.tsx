@@ -8,8 +8,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 
 interface TransitsUpsellCardProps {
   /**
-   * Kept for API compatibility with callers that bundled a premium month;
-   * the upsell is subscription-only now so the flag has no behavioural effect.
+   * Il cliente ha gia' avuto dei transiti (Report.tsx lo passa quando esiste
+   * almeno un ciclo). Dice solo questo: se la finestra pagata sia ancora
+   * aperta lo decide accessEndsAt, non questo flag.
    */
   subscriptionOnly?: boolean;
   accessEndsAt?: string | null;
@@ -36,7 +37,13 @@ const TransitsUpsellCard = ({
     if (Number.isNaN(date.getTime())) return null;
     return formatDate(date);
   })();
-  const hasActiveTransitAccess = subscriptionOnly || Boolean(formattedAccessEndsAt);
+  // Questa card viene mostrata anche a chi ha soltanto cicli vecchi da
+  // consultare: l'abbonamento e' finito, ma le letture pagate restano leggibili
+  // (Report.tsx, ramo hasAccess). Senza confrontare la data con oggi scriveva
+  // "Attivi / Hai i transiti di questo mese" sopra una scadenza passata da mesi.
+  const hasTransitHistory = subscriptionOnly || Boolean(formattedAccessEndsAt);
+  const accessEndsAtTime = accessEndsAt ? new Date(accessEndsAt).getTime() : Number.NaN;
+  const accessIsCurrent = Number.isFinite(accessEndsAtTime) && accessEndsAtTime > Date.now();
 
   const startCheckout = async () => {
     setLoading(true);
@@ -59,24 +66,38 @@ const TransitsUpsellCard = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      aria-label={hasActiveTransitAccess ? t.ariaActive : t.ariaInactive}
+      aria-label={
+        hasTransitHistory ? (accessIsCurrent ? t.ariaActive : t.ariaExpired) : t.ariaInactive
+      }
       className="rounded-2xl border border-border/70 bg-surface px-6 py-8 sm:px-8 sm:py-10 shadow-sm"
     >
-      {hasActiveTransitAccess ? (
+      {hasTransitHistory ? (
         <>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs lg:text-sm font-medium text-primary">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {t.activeBadge}
+          <div
+            className={
+              accessIsCurrent
+                ? "inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs lg:text-sm font-medium text-primary"
+                : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-3 py-1 text-xs lg:text-sm font-medium text-muted-foreground"
+            }
+          >
+            {accessIsCurrent ? (
+              <CheckCircle2 className="h-3.5 w-3.5" />
+            ) : (
+              <CalendarClock className="h-3.5 w-3.5" />
+            )}
+            {accessIsCurrent ? t.activeBadge : t.expiredBadge}
           </div>
 
           <h3 className="mt-4 font-display text-2xl sm:text-[26px] font-semibold text-foreground leading-snug">
-            {t.activeTitle}
+            {accessIsCurrent ? t.activeTitle : t.expiredTitle}
           </h3>
 
           <div className="mt-5 rounded-xl border border-border/70 bg-background/45 px-4 py-3 flex items-start gap-3">
             <CalendarClock className="mt-0.5 h-4 w-4 text-primary shrink-0" />
             <div>
-              <p className="text-xs lg:text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground">{t.validUntil}</p>
+              <p className="text-xs lg:text-sm font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {accessIsCurrent ? t.validUntil : t.validUntilExpired}
+              </p>
               <p className="mt-1 text-lg font-semibold text-foreground">
                 {formattedAccessEndsAt || t.validUntilFallback}
               </p>
@@ -84,7 +105,7 @@ const TransitsUpsellCard = ({
           </div>
 
           <p className="mt-4 text-[15px] lg:text-base text-muted-foreground leading-relaxed max-w-prose">
-            {t.activeBody}
+            {accessIsCurrent ? t.activeBody : t.expiredBody}
           </p>
         </>
       ) : (
@@ -128,14 +149,14 @@ const TransitsUpsellCard = ({
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
-          ) : hasActiveTransitAccess ? (
-            t.ctaActive(priceLabel)
+          ) : hasTransitHistory ? (
+            accessIsCurrent ? t.ctaActive(priceLabel) : t.ctaExpired(priceLabel)
           ) : (
             t.ctaInactive(priceLabel)
           )}
         </Button>
         <p className="mt-2 text-xs lg:text-sm text-muted-foreground text-center">
-          {hasActiveTransitAccess ? t.renewNoteActive : t.renewNoteInactive}
+          {hasTransitHistory ? t.renewNoteActive : t.renewNoteInactive}
         </p>
       </div>
 

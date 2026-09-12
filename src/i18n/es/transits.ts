@@ -14,6 +14,13 @@ const transits: Messages['transits'] = {
     validUntilFallback: 'final del periodo incluido',
     activeBody:
       'Te quedan hasta la fecha indicada. Para continuar también después, puedes renovar con la lectura mensual, o detenerte aquí.',
+    ariaExpired: 'Tránsitos del mes caducados',
+    expiredBadge: 'Caducados',
+    expiredTitle: 'No tienes los tránsitos de este mes',
+    validUntilExpired: 'Última lectura válida hasta el',
+    expiredBody:
+      'Las lecturas que ya recibiste siguen aquí, siempre consultables. Para retomar desde el mes en curso, reactiva la lectura mensual.',
+    ctaExpired: (priceLabel) => `Retoma los tránsitos del mes - ${priceLabel}/mes`,
     kicker: 'Tránsitos del mes',
     title: 'Has leído tu Carta Natal. Ahora puedes leer el momento presente.',
     body: 'La carta natal es tu estructura, fijada al nacer: no cambia. El cielo, en cambio, se mueve cada día. Los planetas se superponen cada día a los puntos de tu carta (tu Sol, Luna, Ascendente, etc.) y activan ciertas partes según el aspecto que forman.',

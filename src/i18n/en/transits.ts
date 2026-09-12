@@ -12,6 +12,13 @@ const transits = {
     validUntilFallback: 'the end of the included period',
     activeBody:
       'You have access through the date shown. To keep going afterward, you can renew with the monthly reading, or stop here.',
+    ariaExpired: "This month's transits expired",
+    expiredBadge: 'Expired',
+    expiredTitle: "You don't have this month's transits",
+    validUntilExpired: 'Last reading valid until',
+    expiredBody:
+      'The readings you already received stay here, available whenever you want them. To pick up from the current month, reactivate the monthly reading.',
+    ctaExpired: (priceLabel: string) => `Resume monthly transits - ${priceLabel}/month`,
     kicker: 'This month\'s transits',
     title: 'You\'ve read your Birth Chart. Now you can read the present moment.',
     body: "Your birth chart is your structure, set at birth: it doesn't change. The sky, though, moves every day. Each day the planets pass over the points in your chart (your Sun, Moon, Ascendant, and so on) and activate certain parts of it depending on the aspect they form.",

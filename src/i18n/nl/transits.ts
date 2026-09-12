@@ -14,6 +14,13 @@ const transits: Messages['transits'] = {
     validUntilFallback: 'het einde van de inbegrepen periode',
     activeBody:
       'Ze lopen tot de genoemde datum. Wil je daarna doorgaan, dan kun je verlengen met de maandelijkse duiding, of het hierbij laten.',
+    ariaExpired: 'Transits van de maand verlopen',
+    expiredBadge: 'Verlopen',
+    expiredTitle: 'Je hebt de transits van deze maand niet',
+    validUntilExpired: 'Laatste duiding geldig tot',
+    expiredBody:
+      'De duidingen die je al ontving blijven hier staan, altijd te lezen. Activeer de maandelijkse duiding opnieuw om vanaf deze maand verder te gaan.',
+    ctaExpired: (priceLabel) => `Hervat de transits van de maand - ${priceLabel} per maand`,
     kicker: 'Transits van de maand',
     title: 'Je hebt je geboortehoroscoop gelezen. Nu kun je het moment van nu lezen.',
     body: 'De geboortehoroscoop is je structuur, vastgelegd bij je geboorte: die verandert niet. De hemel beweegt daarentegen elke dag. De planeten schuiven dagelijks over de punten van jouw horoscoop (je Zon, Maan, Ascendant en zo verder) en zetten bepaalde delen aan, afhankelijk van het aspect dat ze maken.',

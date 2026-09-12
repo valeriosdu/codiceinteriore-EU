@@ -12,6 +12,13 @@ const transits = {
     validUntilFallback: 'fine del periodo incluso',
     activeBody:
       'Ti restano fino alla data indicata. Per continuare anche dopo, puoi rinnovare con la lettura mensile, oppure fermarti qui.',
+    ariaExpired: 'Transiti del mese scaduti',
+    expiredBadge: 'Scaduti',
+    expiredTitle: 'Non hai i transiti di questo mese',
+    validUntilExpired: 'Ultima lettura valida fino al',
+    expiredBody:
+      'Le letture che hai già ricevuto restano qui, sempre consultabili. Per riprendere dal mese in corso, riattiva la lettura mensile.',
+    ctaExpired: (priceLabel: string) => `Riprendi i transiti del mese - ${priceLabel}/mese`,
     kicker: 'Transiti del mese',
     title: 'Hai letto il tuo Tema Natale. Adesso puoi leggere il momento presente.',
     body: "La carta natale è la tua struttura, decisa dalla nascita: non cambia. Il cielo, però, si muove ogni giorno. I pianeti ogni giorno si sovrappongono ai punti della tua carta (il tuo Sole, Luna, Ascendente, etc.) e ne attivano certe parti a seconda dell'aspetto che formano.",
