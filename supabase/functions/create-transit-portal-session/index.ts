@@ -54,11 +54,23 @@ serve(async (req) => {
       });
     }
 
-    // Try to find an active subscription row for this profile.
-    const { data: subscription } = await supabaseAdmin
+    // Un abbonamento per lettura: il portale deve aprirsi su quello della
+    // lettura che il cliente sta guardando, non sull'ultimo sottoscritto. Il
+    // filtro si somma sempre a profile_id, quindi un id altrui non apre nulla:
+    // al massimo non trova la riga. Il market resta quello della riga.
+    const body = await req.json().catch(() => ({}));
+    const quizSessionId =
+      typeof body?.quizSessionId === "string" && body.quizSessionId.trim()
+        ? body.quizSessionId.trim()
+        : null;
+
+    const subscriptionQuery = supabaseAdmin
       .from("transit_subscriptions")
       .select("stripe_customer_id, market")
-      .eq("profile_id", profile.id)
+      .eq("profile_id", profile.id);
+    const { data: subscription } = await (quizSessionId
+      ? subscriptionQuery.eq("quiz_session_id", quizSessionId)
+      : subscriptionQuery)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

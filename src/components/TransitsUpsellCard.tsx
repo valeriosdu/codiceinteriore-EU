@@ -13,9 +13,19 @@ interface TransitsUpsellCardProps {
    */
   subscriptionOnly?: boolean;
   accessEndsAt?: string | null;
+  /**
+   * La lettura per cui si stanno comprando i transiti. Un abbonamento ne copre
+   * una sola, e il server non puo' indovinarla: senza questo id ricade sulla
+   * lettura piu' recente, che e' come i transiti finivano su quella sbagliata.
+   */
+  quizSessionId?: string | null;
 }
 
-const TransitsUpsellCard = ({ subscriptionOnly = false, accessEndsAt = null }: TransitsUpsellCardProps) => {
+const TransitsUpsellCard = ({
+  subscriptionOnly = false,
+  accessEndsAt = null,
+  quizSessionId = null,
+}: TransitsUpsellCardProps) => {
   const [loading, setLoading] = useState(false);
   const { m, market, formatDate } = useI18n();
   const t = m.transits.upsell;
@@ -32,7 +42,7 @@ const TransitsUpsellCard = ({ subscriptionOnly = false, accessEndsAt = null }: T
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-transit-checkout", {
-        body: { mode: "subscription" },
+        body: { mode: "subscription", quizSessionId },
       });
       if (error) throw error;
       if (!data?.url) throw new Error(t.errors.noUrl);
