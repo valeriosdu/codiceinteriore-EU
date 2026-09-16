@@ -1650,7 +1650,15 @@ serve(async (req) => {
         });
     }
 
-    if (!isPrivilegedRequest && !isActiveEntitlement(typedCycle.user_entitlements)) throw new Error("monthly_transits_entitlement_inactive");
+    // Il ciclo gia' finito esce PRIMA del controllo sull'entitlement.
+    // Al contrario, una seconda invocazione su un ciclo concluso il cui mese e'
+    // nel frattempo scaduto finiva nel catch di questa funzione, che scrive
+    // status = 'failed_permanent' sopra un ciclo perfettamente valido lasciando
+    // interpreted_transits al suo posto. Il report continuava a mostrarlo (non
+    // filtra su status) e la guida astrologica no: stesso dato, due verita'.
+    // Qui non si lavora e non si spende nulla, si constata soltanto che c'e'
+    // gia' tutto — e chi chiama e' comunque gia' passato dal controllo di
+    // proprieta' sopra.
     if (
       !forceInterpretation &&
       typedCycle.status === "completed" &&
@@ -1671,6 +1679,11 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Da qui in poi si lavora davvero (fetch effemeridi + LLM): l'entitlement
+    // deve essere attivo.
+    if (!isPrivilegedRequest && !isActiveEntitlement(typedCycle.user_entitlements))
+      throw new Error("monthly_transits_entitlement_inactive");
     // Atomic compare-and-swap to claim the cycle. Mirrors the lock pattern in
     // generate-report (avoids two concurrent callers both invoking the LLM
     // when the non-atomic check + update window overlapped). The lock can be

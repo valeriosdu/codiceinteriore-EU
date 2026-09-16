@@ -818,22 +818,47 @@ serve(async (req) => {
       // Transits are always anchored to the primary report's natal chart —
       // we don't have transits for otherReports.
       const todayDate = new Date().toISOString().slice(0, 10);
+      // Nessun filtro su `status`. La fonte di verita' di "questa lettura
+      // esiste" e' interpreted_transits, ed e' quella che usa anche Report.tsx:
+      // `status` e' un campo di lavorazione che puo' staccarsi dal contenuto (un
+      // ciclo concluso poteva finire a 'failed_permanent' conservando
+      // l'interpretazione). Filtrandoci sopra, la guida rispondeva "non hai i
+      // transiti" a chi li stava leggendo sul report in quel momento — tipico
+      // dopo un rinnovo, perche' i cicli vecchi sono i piu' esposti alla deriva.
+      //
+      // Limite largo e deduplica esplicita: per uno stesso periodo possono
+      // esistere due righe (webhook abbonamento e sync-checkout-session, vedi
+      // Report.tsx), e con limit(3) i doppioni si mangiavano la finestra dei
+      // mesi passati che il prompt promette. Si tengono 3 periodi DISTINTI.
       const { data: recentCycles } = await supabaseAdmin
         .from("transit_cycles")
-        .select("interpreted_transits, period_start, period_end")
+        .select("interpreted_transits, period_start, period_end, status, interpretation_status")
         .eq("quiz_session_id", row.quiz_session_id)
-        .eq("status", "completed")
         .lte("period_start", todayDate)
         .not("interpreted_transits", "is", null)
         .order("period_start", { ascending: false })
-        .limit(3);
+        .limit(12);
 
-      const cycles =
-        (recentCycles as Array<{
-          interpreted_transits: unknown;
-          period_start: string;
-          period_end: string;
-        }> | null) || [];
+      type TransitCycleRow = {
+        interpreted_transits: unknown;
+        period_start: string;
+        period_end: string;
+        status: string | null;
+        interpretation_status: string | null;
+      };
+      const cycleRank = (c: TransitCycleRow) =>
+        (c.interpreted_transits ? 4 : 0) +
+        (c.interpretation_status === "completed" ? 2 : 0) +
+        (c.status === "completed" ? 1 : 0);
+      const cyclesByPeriod = new Map<string, TransitCycleRow>();
+      for (const c of ((recentCycles as TransitCycleRow[] | null) || [])) {
+        const key = `${c.period_start}|${c.period_end}`;
+        const prev = cyclesByPeriod.get(key);
+        if (!prev || cycleRank(c) > cycleRank(prev)) cyclesByPeriod.set(key, c);
+      }
+      const cycles = Array.from(cyclesByPeriod.values())
+        .sort((a, b) => (a.period_start < b.period_start ? 1 : -1))
+        .slice(0, 3);
       const currentCycle = cycles.find((c) => c.period_start <= todayDate && c.period_end >= todayDate) || null;
       const currentTransits = currentCycle?.interpreted_transits ?? null;
       const hasTransits = Boolean(currentTransits);
