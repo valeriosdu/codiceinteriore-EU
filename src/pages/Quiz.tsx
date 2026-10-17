@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuiz } from '@/context/QuizContext';
+import { useQuiz, hasFreshFunnelSession } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/ProgressBar';
 import PlaceAutocomplete, { type PlaceAutocompleteHandle } from '@/components/PlaceAutocomplete';
@@ -80,6 +80,27 @@ const Quiz = () => {
       resetQuizForNewPurchase();
     }
   }, [isGiftRoute]);
+
+  // Browser Back from /teaser. History is / → /quiz → /teaser because
+  // /processing replaces itself, so Back lands here at question 1 and reads as
+  // "I lost my reading". Worse, redoing the quiz with a different birth date
+  // would hit Processing's session-reuse guard: the teaser would show the new
+  // date with the old chart and insights, and checkout would bill the old
+  // session (CLAUDE.md, sensitive area #8). Anyone with a reading still ready
+  // goes straight back to the teaser.
+  //
+  // POP only: a CTA from a landing is a PUSH and must open the quiz. The
+  // teaser's "wrong data?" link and Report's "new reading" CTA are immune
+  // because they clear the funnel storage before navigating. The gift route is
+  // excluded by hand: it shares this component and subjectIsOther is not set
+  // on the first render.
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (isGiftRoute || navigationType !== 'POP') return;
+    if (hasFreshFunnelSession()) {
+      navigate('/teaser', { replace: true });
+    }
+  }, []);
 
   // When the buyer is purchasing for someone else (entered via /regalo or
   // the "Acquista una nuova lettura" CTA on /report), the two contextual
