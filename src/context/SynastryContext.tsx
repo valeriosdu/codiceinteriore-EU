@@ -91,6 +91,8 @@ export type RelationshipDuration =
   | 'over_15y'
   | 'prefer_not_to_say';
 
+export type FirstMove = 'self' | 'partner' | 'neither';
+
 export type PricingTier = 'standard' | 'launch';
 
 export interface SynastryData {
@@ -99,6 +101,8 @@ export interface SynastryData {
   clientName: string;
   focusRelational: string;
   relationshipDuration: RelationshipDuration | null;
+  /** "Who made the first move?" tap question: client-side only, never sent to the database. */
+  firstMove: FirstMove | '';
   /** 'standard' = 19,00 (default), 'launch' = 14,90 */
   pricingTier: PricingTier;
 
@@ -131,6 +135,7 @@ const EMPTY_SYNASTRY: SynastryData = {
   clientName: '',
   focusRelational: '',
   relationshipDuration: null,
+  firstMove: '',
   pricingTier: 'standard',
   sessionId: null,
   archetype: null,

@@ -1,27 +1,41 @@
-// Quiz sinastria di coppia: 1 campo per step, 9 step totali.
-// Pattern allineato al Quiz natale (src/pages/Quiz.tsx): local state per i
-// campi attivi, propagazione al SynastryContext via updatePersonA/B al "Avanti".
+// Quiz sinastria di coppia: 6 step.
 //
-// Step:
-//   1. Data di nascita A
-//   2. Ora di nascita A (con checkbox "non la conosco")
-//   3. Luogo di nascita A (PlaceAutocomplete via city-search IT-first)
-//   4. Nome di A
-//   5. Data di nascita B
-//   6. Ora di nascita B
-//   7. Luogo di nascita B
-//   8. Nome di B
-//   9. Contesto coppia (durata relazione opzionale)
+// Erano 9 schermate con un campo ciascuna. Una schermata per persona con nome,
+// data, ora e luogo insieme sforava il viewport (anche e soprattutto sui telefoni
+// piccoli) e scorreva proprio in mezzo alle ruote. Divisione attuale: le due
+// schermate restano per persona (nome + data + luogo), l'ora va su una schermata
+// sua con entrambe le persone. E' il campo che pesa di piu' ed e' quello che la
+// gente spesso deve andare a cercare: chiederle insieme fa prendere la decisione
+// "le sappiamo o no?" una volta sola.
+//
+//   1. Da quanto state insieme?        (card, auto-avanza) -> relationship_duration
+//   2. Chi ha fatto il primo passo?    (card, auto-avanza) -> solo client, non salvata
+//   3. I tuoi dati                     nome + data + luogo
+//   4. Cosa vorreste capire di piu'?   (card, auto-avanza) -> focus_relational
+//   5. I dati del/della partner        nome + data + luogo
+//   6. Le ore di nascita               entrambe
+//
+// Chrome e interazioni allineati al quiz natale (src/pages/Quiz.tsx): Header con
+// tasto indietro, ProgressBar, transizioni AnimatePresence, card che avanzano da
+// sole al tap. Il bottone esplicito resta solo sulle schermate dati, cosi il
+// calcolo non parte mai per un tap di troppo.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import Header from '@/components/Header';
+import ProgressBar from '@/components/ProgressBar';
+import { Button } from '@/components/ui/button';
 import PlaceAutocomplete, {
   type PlaceAutocompleteHandle,
 } from '@/components/PlaceAutocomplete';
 import {
   useSynastry,
+  FirstMove,
   RelationshipDuration,
   SynastryPersonData,
+  isBirthDateComplete,
+  isBirthTimeComplete,
   markSynastryFunnelStage,
 } from '@/context/SynastryContext';
 import PickerField from '@/components/PickerField';
@@ -50,26 +64,35 @@ const YEAR_ANCHOR = 1980;
 const HOUR_ANCHOR = 12;
 const MINUTE_ANCHOR = 0;
 
-const DURATION_IDS: (RelationshipDuration | 'skip')[] = [
-  'under_1y', '1_to_3y', '3_to_7y', '7_to_15y', 'over_15y', 'skip',
+// 5 righe per ruota sono 200px l'una: con nome e luogo sulla stessa schermata
+// sfora il viewport. A 3 righe sono 120px e ci sta tutto senza scroll.
+const WHEEL_ROWS = 3;
+
+// 'prefer_not_to_say' e' il valore che process-synastry-insights legge: la sua
+// etichetta nel catalogo si chiama 'skip'.
+const DURATION_IDS: RelationshipDuration[] = [
+  'under_1y', '1_to_3y', '3_to_7y', '7_to_15y', 'over_15y', 'prefer_not_to_say',
 ];
 
-type StepKey =
-  | 'date_a' | 'time_a' | 'place_a' | 'name_a'
-  | 'date_b' | 'time_b' | 'place_b' | 'name_b'
-  | 'context';
+const FIRST_MOVE_IDS: FirstMove[] = ['self', 'partner', 'neither'];
 
-const STEPS: StepKey[] = [
-  'date_a', 'time_a', 'place_a', 'name_a',
-  'date_b', 'time_b', 'place_b', 'name_b',
-  'context',
-];
+type StepKey = 'duration' | 'first_move' | 'person_a' | 'focus' | 'person_b' | 'times';
+
+const STEPS: StepKey[] = ['duration', 'first_move', 'person_a', 'focus', 'person_b', 'times'];
+
+// Domande a scelta singola: il tap salva e avanza da solo, senza bottone.
+const AUTO_ADVANCE_STEPS: StepKey[] = ['duration', 'first_move', 'focus'];
 
 function aOrB(step: StepKey): 'a' | 'b' | null {
-  if (step.endsWith('_a')) return 'a';
-  if (step.endsWith('_b')) return 'b';
+  if (step === 'person_a') return 'a';
+  if (step === 'person_b') return 'b';
   return null;
 }
+
+const optionCardClasses = (selected: boolean) =>
+  `p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-left ${
+    selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
+  }`;
 
 export default function CoppiaQuiz() {
   const navigate = useNavigate();
@@ -93,11 +116,11 @@ export default function CoppiaQuiz() {
     markSynastryFunnelStage('quiz');
   }, [m, market.siteName]);
 
-  // Quando entriamo in uno step "place", sincronizza il testo del campo con
+  // Entrando in una schermata persona, sincronizza il testo del campo luogo con
   // il valore gia salvato nel context (es. tornando indietro).
   useEffect(() => {
-    if (stepKey === 'place_a') setPlaceText(data.personA.birthPlace || '');
-    else if (stepKey === 'place_b') setPlaceText(data.personB.birthPlace || '');
+    if (stepKey === 'person_a') setPlaceText(data.personA.birthPlace || '');
+    else if (stepKey === 'person_b') setPlaceText(data.personB.birthPlace || '');
     setPlaceError('');
   }, [stepKey]);
 
@@ -106,66 +129,56 @@ export default function CoppiaQuiz() {
     which === 'a' ? data.personA : which === 'b' ? data.personB : null;
   const updateTarget = which === 'a' ? updatePersonA : updatePersonB;
 
-  // Validazione del singolo step
-  const canContinue = useMemo(() => {
-    if (!target && stepKey !== 'context') return false;
-    switch (stepKey) {
-      case 'date_a':
-      case 'date_b': {
-        // Same rule as Quiz.tsx. On the wheels one gesture on any wheel is
-        // enough: the others count as the value they already show (handleNext
-        // writes it down). The desktop <select> shows '—' for an unset field,
-        // so there every field has to be chosen.
-        const d = target!.birthDate;
-        return isMobile
-          ? d.day != null || d.month != null || d.year != null
-          : d.day != null && d.month != null && d.year != null;
-      }
-      case 'time_a':
-      case 'time_b': {
-        if (!target!.timeKnown) return true; // skip ok
-        const t = target!.birthTime;
-        return isMobile
-          ? t.hour != null || t.minute != null
-          : t.hour != null && t.minute != null;
-      }
-      case 'place_a':
-      case 'place_b':
-        return placeText.trim().length > 2 && !resolvingPlace;
-      case 'name_a':
-      case 'name_b':
-        return target!.name.trim().length >= 2;
-      case 'context':
-        return true; // contesto e' interamente opzionale
-      default:
-        return false;
+  // Stessa regola di Quiz.tsx. Sulle ruote basta un gesto su una qualsiasi: le
+  // altre valgono il valore che gia mostrano (handleNext lo scrive). Il <select>
+  // desktop mostra '—' per un campo non scelto, quindi li' servono tutti.
+  const dateIsValid = (d: SynastryPersonData['birthDate']) =>
+    isMobile ? d.day != null || d.month != null || d.year != null : isBirthDateComplete(d);
+  const timeIsValid = (p: SynastryPersonData) =>
+    !p.timeKnown ||
+    (isMobile
+      ? p.birthTime.hour != null || p.birthTime.minute != null
+      : isBirthTimeComplete(p.birthTime));
+
+  const filledDate = (d: SynastryPersonData['birthDate']) => ({
+    day: d.day ?? DAY_ANCHOR,
+    month: d.month ?? MONTH_ANCHOR,
+    year: d.year ?? YEAR_ANCHOR,
+  });
+  const filledTime = (t: SynastryPersonData['birthTime']) => ({
+    hour: t.hour ?? HOUR_ANCHOR,
+    minute: t.minute ?? MINUTE_ANCHOR,
+  });
+
+  const canContinue = (() => {
+    if (stepKey === 'times') return timeIsValid(data.personA) && timeIsValid(data.personB);
+    if (!target) return false;
+    return (
+      target.name.trim().length >= 2 &&
+      dateIsValid(target.birthDate) &&
+      placeText.trim().length > 2 &&
+      !resolvingPlace
+    );
+  })();
+
+  // Senza questa riga il bottone resta disabilitato senza dire perche', che e'
+  // il dead click piu' frequente del funnel. Sulle ruote si chiede un gesto, sul
+  // <select> di sceglierli tutti.
+  const missingHint = (() => {
+    if (stepKey === 'times') {
+      if (timeIsValid(data.personA) && timeIsValid(data.personB)) return '';
+      return isMobile ? cq.time.confirmHint : cq.missing.time;
     }
-  }, [stepKey, target, placeText, resolvingPlace, isMobile]);
+    if (target && !dateIsValid(target.birthDate)) {
+      return isMobile ? cq.date.confirmHint : cq.missing.date;
+    }
+    return '';
+  })();
 
   const handleNext = async () => {
-    // A wheel left untouched counts as the value it shows. Write it down before
-    // advancing: useSynastrySession turns a partially filled date/time into
-    // null, and the chart would not be computed.
-    if ((stepKey === 'date_a' || stepKey === 'date_b') && target) {
-      const d = target.birthDate;
-      updateTarget({
-        birthDate: {
-          day: d.day ?? DAY_ANCHOR,
-          month: d.month ?? MONTH_ANCHOR,
-          year: d.year ?? YEAR_ANCHOR,
-        },
-      });
-    }
-    if ((stepKey === 'time_a' || stepKey === 'time_b') && target && target.timeKnown) {
-      const t = target.birthTime;
-      updateTarget({
-        birthTime: { hour: t.hour ?? HOUR_ANCHOR, minute: t.minute ?? MINUTE_ANCHOR },
-      });
-    }
-
-    // PLACE step: prima di avanzare, garantisci che le coordinate corrispondano
-    // al testo digitato (auto-resolve come fa Quiz.tsx).
-    if ((stepKey === 'place_a' || stepKey === 'place_b') && target) {
+    // Sulle schermate persona: prima di avanzare, garantisci che le coordinate
+    // corrispondano al testo digitato (auto-resolve come fa Quiz.tsx).
+    if (target) {
       const trimmedPlace = placeText.trim();
       const normalize = (s: string) => s.trim().toLowerCase();
       const hasCoords =
@@ -188,9 +201,18 @@ export default function CoppiaQuiz() {
       } else {
         updateTarget({ birthPlace: trimmedPlace });
       }
+
+      // Una ruota lasciata intatta vale il valore che mostra: va scritto prima
+      // di avanzare, perche' useSynastrySession trasforma una data parziale in
+      // null e la carta non verrebbe calcolata.
+      updateTarget({ birthDate: filledDate(target.birthDate) });
     }
 
-    // Step finale: vai a /coppia/processing
+    if (stepKey === 'times') {
+      if (data.personA.timeKnown) updatePersonA({ birthTime: filledTime(data.personA.birthTime) });
+      if (data.personB.timeKnown) updatePersonB({ birthTime: filledTime(data.personB.birthTime) });
+    }
+
     if (step === STEPS.length) {
       navigate(ROUTES.coupleProcessing);
       return;
@@ -198,273 +220,329 @@ export default function CoppiaQuiz() {
     setStep((s) => s + 1);
   };
 
-  const handleBack = () => {
-    if (step > 1) setStep((s) => s - 1);
+  // Tap-to-advance delle card: salva la risposta e avanza dopo un attimo, cosi
+  // l'evidenziazione della scelta si vede. Il passo e' condizionato a quello da
+  // cui si parte: un secondo tap dentro i 180ms fa scattare due timer, e senza
+  // la condizione il secondo salterebbe una domanda intera.
+  const advanceFrom = (from: number, delayMs = 180) => {
+    setTimeout(() => setStep((s) => (s === from ? from + 1 : s)), delayMs);
   };
 
+  const nameA = data.personA.name.trim() || cq.times.you;
+  const nameB = data.personB.name.trim() || cq.times.partner;
+
+  const ctaLabel = resolvingPlace
+    ? cq.resolving
+    : step === STEPS.length
+      ? cq.finalCta
+      : cq.next;
+
+  const helperText =
+    stepKey === 'person_b'
+      ? cq.helper.almostDone
+      : stepKey === 'times'
+        ? cq.helper.lastStep
+        : undefined;
+
+  const renderPersonStep = (person: SynastryPersonData) => (
+    <>
+      <div>
+        <h2 className="font-display text-2xl font-semibold text-foreground">
+          {which === 'a' ? cq.people.titleA : cq.people.titleB}
+        </h2>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {which === 'a' ? cq.people.hintA : cq.people.hintB}
+        </p>
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor={`coppia-name-${which}`} className="text-xs text-muted-foreground">
+          {cq.people.nameLabel}
+        </label>
+        <input
+          id={`coppia-name-${which}`}
+          type="text"
+          value={person.name}
+          onChange={(e) => updateTarget({ name: e.target.value })}
+          placeholder={which === 'a' ? cq.name.placeholderA : cq.name.placeholderB}
+          className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none"
+        />
+      </div>
+
+      {/* Niente etichetta di gruppo "Data di nascita": Giorno/Mese/Anno la
+          rendono ridondante, e sono 24px che servono altrove. */}
+      <div className="grid grid-cols-3 gap-2">
+        <PickerField
+          label={cq.date.day}
+          items={DAY_ITEMS}
+          value={person.birthDate.day}
+          anchor={DAY_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, day: v } })}
+        />
+        <PickerField
+          label={cq.date.month}
+          items={MONTH_ITEMS}
+          value={person.birthDate.month}
+          anchor={MONTH_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, month: v } })}
+        />
+        <PickerField
+          label={cq.date.year}
+          items={YEAR_ITEMS}
+          value={person.birthDate.year}
+          anchor={YEAR_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, year: v } })}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs text-muted-foreground">{cq.people.placeLabel}</label>
+        <PlaceAutocomplete
+          ref={placeRef}
+          value={placeText}
+          onChange={(placeData) => {
+            setPlaceText(placeData.name);
+            setPlaceError('');
+            updateTarget({
+              birthPlace: placeData.name,
+              birthLat: placeData.lat,
+              birthLng: placeData.lng,
+              birthTimezone: placeData.timezone,
+              birthTimezoneIana: placeData.timezoneIana,
+            });
+          }}
+          onTextChange={(t) => {
+            setPlaceText(t);
+            if (placeError) setPlaceError('');
+          }}
+          onClear={() => {
+            if (
+              person.birthLat != null ||
+              person.birthLng != null ||
+              person.birthTimezone != null ||
+              person.birthTimezoneIana ||
+              person.birthPlace
+            ) {
+              updateTarget({
+                birthLat: null,
+                birthLng: null,
+                birthTimezone: null,
+                birthTimezoneIana: null,
+                birthPlace: '',
+              });
+            }
+          }}
+          placeholder={cq.place.placeholder}
+        />
+        {placeError ? (
+          <p className="text-xs text-destructive">{placeError}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">{cq.place.suggestionHint}</p>
+        )}
+      </div>
+    </>
+  );
+
+  const renderTimeRow = (
+    person: SynastryPersonData,
+    label: string,
+    update: (updates: Partial<SynastryPersonData>) => void,
+  ) => (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-sm font-medium text-foreground truncate">{label}</span>
+        <label className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!person.timeKnown}
+            onChange={(e) =>
+              update({
+                timeKnown: !e.target.checked,
+                birthTime: e.target.checked ? { hour: null, minute: null } : person.birthTime,
+              })
+            }
+          />
+          {cq.time.unknownLabel}
+        </label>
+      </div>
+      {person.timeKnown ? (
+        <div className="grid grid-cols-2 gap-2">
+          <PickerField
+            label={cq.time.hour}
+            items={HOUR_ITEMS}
+            value={person.birthTime.hour}
+            anchor={HOUR_ANCHOR}
+            visibleCount={WHEEL_ROWS}
+            onChange={(v) => update({ birthTime: { ...person.birthTime, hour: v } })}
+          />
+          <PickerField
+            label={cq.time.minute}
+            items={MINUTE_ITEMS}
+            value={person.birthTime.minute}
+            anchor={MINUTE_ANCHOR}
+            visibleCount={WHEEL_ROWS}
+            onChange={(v) => update({ birthTime: { ...person.birthTime, minute: v } })}
+          />
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">{cq.time.unknownNote}</p>
+      )}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-xl mx-auto px-4 pt-10 pb-24">
-        {/* Indicatore step */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-            <span>{cq.stepOf(step, STEPS.length)}</span>
-            {which && (
-              <span>
-                {which === 'a' ? cq.personA : cq.personB}
-              </span>
-            )}
-          </div>
-          <div className="h-1 w-full bg-border rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all"
-              style={{ width: `${(step / STEPS.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* STEP CONTENT */}
-        {(stepKey === 'date_a' || stepKey === 'date_b') && target && (
-          <div className="space-y-5">
-            <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? cq.date.titleA : cq.date.titleB}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {cq.date.hint}
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <PickerField
-                label={cq.date.day}
-                items={DAY_ITEMS}
-                value={target.birthDate.day ?? null}
-                anchor={DAY_ANCHOR}
-                onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, day: v } })}
-              />
-              <PickerField
-                label={cq.date.month}
-                items={MONTH_ITEMS}
-                value={target.birthDate.month ?? null}
-                anchor={MONTH_ANCHOR}
-                onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, month: v } })}
-              />
-              <PickerField
-                label={cq.date.year}
-                items={YEAR_ITEMS}
-                value={target.birthDate.year ?? null}
-                anchor={YEAR_ANCHOR}
-                onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, year: v } })}
-              />
-            </div>
-            {isMobile && !canContinue && (
-              <p className="text-xs text-muted-foreground">{cq.date.confirmHint}</p>
-            )}
-          </div>
-        )}
-
-        {(stepKey === 'time_a' || stepKey === 'time_b') && target && (
-          <div className="space-y-5">
-            <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? cq.time.titleA : cq.time.titleB}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {cq.time.hint}
-            </p>
-            {target.timeKnown && (
-              <div className="grid grid-cols-2 gap-2">
-                <PickerField
-                  label={cq.time.hour}
-                  items={HOUR_ITEMS}
-                  value={target.birthTime.hour ?? null}
-                  anchor={HOUR_ANCHOR}
-                  onChange={(v) => updateTarget({ birthTime: { ...target.birthTime, hour: v } })}
-                />
-                <PickerField
-                  label={cq.time.minute}
-                  items={MINUTE_ITEMS}
-                  value={target.birthTime.minute ?? null}
-                  anchor={MINUTE_ANCHOR}
-                  onChange={(v) => updateTarget({ birthTime: { ...target.birthTime, minute: v } })}
-                />
-              </div>
-            )}
-            <label className="inline-flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!target.timeKnown}
-                onChange={(e) =>
-                  updateTarget({
-                    timeKnown: !e.target.checked,
-                    birthTime: e.target.checked
-                      ? { hour: null, minute: null }
-                      : target.birthTime,
-                  })
-                }
-              />
-              {cq.time.unknownLabel}
-            </label>
-            {isMobile && target.timeKnown && !canContinue && (
-              <p className="text-xs text-muted-foreground">{cq.time.confirmHint}</p>
-            )}
-            {!target.timeKnown && (
-              <p className="text-xs text-muted-foreground">
-                {cq.time.unknownNote}
-              </p>
-            )}
-          </div>
-        )}
-
-        {(stepKey === 'place_a' || stepKey === 'place_b') && target && (
-          <div className="space-y-5">
-            <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? cq.place.titleA : cq.place.titleB}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {cq.place.hint}
-            </p>
-            <PlaceAutocomplete
-              ref={placeRef}
-              value={placeText}
-              onChange={(placeData) => {
-                setPlaceText(placeData.name);
-                setPlaceError('');
-                updateTarget({
-                  birthPlace: placeData.name,
-                  birthLat: placeData.lat,
-                  birthLng: placeData.lng,
-                  birthTimezone: placeData.timezone,
-                  birthTimezoneIana: placeData.timezoneIana,
-                });
-              }}
-              onTextChange={(t) => {
-                setPlaceText(t);
-                if (placeError) setPlaceError('');
-              }}
-              onClear={() => {
-                if (
-                  target.birthLat != null ||
-                  target.birthLng != null ||
-                  target.birthTimezone != null ||
-                  target.birthTimezoneIana ||
-                  target.birthPlace
-                ) {
-                  updateTarget({
-                    birthLat: null,
-                    birthLng: null,
-                    birthTimezone: null,
-                    birthTimezoneIana: null,
-                    birthPlace: '',
-                  });
-                }
-              }}
-              placeholder={cq.place.placeholder}
-            />
-            {placeError ? (
-              <p className="text-xs text-destructive">{placeError}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {cq.place.suggestionHint}
-              </p>
-            )}
-          </div>
-        )}
-
-        {(stepKey === 'name_a' || stepKey === 'name_b') && target && (
-          <div className="space-y-5">
-            <h2 className="font-display text-2xl font-semibold text-foreground">
-              {which === 'a' ? cq.name.titleA : cq.name.titleB}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {cq.name.hint}
-            </p>
-            <input
-              type="text"
-              value={target.name}
-              onChange={(e) => updateTarget({ name: e.target.value })}
-              placeholder={which === 'a' ? cq.name.placeholderA : cq.name.placeholderB}
-              className="h-12 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm focus:ring-2 focus:ring-ring focus:outline-none"
-              autoFocus
-            />
-          </div>
-        )}
-
-        {stepKey === 'context' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-foreground mb-1">
-                {cq.context.title}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {cq.context.hint}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DURATION_IDS.map((id) => {
-                const selected = id === 'skip'
-                  ? data.relationshipDuration === 'prefer_not_to_say'
-                  : data.relationshipDuration === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() =>
-                      updateData({
-                        relationshipDuration: id === 'skip' ? 'prefer_not_to_say' : id,
-                      })
-                    }
-                    className={`h-11 px-4 rounded-lg border text-sm text-left transition-colors ${
-                      selected
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-background hover:bg-accent/30'
-                    }`}
-                  >
-                    {cq.context.durations[id]}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div>
-              <label className="text-xs text-muted-foreground">
-                {cq.context.focusLabel}
-              </label>
-              <input
-                type="text"
-                value={data.focusRelational}
-                onChange={(e) => updateData({ focusRelational: e.target.value })}
-                placeholder={cq.context.focusPlaceholder}
-                className="mt-1.5 h-11 w-full rounded-lg border border-input bg-background px-4 text-foreground text-sm focus:ring-2 focus:ring-ring focus:outline-none"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* NAVIGATION */}
-        <div className="mt-10 flex items-center justify-between">
-          {step > 1 ? (
+    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+      <Header
+        backButton={
+          step > 1 ? (
             <button
-              type="button"
-              onClick={handleBack}
-              className="h-11 px-5 rounded-lg border border-border text-sm hover:bg-accent/30"
+              onClick={() => setStep((s) => s - 1)}
+              className="p-1.5 -ml-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label={cq.back}
             >
-              {cq.back}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
             </button>
-          ) : (
-            <span />
-          )}
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={!canContinue}
-            className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
-          >
-            {resolvingPlace
-              ? cq.resolving
-              : step === STEPS.length
-                ? cq.finalCta
-                : cq.next}
-          </button>
+          ) : undefined
+        }
+      />
+
+      <div className="container max-w-md mx-auto flex-1 flex flex-col py-2 sm:py-4 min-h-0">
+        <ProgressBar current={step} total={STEPS.length} label={helperText} />
+
+        <div className="flex-1 flex items-center py-3 sm:py-6 min-h-0 overflow-y-auto overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stepKey}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3 }}
+              className="w-full space-y-5"
+            >
+              {stepKey === 'duration' && (
+                <>
+                  <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
+                    {cq.context.title}
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {DURATION_IDS.map((id) => (
+                      <div
+                        key={id}
+                        className={`${optionCardClasses(data.relationshipDuration === id)} ${
+                          id === 'prefer_not_to_say' ? 'col-span-2' : ''
+                        }`}
+                        onClick={() => {
+                          updateData({ relationshipDuration: id });
+                          advanceFrom(step);
+                        }}
+                      >
+                        <p className="text-sm font-medium text-foreground">
+                          {cq.context.durations[id === 'prefer_not_to_say' ? 'skip' : id]}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {stepKey === 'first_move' && (
+                <>
+                  <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
+                    {cq.firstMove.question}
+                  </h2>
+                  <div className="space-y-2.5">
+                    {FIRST_MOVE_IDS.map((id) => (
+                      <div
+                        key={id}
+                        className={optionCardClasses(data.firstMove === id)}
+                        onClick={() => {
+                          updateData({ firstMove: id });
+                          advanceFrom(step);
+                        }}
+                      >
+                        <p className="text-sm font-medium text-foreground">{cq.firstMove.options[id]}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {stepKey === 'focus' && (
+                <>
+                  <h2 className="font-display text-xl font-semibold text-foreground leading-snug">
+                    {cq.focus.question}
+                  </h2>
+                  <div className="space-y-2.5">
+                    {cq.focus.options.map((option) => (
+                      <div
+                        key={option}
+                        className={optionCardClasses(data.focusRelational === option)}
+                        onClick={() => {
+                          updateData({ focusRelational: option });
+                          advanceFrom(step);
+                        }}
+                      >
+                        <p className="text-sm font-medium text-foreground">{option}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateData({ focusRelational: '' });
+                      advanceFrom(step, 0);
+                    }}
+                    className="mx-auto block py-1 text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                  >
+                    {cq.focus.skip}
+                  </button>
+                </>
+              )}
+
+              {stepKey === 'times' && (
+                <>
+                  <div>
+                    <h2 className="font-display text-2xl font-semibold text-foreground">
+                      {cq.times.title}
+                    </h2>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{cq.times.hint}</p>
+                  </div>
+                  {renderTimeRow(data.personA, nameA, updatePersonA)}
+                  {renderTimeRow(data.personB, nameB, updatePersonB)}
+                </>
+              )}
+
+              {target && renderPersonStep(target)}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </main>
+
+        {!AUTO_ADVANCE_STEPS.includes(stepKey) && (
+          <div className="pb-4 sm:pb-6 shrink-0">
+            {missingHint && (
+              <p className="pb-2 text-center text-xs text-muted-foreground">{missingHint}</p>
+            )}
+            <Button variant="premium" size="quiz" onClick={handleNext} disabled={!canContinue}>
+              {ctaLabel}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

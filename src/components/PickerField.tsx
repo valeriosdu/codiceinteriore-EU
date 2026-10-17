@@ -11,6 +11,11 @@ interface PickerFieldProps {
   onChange: (value: number) => void;
   /** Placeholder shown in the desktop dropdown until a value is picked. */
   placeholder?: string;
+  /**
+   * Odd number of wheel rows shown on mobile. Omitted = WheelPicker's default
+   * (5). The coppia quiz passes 3 so name + date + place fit one phone screen.
+   */
+  visibleCount?: number;
 }
 
 const selectClasses =
@@ -27,6 +32,7 @@ export default function PickerField({
   anchor,
   onChange,
   placeholder = '—',
+  visibleCount,
 }: PickerFieldProps) {
   const isMobile = useIsMobile();
 
@@ -34,7 +40,14 @@ export default function PickerField({
     <div className="space-y-1.5">
       <label className="text-xs text-muted-foreground text-center block">{label}</label>
       {isMobile ? (
-        <WheelPicker items={items} value={value} anchor={anchor} onChange={onChange} ariaLabel={label} />
+        <WheelPicker
+          items={items}
+          value={value}
+          anchor={anchor}
+          onChange={onChange}
+          ariaLabel={label}
+          visibleCount={visibleCount}
+        />
       ) : (
         <select
           className={selectClasses}
