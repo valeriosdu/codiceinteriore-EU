@@ -17,6 +17,7 @@ import {
 } from "../_shared/report-pdf.ts";
 import { brandSlug, docNoun, getMarket } from "../_shared/markets.ts";
 import { resolvePromptLang } from "../_shared/prompts/lang.ts";
+import { SYNASTRY_PDF_BUCKET, synastryCustomerPdfPath } from "../_shared/synastry-pdf-cache.ts";
 
 const ASTROLOGY_API_KEY = Deno.env.get("ASTROLOGY_API_KEY") || "";
 const BI_WHEEL_URL = "https://api.freeastroapi.com/api/v1/natal/chart/synastry";
@@ -95,6 +96,9 @@ declare const Deno: {
   env: { get(name: string): string | undefined };
   serve: (handler: (req: Request) => Promise<Response>) => void;
 };
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<unknown>): void;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,6 +125,7 @@ function pdfResponse(
   bName: string,
   market: string | null,
   lang: string | null,
+  cached: boolean,
 ): Response {
   const filename = `${brandSlug(getMarket(market))}-${docNoun(lang, "couple")}-${safeSlug(aName)}-${safeSlug(bName)}.pdf`;
   return new Response(bytes, {
@@ -130,6 +135,7 @@ function pdfResponse(
       "Content-Disposition": `inline; filename="${filename}"`,
       "Cache-Control": "no-store",
       "X-PDF-Version": SYNASTRY_PDF_VERSION,
+      "X-PDF-Cache": cached ? "hit" : "miss",
     },
   });
 }
@@ -201,6 +207,29 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Report not ready yet" }, 404);
     }
 
+    // Cache su storage, come il gemello natale (generate-report-pdf) e il
+    // download admin: senza, ogni click su "Scarica PDF" rigenera il documento
+    // e rasterizza di nuovo la bi-wheel per un file identico. Va dopo il guard
+    // su full_report (un report cancellato non serve mai un file cachato) e la
+    // lingua e' nel path. A invalidare dopo una rigenerazione o una
+    // cancellazione ci pensano le funzioni admin (clearSynastryPdfCache).
+    const pdfLang = resolvePromptLang((session as any).language);
+    const storagePath = synastryCustomerPdfPath(session.id, SYNASTRY_PDF_VERSION, pdfLang);
+
+    const { data: cachedPdf } = await supabaseAdmin.storage
+      .from(SYNASTRY_PDF_BUCKET)
+      .download(storagePath);
+    if (cachedPdf) {
+      return pdfResponse(
+        new Uint8Array(await cachedPdf.arrayBuffer()),
+        session.person_a_name ?? "",
+        session.person_b_name ?? "",
+        (session as any).market,
+        (session as any).language,
+        true,
+      );
+    }
+
     const personAPayload = buildPersonPayloadForChart(
       session.person_a_birth_date,
       session.person_a_birth_time,
@@ -242,9 +271,24 @@ Deno.serve(async (req: Request) => {
       scoreOverall: session.score_overall,
       scores: session.scores,
       biWheelPng,
-      lang: resolvePromptLang((session as any).language),
+      lang: pdfLang,
       market: getMarket((session as any).market).id,
     });
+
+    // Scrittura in background: il cliente ha gia' il suo PDF, un errore di
+    // upload costa solo la cache mancata al download successivo. Un PDF senza
+    // ruota (rasterizzazione e fallback live falliti) non si cacha: resterebbe
+    // senza grafico finche' qualcuno non rigenera il report.
+    if (biWheelPng) {
+      EdgeRuntime.waitUntil((async () => {
+        const { error: uploadErr } = await supabaseAdmin.storage
+          .from(SYNASTRY_PDF_BUCKET)
+          .upload(storagePath, bytes, { contentType: "application/pdf", upsert: true });
+        if (uploadErr) {
+          console.warn("[generate-synastry-report-pdf] cache upload failed:", uploadErr.message);
+        }
+      })());
+    }
 
     return pdfResponse(
       bytes,
@@ -252,6 +296,7 @@ Deno.serve(async (req: Request) => {
       session.person_b_name ?? "",
       (session as any).market,
       (session as any).language,
+      false,
     );
   } catch (err) {
     console.error("[generate-synastry-report-pdf] error:", err);
