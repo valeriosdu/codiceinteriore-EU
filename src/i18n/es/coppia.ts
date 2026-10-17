@@ -42,6 +42,14 @@ const coppia: Messages['coppia'] = {
       'Calculamos la carta natal de cada uno y analizamos la superposición: es la sinastría.',
       'Recibís el informe completo: unas 10 páginas en español.',
     ],
+    ctaNote: 'Unas pocas preguntas rápidas · Vista previa gratuita, sin registro',
+    plateCaption: 'Lám. I · Carta de sinastría',
+    quotePlateCaption: 'Lám. II',
+    quote:
+      'Dos cartas natales no se suman: se superponen. Es en la superposición donde una relación se vuelve legible.',
+    closingLine: 'Partid de vuestras dos cartas. El resto de la historia se lee ahí.',
+    seoDescription:
+      'La sinastría compara las dos cartas natales y explica por qué en ciertas cosas os entendéis al vuelo y en otras no. Arquetipo de pareja, seis puntuaciones de compatibilidad y ocho secciones de lectura, en español.',
   },
   quiz: {
     date: {
