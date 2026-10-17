@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface ProgressBarProps {
   current: number;
@@ -7,6 +8,7 @@ interface ProgressBarProps {
 }
 
 const ProgressBar = ({ current, total, label }: ProgressBarProps) => {
+  const { m } = useI18n();
   const percentage = (current / total) * 100;
 
   return (
@@ -23,7 +25,7 @@ const ProgressBar = ({ current, total, label }: ProgressBarProps) => {
         />
       </div>
       <p className="text-xs text-muted-foreground text-center">
-        {current} di {total}
+        {m.quiz.stepOf(current, total)}
       </p>
     </div>
   );

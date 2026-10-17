@@ -5,6 +5,7 @@ const quiz: Messages['quiz'] = {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
   ],
+  stepOf: (current: number, total: number) => `${current} of ${total}`,
   steps: {
     intent: {
       question: 'What are you most curious to understand?',

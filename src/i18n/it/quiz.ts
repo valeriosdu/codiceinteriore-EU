@@ -3,6 +3,7 @@ const quiz = {
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
   ],
+  stepOf: (current: number, total: number) => `${current} di ${total}`,
   steps: {
     intent: {
       question: 'Cosa ti interessa capire di più?',
