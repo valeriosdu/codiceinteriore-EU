@@ -5,6 +5,7 @@
 
 // @ts-ignore deno import
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { clearSynastryPdfCache } from "../_shared/synastry-pdf-cache.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -79,11 +80,20 @@ async function archivePreviousPdf(
 async function orchestrateRegeneration(synastrySessionId: string) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Step 1: archivia PDF corrente
+  // Step 1: archivia PDF corrente, poi svuota la cache. L'ordine conta:
+  // l'archivio copia il PDF admin corrente in -previous, la pulizia non lo
+  // tocca. Senza pulizia il path (versione + lingua, non il contenuto)
+  // resterebbe valido e il cliente scaricherebbe ancora il PDF vecchio.
   try {
     await archivePreviousPdf(supabase, synastrySessionId);
   } catch (e) {
     console.warn("[admin-regenerate-synastry] PDF archive failed:", e);
+  }
+  try {
+    const cleared = await clearSynastryPdfCache(supabase, synastrySessionId);
+    console.log(`[admin-regenerate-synastry] cached PDFs cleared: ${cleared}`);
+  } catch (e) {
+    console.warn("[admin-regenerate-synastry] PDF cache clear failed:", e);
   }
 
   // Step 2: azzera tutti i dati calcolati

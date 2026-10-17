@@ -3,6 +3,7 @@
 
 // @ts-ignore deno import
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { clearSynastryPdfCache } from "../_shared/synastry-pdf-cache.ts";
 
 declare const Deno: {
   env: { get(name: string): string | undefined };
@@ -85,6 +86,17 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+
+    // Il cliente puo' rilanciare la generazione su una sessione cancellata
+    // (CoppiaReportProcessing): senza questa pulizia il nuovo report
+    // verrebbe scaricato come il PDF cachato di quello vecchio.
+    // Best-effort: la cancellazione e' gia' avvenuta.
+    try {
+      const cleared = await clearSynastryPdfCache(supabase, synastrySessionId);
+      console.log(`[admin-delete-synastry-report] cached PDFs cleared: ${cleared}`);
+    } catch (e) {
+      console.warn("[admin-delete-synastry-report] PDF cache clear failed:", e);
     }
 
     return new Response(
