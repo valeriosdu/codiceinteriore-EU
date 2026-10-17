@@ -218,28 +218,32 @@ const Report = () => {
     // latest. Each paid period (initial sub, renewal, one-time addon) creates
     // its own entitlement row. We want every cycle attached to any of them to
     // remain consultable, even after that period's ends_at has passed.
-    const { data: entitlements } = await (supabase as any)
-      .from("user_entitlements")
-      .select("id, starts_at, ends_at, source")
-      .eq("profile_id", profileId)
-      .eq("quiz_session_id", quizSessionId)
-      .eq("entitlement_type", "monthly_transits")
-      .eq("status", "active")
-      .order("ends_at", { ascending: false });
-
-    // Un abbonamento copre UNA lettura: entitlement, cicli e abbonamento vanno
-    // letti tutti con lo stesso quiz_session_id. Finche' qui il filtro era solo
-    // su profile_id, chi aveva due letture vedeva "abbonamento attivo" anche su
-    // quella scoperta — e li' il ramo subActive nascondeva la card di acquisto,
-    // lasciandola senza transiti e senza modo di comprarli.
-    const { data: subscription } = await (supabase as any)
-      .from("transit_subscriptions")
-      .select("status, cancel_at_period_end, current_period_end")
-      .eq("profile_id", profileId)
-      .eq("quiz_session_id", quizSessionId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Le due query non dipendono l'una dall'altra: in parallelo tolgono un
+    // round trip prima che il report compaia, perche' loadFromDb aspetta
+    // questa funzione prima di mostrarlo.
+    const [{ data: entitlements }, { data: subscription }] = await Promise.all([
+      (supabase as any)
+        .from("user_entitlements")
+        .select("id, starts_at, ends_at, source")
+        .eq("profile_id", profileId)
+        .eq("quiz_session_id", quizSessionId)
+        .eq("entitlement_type", "monthly_transits")
+        .eq("status", "active")
+        .order("ends_at", { ascending: false }),
+      // Un abbonamento copre UNA lettura: entitlement, cicli e abbonamento vanno
+      // letti tutti con lo stesso quiz_session_id. Finche' qui il filtro era solo
+      // su profile_id, chi aveva due letture vedeva "abbonamento attivo" anche su
+      // quella scoperta — e li' il ramo subActive nascondeva la card di acquisto,
+      // lasciandola senza transiti e senza modo di comprarli.
+      (supabase as any)
+        .from("transit_subscriptions")
+        .select("status, cancel_at_period_end, current_period_end")
+        .eq("profile_id", profileId)
+        .eq("quiz_session_id", quizSessionId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
     const entitlementRows = (entitlements || []) as Array<{
       id: string;
