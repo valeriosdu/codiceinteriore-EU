@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PACK_CREDITS } from "./constants";
+import { planAnswerRecheck } from "./answerRecheck";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Messages } from "@/i18n";
 
@@ -123,8 +124,6 @@ export const AstrologyGuideProvider = ({
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const client = supabase as unknown as {
     from: (table: string) => any;
-    channel: (name: string) => any;
-    removeChannel: (channel: any) => void;
     auth: typeof supabase.auth;
     functions: typeof supabase.functions;
   };
@@ -186,75 +185,40 @@ export const AstrologyGuideProvider = ({
     refresh();
   }, [refresh]);
 
-  // Realtime: listen for INSERT/UPDATE on questions for this session.
-  // Falls back to a periodic refresh if realtime isn't available.
+  // Risposte in attesa. Escono 2-6 ore dopo la domanda (scheduled_for, deciso
+  // da submit-astrology-question) e arrivano anche per email. Prima due canali
+  // Realtime postgres_changes restavano aperti finche' /report era aperto e
+  // tenevano acceso il polling del WAL di Supabase: da pg_stat_statements era
+  // il 64% del tempo di query del database, per aggiornare in diretta una
+  // risposta che arriva ore dopo. Il canale dei crediti non riceveva nulla:
+  // la tabella non e' nella publication di Realtime.
+  //
+  // Ora si ricarica solo quando serve: poco dopo l'orario previsto della
+  // risposta, e quando il cliente torna sulla scheda (tipicamente dall'email).
+  // La domanda appena inviata non ne ha bisogno: submitQuestion fa refresh().
+  // Ogni refresh produce un nuovo array di domande, e questo riarma il timer.
   useEffect(() => {
-    if (!quizSessionId) return;
-    const channel = client
-      .channel(`astrology-guide-${quizSessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: TABLE_QUESTIONS,
-          filter: `quiz_session_id=eq.${quizSessionId}`,
-        },
-        (payload: { eventType: string; new: AstrologyGuideQuestion }) => {
-          setQuestions((prev) => {
-            const next = [...prev];
-            const existingIdx = next.findIndex((q) => q.id === payload.new.id);
-            if (payload.eventType === "INSERT") {
-              if (existingIdx >= 0) next[existingIdx] = payload.new;
-              else next.push(payload.new);
-            } else if (payload.eventType === "UPDATE") {
-              if (existingIdx >= 0) next[existingIdx] = payload.new;
-            }
-            return next.sort(
-              (a, b) =>
-                new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-            );
-          });
-          // Refresh credits too — answer completion may have happened, but
-          // mostly credit changes happen on submit which we already handle.
-          if (payload.eventType === "UPDATE" && payload.new.status === "completed") {
-            void refresh();
-          }
-        },
-      )
-      .subscribe();
+    const plan = planAnswerRecheck(questions, Date.now());
+    if (!plan) return;
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+
+    // delayMs null = risposta bloccata oltre la finestra di ricontrollo: niente
+    // piu' interrogazioni a tempo, resta solo il ricontrollo al ritorno.
+    const timer = plan.delayMs !== null ? window.setTimeout(refreshIfVisible, plan.delayMs) : undefined;
+
+    const onVisibilityChange = () => {
+      if (Date.now() >= plan.nextRelease) refreshIfVisible();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      client.removeChannel(channel);
+      if (timer !== undefined) window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [quizSessionId, client, refresh]);
-
-  // Realtime: listen for changes on the credits row (e.g. a webhook just
-  // granted a pack on another tab/device). RLS ensures we only receive rows
-  // we own. If the credits table doesn't have realtime enabled in the
-  // Supabase publication, this silently no-ops — the post-checkout poller
-  // below covers the same-tab case.
-  useEffect(() => {
-    if (!quizSessionId) return;
-    const channel = client
-      .channel(`astrology-guide-credits-${quizSessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: TABLE_CREDITS,
-          filter: `quiz_session_id=eq.${quizSessionId}`,
-        },
-        () => {
-          void refresh();
-        },
-      )
-      .subscribe();
-    return () => {
-      client.removeChannel(channel);
-    };
-  }, [quizSessionId, client, refresh]);
+  }, [questions, refresh]);
 
   // Post-checkout activation flow for the astrology guide pack.
   // When Stripe redirects to /report?guide=activated&session_id=cs_..., we:
