@@ -51,6 +51,7 @@ const coppia: Messages['coppia'] = {
       titleA: 'Cuándo naciste',
       titleB: 'Cuándo nació tu pareja',
       hint: 'Desliza para elegir día, mes y año.',
+      confirmHint: 'Desliza o toca las ruedas para confirmar la fecha de nacimiento.',
       day: 'Día',
       month: 'Mes',
       year: 'Año',
@@ -64,6 +65,7 @@ const coppia: Messages['coppia'] = {
       unknownLabel: 'No la conozco',
       unknownNote:
         'Sin la hora la sinastría será parcial para esta persona (sin casas ni ascendente). Continúa tranquilamente, el resto del análisis sigue siendo válido.',
+      confirmHint: 'Toca una rueda para confirmar la hora, o marca "No la conozco".',
     },
     place: {
       titleA: 'Dónde naciste',

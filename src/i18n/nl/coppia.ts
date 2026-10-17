@@ -51,6 +51,7 @@ const coppia: Messages['coppia'] = {
       titleA: 'Wanneer ben jij geboren',
       titleB: 'Wanneer is je partner geboren',
       hint: 'Veeg om dag, maand en jaar te kiezen.',
+      confirmHint: 'Veeg of tik op de wielen om de geboortedatum te bevestigen.',
       day: 'Dag',
       month: 'Maand',
       year: 'Jaar',
@@ -64,6 +65,7 @@ const coppia: Messages['coppia'] = {
       unknownLabel: 'Weet ik niet',
       unknownNote:
         'Zonder geboortetijd wordt de synastrie voor deze persoon gedeeltelijk (geen huizen, geen ascendant). Ga gerust verder, de rest van de analyse blijft geldig.',
+      confirmHint: 'Tik op een wiel om de tijd te bevestigen, of vink "Weet ik niet" aan.',
     },
     place: {
       titleA: 'Waar ben jij geboren',

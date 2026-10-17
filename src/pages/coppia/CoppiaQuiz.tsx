@@ -26,6 +26,7 @@ import {
 } from '@/context/SynastryContext';
 import PickerField from '@/components/PickerField';
 import { type WheelItem } from '@/components/WheelPicker';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useI18n } from '@/i18n/I18nProvider';
 import { ROUTES } from '@/lib/routes';
 
@@ -75,6 +76,7 @@ export default function CoppiaQuiz() {
   const { data, updatePersonA, updatePersonB, updateData } = useSynastry();
   const { m, market } = useI18n();
   const cq = m.coppia.quiz;
+  const isMobile = useIsMobile();
   const MONTH_ITEMS: WheelItem[] = useMemo(
     () => m.quiz.months.map((label, i) => ({ value: i + 1, label: label.toLowerCase() })),
     [m.quiz.months],
@@ -110,16 +112,22 @@ export default function CoppiaQuiz() {
     switch (stepKey) {
       case 'date_a':
       case 'date_b': {
-        // The 1980 anchor is shown but never written to context (only a real
-        // onChange persists), so a complete date implies a deliberate pick.
+        // Same rule as Quiz.tsx. On the wheels one gesture on any wheel is
+        // enough: the others count as the value they already show (handleNext
+        // writes it down). The desktop <select> shows '—' for an unset field,
+        // so there every field has to be chosen.
         const d = target!.birthDate;
-        return d.day != null && d.month != null && d.year != null;
+        return isMobile
+          ? d.day != null || d.month != null || d.year != null
+          : d.day != null && d.month != null && d.year != null;
       }
       case 'time_a':
       case 'time_b': {
         if (!target!.timeKnown) return true; // skip ok
         const t = target!.birthTime;
-        return t.hour != null && t.minute != null;
+        return isMobile
+          ? t.hour != null || t.minute != null
+          : t.hour != null && t.minute != null;
       }
       case 'place_a':
       case 'place_b':
@@ -132,9 +140,29 @@ export default function CoppiaQuiz() {
       default:
         return false;
     }
-  }, [stepKey, target, placeText, resolvingPlace]);
+  }, [stepKey, target, placeText, resolvingPlace, isMobile]);
 
   const handleNext = async () => {
+    // A wheel left untouched counts as the value it shows. Write it down before
+    // advancing: useSynastrySession turns a partially filled date/time into
+    // null, and the chart would not be computed.
+    if ((stepKey === 'date_a' || stepKey === 'date_b') && target) {
+      const d = target.birthDate;
+      updateTarget({
+        birthDate: {
+          day: d.day ?? DAY_ANCHOR,
+          month: d.month ?? MONTH_ANCHOR,
+          year: d.year ?? YEAR_ANCHOR,
+        },
+      });
+    }
+    if ((stepKey === 'time_a' || stepKey === 'time_b') && target && target.timeKnown) {
+      const t = target.birthTime;
+      updateTarget({
+        birthTime: { hour: t.hour ?? HOUR_ANCHOR, minute: t.minute ?? MINUTE_ANCHOR },
+      });
+    }
+
     // PLACE step: prima di avanzare, garantisci che le coordinate corrispondano
     // al testo digitato (auto-resolve come fa Quiz.tsx).
     if ((stepKey === 'place_a' || stepKey === 'place_b') && target) {
@@ -227,6 +255,9 @@ export default function CoppiaQuiz() {
                 onChange={(v) => updateTarget({ birthDate: { ...target.birthDate, year: v } })}
               />
             </div>
+            {isMobile && !canContinue && (
+              <p className="text-xs text-muted-foreground">{cq.date.confirmHint}</p>
+            )}
           </div>
         )}
 
@@ -271,6 +302,9 @@ export default function CoppiaQuiz() {
               />
               {cq.time.unknownLabel}
             </label>
+            {isMobile && target.timeKnown && !canContinue && (
+              <p className="text-xs text-muted-foreground">{cq.time.confirmHint}</p>
+            )}
             {!target.timeKnown && (
               <p className="text-xs text-muted-foreground">
                 {cq.time.unknownNote}

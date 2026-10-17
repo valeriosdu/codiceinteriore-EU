@@ -60,6 +60,10 @@ const quiz = {
       hour: 'Ora',
       minute: 'Minuti',
       hint: "Se non la conosci con precisione, scegli l'orario più vicino possibile.",
+      unknown: {
+        label: { self: 'Non conosco la mia ora di nascita', other: 'Non conosco la sua ora di nascita' },
+        note: 'Useremo mezzogiorno: la lettura resta valida, ma Ascendente e case saranno indicativi.',
+      },
     },
     place: {
       title: { self: 'Il tuo luogo di nascita', other: 'Il suo luogo di nascita' },
@@ -91,6 +95,25 @@ const quiz = {
   helper: {
     focus: 'Manca poco',
     name: 'Ancora un passaggio',
+  },
+  wheelHint: {
+    date: {
+      all: 'Scorri o tocca le ruote per confermare giorno, mese e anno.',
+      some: (fields: string) => `Da controllare: ${fields}.`,
+    },
+    time: {
+      all: 'Scorri o tocca le ruote per confermare ora e minuti.',
+      some: (fields: string) => `Da controllare: ${fields}.`,
+    },
+    fields: {
+      day: 'il giorno',
+      month: 'il mese',
+      year: "l'anno",
+      hour: "l'ora",
+      minute: 'i minuti',
+    },
+    join: (items: string[]) =>
+      items.length > 1 ? items.slice(0, -1).join(', ') + ' e ' + items[items.length - 1] : (items[0] ?? ''),
   },
   cta: {
     continue: 'Continua',

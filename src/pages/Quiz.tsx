@@ -8,7 +8,9 @@ import PlaceAutocomplete, { type PlaceAutocompleteHandle } from '@/components/Pl
 import Header from '@/components/Header';
 import { trackEvent } from '@/lib/analytics';
 import PickerField from '@/components/PickerField';
+import { Checkbox } from '@/components/ui/checkbox';
 import { type WheelItem } from '@/components/WheelPicker';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useI18n } from '@/i18n/I18nProvider';
 import { ROUTES } from '@/lib/routes';
 
@@ -32,6 +34,10 @@ const MONTH_ANCHOR = 6;
 const YEAR_ANCHOR = 1980;
 const HOUR_ANCHOR = 12;
 const MINUTE_ANCHOR = 0;
+
+// Time saved when the user declares they do not know it. See birthTimeUnknown
+// in QuizContext for why noon and why the flag is still needed.
+const UNKNOWN_BIRTH_TIME = { hour: 12, minute: 0 };
 
 type StepKey =
   | 'intent'
@@ -66,6 +72,7 @@ const Quiz = () => {
   const { data, updateData, resetQuizForNewPurchase } = useQuiz();
   const { m } = useI18n();
   const q = m.quiz;
+  const isMobile = useIsMobile();
   const MONTH_ITEMS: WheelItem[] = useMemo(
     () => q.months.map((monthLabel, i) => ({ value: i + 1, label: monthLabel })),
     [q.months],
@@ -137,6 +144,7 @@ const Quiz = () => {
   const [year, setYear] = useState<number>(data.birthDate?.year || 0);
   const [hour, setHour] = useState<number>(data.birthTime?.hour ?? -1);
   const [minute, setMinute] = useState<number>(data.birthTime?.minute ?? -1);
+  const [timeUnknown, setTimeUnknown] = useState<boolean>(data.birthTimeUnknown);
   const [place, setPlace] = useState(data.birthPlace || '');
   const [focus, setFocus] = useState(data.focusArea || '');
   const [userName, setUserName] = useState(data.userName || '');
@@ -170,8 +178,14 @@ const Quiz = () => {
       case 'attachment': return attachment !== '';
       case 'symptom': return symptom !== '';
       case 'narrative': return narrative !== '';
-      case 'date': return day > 0 && month > 0 && year > 0;
-      case 'time': return hour >= 0 && minute >= 0;
+      // On the wheels (mobile) one gesture on any wheel is enough: the others
+      // count as the value they already show in the selection band, which is
+      // what the user reads. Only someone who touches none stays blocked, the
+      // one case where the whole date would be invented by the component. The
+      // desktop <select> shows '—' for an unset field, so there every field
+      // has to be chosen.
+      case 'date': return isMobile ? (day > 0 || month > 0 || year > 0) : (day > 0 && month > 0 && year > 0);
+      case 'time': return timeUnknown || (isMobile ? (hour >= 0 || minute >= 0) : (hour >= 0 && minute >= 0));
       case 'place': return place.trim().length > 2 && !resolvingPlace;
       case 'focus': return focus !== '';
       case 'name': return userName.trim().length > 1;
@@ -190,9 +204,25 @@ const Quiz = () => {
     } else if (stepKey === 'narrative') {
       updateData({ narrativeResponse: narrative });
     } else if (stepKey === 'date') {
-      updateData({ birthDate: { day, month, year } });
+      updateData({
+        birthDate: {
+          day: day > 0 ? day : DAY_ANCHOR,
+          month: month > 0 ? month : MONTH_ANCHOR,
+          year: year > 0 ? year : YEAR_ANCHOR,
+        },
+      });
     } else if (stepKey === 'time') {
-      updateData({ birthTime: { hour, minute } });
+      updateData(
+        timeUnknown
+          ? { birthTime: { ...UNKNOWN_BIRTH_TIME }, birthTimeUnknown: true }
+          : {
+              birthTime: {
+                hour: hour >= 0 ? hour : HOUR_ANCHOR,
+                minute: minute >= 0 ? minute : MINUTE_ANCHOR,
+              },
+              birthTimeUnknown: false,
+            },
+      );
     } else if (stepKey === 'place') {
       // Ensure coordinates match the currently typed place name. Auto-resolve if needed.
       const trimmedPlace = place.trim();
@@ -266,6 +296,26 @@ const Quiz = () => {
     `p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-left ${
       selected ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/40'
     }`;
+
+  // The wheels no longer confirm the value they open on, so a field never
+  // touched can leave Continue disabled. A button that does not react and does
+  // not say why is the most frequent dead click in a funnel: these lines say
+  // what is still unconfirmed. Mobile only, the desktop <select> shows '—'.
+  const wh = q.wheelHint;
+  const notNull = (f: string | null): f is string => f !== null;
+  const dateUntouched = isMobile
+    ? [
+        day > 0 ? null : wh.fields.day,
+        month > 0 ? null : wh.fields.month,
+        year > 0 ? null : wh.fields.year,
+      ].filter(notNull)
+    : [];
+  const timeUntouched = isMobile
+    ? [
+        hour >= 0 ? null : wh.fields.hour,
+        minute >= 0 ? null : wh.fields.minute,
+      ].filter(notNull)
+    : [];
 
   const ctaLabel =
     stepKey === 'name'
@@ -388,6 +438,11 @@ const Quiz = () => {
                     <PickerField label={q.steps.date.month} items={MONTH_ITEMS} value={month || null} anchor={MONTH_ANCHOR} onChange={setMonth} />
                     <PickerField label={q.steps.date.year} items={YEAR_ITEMS} value={year || null} anchor={YEAR_ANCHOR} onChange={setYear} />
                   </div>
+                  {dateUntouched.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {dateUntouched.length === 3 ? wh.date.all : wh.date.some(wh.join(dateUntouched))}
+                    </p>
+                  )}
                 </>
               )}
 
@@ -396,12 +451,31 @@ const Quiz = () => {
                   <h2 className="font-display text-2xl font-semibold text-foreground">
                     {forOther ? q.steps.time.title.other : q.steps.time.title.self}
                   </h2>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className={`grid grid-cols-2 gap-3 transition-opacity duration-200 ${
+                      timeUnknown ? 'pointer-events-none opacity-40' : ''
+                    }`}
+                  >
                     <PickerField label={q.steps.time.hour} items={HOUR_ITEMS} value={hour >= 0 ? hour : null} anchor={HOUR_ANCHOR} onChange={setHour} />
                     <PickerField label={q.steps.time.minute} items={MINUTE_ITEMS} value={minute >= 0 ? minute : null} anchor={MINUTE_ANCHOR} onChange={setMinute} />
                   </div>
+                  <label className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 cursor-pointer">
+                    <Checkbox
+                      checked={timeUnknown}
+                      onCheckedChange={checked => setTimeUnknown(checked === true)}
+                    />
+                    <span className="text-sm font-medium text-foreground">
+                      {forOther ? q.steps.time.unknown.label.other : q.steps.time.unknown.label.self}
+                    </span>
+                  </label>
                   <p className="text-xs text-muted-foreground">
-                    {q.steps.time.hint}
+                    {timeUnknown
+                      ? q.steps.time.unknown.note
+                      : timeUntouched.length === 2
+                        ? wh.time.all
+                        : timeUntouched.length === 1
+                          ? wh.time.some(wh.join(timeUntouched))
+                          : q.steps.time.hint}
                   </p>
                 </>
               )}

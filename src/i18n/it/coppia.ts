@@ -49,6 +49,7 @@ const coppia = {
       titleA: 'Quando sei nato/a',
       titleB: 'Quando e nato/a il tuo partner',
       hint: 'Scorri per scegliere giorno, mese e anno.',
+      confirmHint: 'Scorri o tocca le ruote per confermare la data di nascita.',
       day: 'Giorno',
       month: 'Mese',
       year: 'Anno',
@@ -62,6 +63,7 @@ const coppia = {
       unknownLabel: 'Non la conosco',
       unknownNote:
         "Senza l'ora la sinastria sara parziale per questa persona (niente case e ascendente). Procedi tranquillamente, il resto dell'analisi resta valido.",
+      confirmHint: "Tocca una ruota per confermare l'orario, oppure spunta \"Non la conosco\".",
     },
     place: {
       titleA: 'Dove sei nato/a',

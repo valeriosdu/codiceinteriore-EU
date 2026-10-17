@@ -62,6 +62,10 @@ const quiz: Messages['quiz'] = {
       hour: 'Hora',
       minute: 'Minutos',
       hint: 'Si no la conoces con precisión, elige la hora más cercana posible.',
+      unknown: {
+        label: { self: 'No conozco mi hora de nacimiento', other: 'No conozco su hora de nacimiento' },
+        note: 'Usaremos el mediodía: la lectura sigue siendo válida, pero el ascendente y las casas serán orientativos.',
+      },
     },
     place: {
       title: { self: 'Tu lugar de nacimiento', other: 'Su lugar de nacimiento' },
@@ -93,6 +97,25 @@ const quiz: Messages['quiz'] = {
   helper: {
     focus: 'Ya casi está',
     name: 'Un paso más',
+  },
+  wheelHint: {
+    date: {
+      all: 'Desliza o toca las ruedas para confirmar día, mes y año.',
+      some: (fields: string) => `Por revisar: ${fields}.`,
+    },
+    time: {
+      all: 'Desliza o toca las ruedas para confirmar hora y minutos.',
+      some: (fields: string) => `Por revisar: ${fields}.`,
+    },
+    fields: {
+      day: 'el día',
+      month: 'el mes',
+      year: 'el año',
+      hour: 'la hora',
+      minute: 'los minutos',
+    },
+    join: (items: string[]) =>
+      items.length > 1 ? items.slice(0, -1).join(', ') + ' y ' + items[items.length - 1] : (items[0] ?? ''),
   },
   cta: {
     continue: 'Continuar',
