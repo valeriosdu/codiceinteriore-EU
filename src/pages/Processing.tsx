@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuiz, getFunnelStage } from '@/context/QuizContext';
+import { useQuiz, hasFreshFunnelSession } from '@/context/QuizContext';
 import { supabase } from '@/integrations/supabase/client';
 import { createQuizSession, fetchQuizSessionPublic } from '@/lib/sessionAccess';
 import { useMetaConversions } from '@/hooks/useMetaConversions';
@@ -33,8 +33,11 @@ const Processing = () => {
     // If the user is navigating back here from later in the funnel (e.g. browser
     // back from /teaser), don't recreate the session — that would burn another
     // freeastroapi + Gemini cycle on the same data. Send them forward instead.
-    const stage = getFunnelStage();
-    if (stage === 'teaser' || stage === 'offer') {
+    //
+    // Past the 7-day window hasFreshFunnelSession() is false and the session is
+    // recreated, so a returning visitor who really wants a second reading is no
+    // longer sent back to the old one after redoing the quiz for nothing.
+    if (hasFreshFunnelSession()) {
       navigate(data.subjectIsOther ? '/checkout' : '/teaser', { replace: true });
       return;
     }

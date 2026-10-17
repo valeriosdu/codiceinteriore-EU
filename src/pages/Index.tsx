@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import SEO from "@/components/SEO";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getFunnelStage, getStoredSessionId } from "@/context/QuizContext";
+import { getPurchaseSessionId, hasFreshFunnelSession } from "@/context/QuizContext";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import { trackEvent } from "@/lib/analytics";
 import {
@@ -102,10 +102,19 @@ const Index = () => {
         }
 
         // 2. Check anonymous user with localStorage state
-        const stage = getFunnelStage();
-        const storedSessionId = getStoredSessionId();
+        // Paid but never activated: still anonymous, so the authenticated
+        // branch above does not catch them. Sending them to the teaser would
+        // resell a reading they already bought: what they lack is the account,
+        // not the reading. /activate resolves the e-mail from the checkout on
+        // the server, so a hand-forged marker gains nothing: it leads to a page
+        // that rejects it.
+        const purchaseSessionId = getPurchaseSessionId();
+        if (purchaseSessionId) {
+          navigate(`/activate?session_id=${encodeURIComponent(purchaseSessionId)}`, { replace: true });
+          return;
+        }
 
-        if (storedSessionId && (stage === "teaser" || stage === "offer")) {
+        if (hasFreshFunnelSession()) {
           navigate("/teaser", { replace: true });
           return;
         }

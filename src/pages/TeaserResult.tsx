@@ -11,7 +11,7 @@ import Testimonials from "@/components/Testimonials";
 import ReportPreviewCarousel from "@/components/ReportPreviewCarousel";
 import { ArrowRight, Loader2, Lock, Zap, PenLine } from "lucide-react";
 import { toast } from "sonner";
-import { useQuiz, getStoredSessionId, clearFunnelStorage } from "@/context/QuizContext";
+import { useQuiz, getStoredSessionId, getPurchaseSessionId, clearFunnelStorage } from "@/context/QuizContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchQuizSessionPublic } from "@/lib/sessionAccess";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
@@ -161,7 +161,17 @@ const TeaserResult = () => {
     const loadOrRecover = async () => {
       const sessionId = data.sessionId || getStoredSessionId();
       if (!sessionId) {
-        setPollFailed(true);
+        // Arriving without a session is not an error: it is a bookmark opened
+        // in a browser that never ran the quiz, or storage cleaned because the
+        // 7-day window expired. Falling into pollFailed here would loop forever
+        // on the "complex chart" reassurance copy; this is simply a new user.
+        const purchaseSessionId = getPurchaseSessionId();
+        navigate(
+          purchaseSessionId
+            ? `/activate?session_id=${encodeURIComponent(purchaseSessionId)}`
+            : "/",
+          { replace: true },
+        );
         return;
       }
 

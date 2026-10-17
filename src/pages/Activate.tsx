@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
+import { useQuiz, clearFunnelStorage, clearPurchaseSessionId } from "@/context/QuizContext";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
 import { isLovablePreview, DEMO_EMAIL } from "@/lib/preview-mode";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -161,6 +161,7 @@ const Activate = () => {
       const syncedCheckout = await syncCheckoutSession(stripeSessionIdLocal || undefined);
       if (syncedCheckout?.quizSessionId) {
         clearFunnelStorage();
+        clearPurchaseSessionId();
         navigate(syncedCheckout.reportReady ? "/report" : "/report-processing", { replace: true });
         return;
       }
@@ -203,6 +204,7 @@ const Activate = () => {
             userName: existingSession.user_name || "",
           });
           clearFunnelStorage();
+          clearPurchaseSessionId();
           navigate("/report", { replace: true });
           return;
         }
@@ -222,6 +224,7 @@ const Activate = () => {
             userName: existingSession.user_name || "",
           });
           clearFunnelStorage();
+          clearPurchaseSessionId();
           navigate("/report", { replace: true });
           return;
         }
@@ -231,6 +234,7 @@ const Activate = () => {
         const recoveredCheckout = await syncCheckoutSession();
         if (recoveredCheckout?.quizSessionId) {
           clearFunnelStorage();
+          clearPurchaseSessionId();
           navigate(recoveredCheckout.reportReady ? "/report" : "/report-processing", { replace: true });
           return;
         }
@@ -280,6 +284,7 @@ const Activate = () => {
       }
 
       clearFunnelStorage();
+      clearPurchaseSessionId();
       navigate("/report-processing", { replace: true });
     } catch (err) {
       console.error("saveProfileAndRedirect error:", err);
