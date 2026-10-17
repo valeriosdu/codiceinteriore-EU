@@ -42,6 +42,14 @@ const coppia: Messages['coppia'] = {
       'We calculate each birth chart and analyze the overlap: that\'s synastry.',
       'You get the full report: about 10 pages in English.',
     ],
+    ctaNote: 'A few quick questions · Free preview, no sign-up',
+    plateCaption: 'Plate I · Synastry chart',
+    quotePlateCaption: 'Plate II',
+    quote:
+      "Two birth charts don't add up: they overlap. It's in the overlap that a relationship becomes readable.",
+    closingLine: 'Start from your two charts. The rest of the story is read there.',
+    seoDescription:
+      'Synastry compares your two birth charts and explains why you click instantly on some things and not on others. Couple archetype, six compatibility scores and eight reading sections, in English.',
   },
   quiz: {
     date: {

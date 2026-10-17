@@ -1,16 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import SEO from '@/components/SEO';
+import SynastryWheels from '@/components/coppia/SynastryWheels';
 import { ArrowRight } from 'lucide-react';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useSynastry } from '@/context/SynastryContext';
 import { ROUTES } from '@/lib/routes';
 import {
   ChapterHeading,
-  ChartWheel,
   ClassicaStyles,
   Colophon,
   FONT_BODY,
@@ -18,9 +19,32 @@ import {
   INK,
   OpeningFlourish,
   PaperGrain,
+  PlateCaption,
   RULE,
   RULE_SOFT,
 } from '@/components/classica';
+
+const EASE_EDITORIAL: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
+
+const LandingStyles = () => (
+  <style>{`
+    @keyframes ci-syn-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes ci-syn-spin-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    .ci-syn-a { animation: ci-syn-spin 240s linear infinite; transform-origin: 50% 50%; will-change: transform; }
+    .ci-syn-b { animation: ci-syn-spin-rev 320s linear infinite; transform-origin: 50% 50%; will-change: transform; }
+    @media (prefers-reduced-motion: reduce) {
+      .ci-syn-a, .ci-syn-b { animation: none; }
+    }
+  `}</style>
+);
+
+// Il contenitore ha gia' il suo rapporto d'aspetto (1.62:1 = due ruote che si
+// sovrappongono per il 23%), quindi le ruote ci entrano senza spostare il testo.
+const SynastryPlate = ({ className = '' }: { className?: string }) => (
+  <div className={`relative ${className}`} style={{ aspectRatio: '1.62 / 1' }} aria-hidden="true">
+    <SynastryWheels />
+  </div>
+);
 
 export default function CoppiaLanding() {
   const navigate = useNavigate();
@@ -39,13 +63,50 @@ export default function CoppiaLanding() {
     navigate(ROUTES.coupleQuiz);
   };
 
+  // Barra CTA fissa su mobile: compare quando il bottone dell'hero esce dallo
+  // schermo e sparisce quando si arriva alla chiusa, cosi' non copre mai un CTA
+  // gia' visibile ne' il footer. Anche il suo bottone passa da startQuiz: un
+  // <Link> al quiz salterebbe l'azzeramento della sessione qui sopra.
+  const heroCtaRef = useRef<HTMLDivElement>(null);
+  const finalCtaRef = useRef<HTMLDivElement>(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
   useEffect(() => {
-    document.title = m.coppia.titles.landing(market.siteName);
-  }, [m, market.siteName]);
+    const hero = heroCtaRef.current;
+    const final = finalCtaRef.current;
+    if (!hero || !final || typeof IntersectionObserver === 'undefined') return;
+
+    const state = { heroVisible: true, beforeFinal: true };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === hero) {
+            state.heroVisible = entry.isIntersecting;
+          } else if (entry.target === final) {
+            // `top > 0` = la chiusa e' ancora sotto la piega; se e' sopra siamo
+            // gia' nel footer e la barra resta nascosta.
+            state.beforeFinal = !entry.isIntersecting && entry.boundingClientRect.top > 0;
+          }
+        }
+        setShowStickyCta(!state.heroVisible && state.beforeFinal);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(hero);
+    observer.observe(final);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
+      <SEO
+        title={m.coppia.titles.landing(market.siteName)}
+        description={cl.seoDescription}
+        path={ROUTES.couple}
+      />
       <ClassicaStyles />
+      <LandingStyles />
       <PaperGrain />
 
       <div className="relative z-10">
@@ -54,24 +115,41 @@ export default function CoppiaLanding() {
         <main style={{ fontFamily: FONT_BODY }}>
           <OpeningFlourish />
 
-          {/* HERO */}
-          <section className="relative">
+          {/* HERO. Desktop: la bi-ruota sborda dal margine destro. Mobile: un
+              emblema compatto sopra il titolo, perche' e' il segno che racconta
+              il prodotto e da mobile arriva quasi tutto il traffico. */}
+          <section className="relative overflow-hidden">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute select-none
                          hidden md:block
                          top-1/2 -translate-y-1/2
-                         right-[-18%] lg:right-[-12%] xl:right-[-6%]
-                         w-[66vw] lg:w-[56vw] xl:w-[48vw] max-w-[840px]"
+                         right-[-30%] lg:right-[-20%] xl:right-[-11%]
+                         w-[92vw] lg:w-[78vw] xl:w-[66vw] max-w-[1080px]"
               style={{ opacity: 0.16 }}
             >
-              <div className="ci-wheel-rotate">
-                <ChartWheel className="w-full h-auto" />
-              </div>
+              <SynastryPlate />
             </div>
 
-            <div className="container max-w-5xl mx-auto px-6 pt-14 pb-24 md:pt-20 md:pb-32 relative">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-10 right-10 z-[2] hidden select-none md:block"
+              style={{ opacity: 0.75 }}
+            >
+              <PlateCaption label={cl.plateCaption} />
+            </div>
+
+            <div className="container max-w-5xl mx-auto px-6 pt-8 pb-24 md:pt-20 md:pb-32 relative">
               <div className="max-w-[34rem]">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 0.72, scale: 1 }}
+                  transition={{ duration: 1.1, ease: EASE_EDITORIAL }}
+                  className="mb-7 w-[188px] md:hidden"
+                >
+                  <SynastryPlate />
+                </motion.div>
+
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -102,10 +180,18 @@ export default function CoppiaLanding() {
                   transition={{ delay: 0.45, duration: 0.65 }}
                   className="mt-10 flex flex-col items-start gap-3"
                 >
-                  <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
-                    {cl.cta}
-                    <ArrowRight className="ml-1.5 h-5 w-5" />
-                  </Button>
+                  <div ref={heroCtaRef}>
+                    <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
+                      {cl.cta}
+                      <ArrowRight className="ml-1.5 h-5 w-5" />
+                    </Button>
+                  </div>
+                  <p
+                    className="text-[16px] md:text-[18px] tracking-wide text-muted-foreground"
+                    style={{ fontFamily: FONT_BODY }}
+                  >
+                    {cl.ctaNote}
+                  </p>
 
                   <div className="mt-7 w-full max-w-[26rem]">
                     <div className="flex items-center justify-center gap-3 mb-2.5">
@@ -205,6 +291,42 @@ export default function CoppiaLanding() {
             </div>
           </section>
 
+          {/* TAVOLA II · citazione */}
+          <section className="container max-w-3xl mx-auto px-6 py-12 md:py-24 relative">
+            <motion.figure
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 1.2 }}
+              className="mx-auto max-w-2xl text-center"
+            >
+              <div className="mb-8 md:mb-9">
+                <PlateCaption label={cl.quotePlateCaption} />
+              </div>
+
+              <blockquote
+                className="text-[23px] md:text-[30px] lg:text-[32px] font-normal italic leading-[1.4] tracking-[-0.005em] text-foreground/90 text-balance"
+                style={{ fontFamily: FONT_DISPLAY }}
+              >
+                <span className="mr-0.5 opacity-40" style={{ color: INK }}>
+                  &ldquo;
+                </span>
+                {cl.quote}
+                <span className="ml-0.5 opacity-40" style={{ color: INK }}>
+                  &rdquo;
+                </span>
+              </blockquote>
+
+              <div className="mt-9 md:mt-10 flex items-center justify-center gap-4" aria-hidden="true">
+                <span className="h-px w-20 md:w-32" style={{ background: RULE }} />
+                <svg width="6" height="6" viewBox="0 0 6 6" style={{ color: INK }}>
+                  <circle cx="3" cy="3" r="1.4" fill="currentColor" opacity="0.6" />
+                </svg>
+                <span className="h-px w-20 md:w-32" style={{ background: RULE }} />
+              </div>
+            </motion.figure>
+          </section>
+
           {/* COME FUNZIONA */}
           <section className="container max-w-4xl mx-auto px-6 py-20 md:py-28 relative">
             <ChapterHeading numeral="II." title={cl.howKicker} />
@@ -243,21 +365,63 @@ export default function CoppiaLanding() {
           <section className="container max-w-3xl mx-auto px-6 pt-12 pb-24 md:pt-16 md:pb-32 text-center">
             <Colophon />
 
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.95 }}
+              className="mx-auto max-w-md text-[20px] md:text-[22px] italic leading-[1.6] text-foreground/85 text-balance"
+              style={{ fontFamily: FONT_DISPLAY }}
+            >
+              {cl.closingLine}
+            </motion.p>
+
             <motion.div
+              ref={finalCtaRef}
               initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.95, delay: 0.12 }}
+              className="mt-9 md:mt-10 flex flex-col items-center gap-3"
             >
               <Button variant="premium" size="hero" className="h-16 px-12 text-lg" onClick={startQuiz}>
                 {cl.cta}
                 <ArrowRight className="ml-1.5 h-5 w-5" />
               </Button>
+              <p
+                className="text-[16px] md:text-[18px] tracking-wide text-muted-foreground"
+                style={{ fontFamily: FONT_BODY }}
+              >
+                {cl.ctaNote}
+              </p>
             </motion.div>
           </section>
         </main>
 
         <Footer />
+      </div>
+
+      {/* Barra CTA mobile: solo sotto md, fuori dal flusso, con la safe area dei
+          telefoni con notch. */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-5 pt-3 backdrop-blur-sm md:hidden ${
+          showStickyCta ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+        }`}
+        style={{
+          borderColor: RULE_SOFT,
+          paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+          // `visibility` toglie il bottone dall'ordine di tabulazione quando la
+          // barra e' fuori schermo; ritardata in uscita per non tagliare il fade.
+          visibility: showStickyCta ? 'visible' : 'hidden',
+          transition: showStickyCta
+            ? 'opacity 300ms ease, transform 300ms ease, visibility 0s'
+            : 'opacity 300ms ease, transform 300ms ease, visibility 0s 300ms',
+        }}
+      >
+        <Button variant="premium" size="hero" className="h-[54px] w-full text-lg" onClick={startQuiz}>
+          {cl.cta}
+          <ArrowRight className="ml-1.5 h-5 w-5" />
+        </Button>
       </div>
     </div>
   );

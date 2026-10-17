@@ -40,6 +40,14 @@ const coppia = {
       'Calcoliamo la carta natale di ciascuno e analizziamo la sovrapposizione: è la sinastria.',
       'Ricevete il report completo: circa 10 pagine in italiano.',
     ],
+    ctaNote: 'Poche domande veloci · Anteprima gratuita, senza registrazione',
+    plateCaption: 'Tav. I · Carta di sinastria',
+    quotePlateCaption: 'Tav. II',
+    quote:
+      'Due carte natali non si sommano: si sovrappongono. È nella sovrapposizione che una relazione diventa leggibile.',
+    closingLine: 'Partite dalle vostre due carte. Il resto della storia si legge lì.',
+    seoDescription:
+      'La sinastria confronta le due carte natali e spiega perché su certe cose vi capite al volo e su altre no. Archetipo di coppia, sei punteggi di compatibilità e otto sezioni di lettura, in italiano.',
   },
   quiz: {
     date: {
