@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useQuiz, clearFunnelStorage } from "@/context/QuizContext";
+import { useQuiz, clearFunnelStorage, clearPurchaseSessionId } from "@/context/QuizContext";
 import { supabase } from "@/integrations/supabase/client";
 import ReportSection from "@/components/ReportSection";
 import ReportFeedback from "@/components/ReportFeedback";
@@ -625,6 +625,7 @@ const Report = () => {
     }
     await supabase.auth.signOut();
     clearFunnelStorage();
+    clearPurchaseSessionId();
     navigate("/");
   };
 

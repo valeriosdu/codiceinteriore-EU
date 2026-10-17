@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { getFunnelStage, getStoredSessionId } from "@/context/QuizContext";
+import { getPurchaseSessionId, hasFreshFunnelSession } from "@/context/QuizContext";
 import { Button } from "@/components/ui/button";
 import { LogIn, User } from "lucide-react";
 import { useAuthReady } from "@/hooks/useAuthReady";
@@ -39,9 +39,16 @@ const Header = ({ backButton }: HeaderProps) => {
         }
       }
 
-      const stage = getFunnelStage();
-      const storedSessionId = getStoredSessionId();
-      if (storedSessionId && (stage === "teaser" || stage === "offer")) {
+      // Same order as Index: first anyone who paid and never activated (still
+      // anonymous, so the signed-in branch above does not see them), then
+      // anyone whose reading is still inside the 7-day window.
+      const purchaseSessionId = getPurchaseSessionId();
+      if (purchaseSessionId) {
+        navigate(`/activate?session_id=${encodeURIComponent(purchaseSessionId)}`);
+        return;
+      }
+
+      if (hasFreshFunnelSession()) {
         navigate("/teaser");
         return;
       }

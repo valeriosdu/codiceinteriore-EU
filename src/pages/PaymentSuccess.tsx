@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
-import { useQuiz } from "@/context/QuizContext";
+import { useQuiz, rememberPurchaseSessionId } from "@/context/QuizContext";
 import { supabase } from "@/integrations/supabase/client";
 import { isLovablePreview } from "@/lib/preview-mode";
 import { trackEvent } from "@/lib/analytics";
@@ -124,6 +124,20 @@ const PaymentSuccess = () => {
         body: { sessionId },
       });
       if (cancelled) return;
+
+      // The only client-side trace that this person paid. Until now the
+      // purchase identity lived only in the URL (/success?session_id=… →
+      // /activate?session_id=…) and then in the profile: a buyer who never
+      // activates stays anonymous, and without a marker Index would offer them
+      // the reading they already bought. Written only after get-checkout-email
+      // recognised the checkout (it answers 402/500 for unpaid or unknown ids),
+      // so a made-up session_id in the URL leaves nothing behind. Signed-in
+      // buyers have an account and are routed by it, so they get no marker.
+      if (checkoutData) {
+        const { data: authSession } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (!authSession.session) rememberPurchaseSessionId(sessionId);
+      }
 
       const purchaseType = checkoutData?.purchaseType || fallbackPurchaseType;
       const amountTotal = Number(checkoutData?.amountTotal);
