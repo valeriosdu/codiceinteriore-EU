@@ -14,6 +14,11 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
+// Per-run cap for Sweep B and C. Normally the candidates are 0-3: the limit only
+// matters on a bad day, so we do not launch dozens of LLM generations at once.
+// Anything excluded comes back on the next tick.
+const RECOVERY_BATCH_LIMIT = 50;
+
 function parseJwtClaims(token: string): Record<string, unknown> | null {
   const parts = token.split(".");
   if (parts.length < 2) return null;
@@ -161,17 +166,32 @@ Deno.serve(async (req) => {
     }
 
     // ---- Sweep B: entitlement sweep ----
+    // "Report still missing" is decided in SQL, not by downloading the reports.
+    // The old query carried full_report + natal_chart of EVERY delivered report
+    // (~25-30KB per row) just to discard them in JS, 480 times a day; and with
+    // no ORDER BY, beyond PostgREST's 1000-row cap the newest sales could be left
+    // out of the check. IS NULL / IS NOT NULL do not decompress the jsonb. The
+    // limit contains a bad day's wave (e.g. the LLM down): normally 0-3 candidates.
     let query = supabaseAdmin
       .from("user_entitlements")
       .select(
-        "profile_id, quiz_session_id, stripe_session_id, created_at, profiles!inner(email), quiz_sessions!inner(id, full_report, processing_status, natal_chart, report_started_at)",
+        "profile_id, quiz_session_id, stripe_session_id, created_at, profiles!inner(email), quiz_sessions!inner(id, processing_status, report_started_at)",
       )
       .eq("entitlement_type", "natal_report")
-      .eq("status", "active");
+      .eq("status", "active")
+      .is("quiz_sessions.full_report", null)
+      .not("quiz_sessions.natal_chart", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(RECOVERY_BATCH_LIMIT);
     if (profileFilter) query = query.eq("profile_id", profileFilter);
 
     const { data: rows, error } = await query;
     if (error) throw error;
+    if ((rows?.length ?? 0) >= RECOVERY_BATCH_LIMIT) {
+      console.warn(
+        `[recover-pending-reports] Sweep B hit the ${RECOVERY_BATCH_LIMIT}-row cap; the rest are picked up on later ticks`,
+      );
+    }
 
     // Watchdog threshold: a session in `report_processing` whose entitlement was
     // created more than this long ago is presumed to have lost its background
@@ -187,8 +207,6 @@ Deno.serve(async (req) => {
     const candidates = (rows || []).filter((row: any) => {
       const qs = row.quiz_sessions;
       if (!qs) return false;
-      if (qs.full_report) return false;
-      if (!qs.natal_chart) return false;
       if (qs.processing_status === "report_processing") {
         // Measure staleness from when this generation actually (re)started, not
         // from the entitlement's creation. An admin regenerate of an old report
@@ -272,24 +290,26 @@ Deno.serve(async (req) => {
       detail?: string;
     }> = [];
 
-    const { data: synRows } = await supabaseAdmin
+    // Same principle as Sweep B: "report missing" is filtered in SQL instead of
+    // downloading full_report and synastry_data of every paid synastry.
+    const { data: synRows, error: synError } = await supabaseAdmin
       .from("checkout_sessions")
-      .select(
-        "synastry_session_id, synastry_sessions!inner(id, full_report, processing_status, synastry_data)",
-      )
+      .select("synastry_session_id, synastry_sessions!inner(id, processing_status)")
       .in("purchase_type", ["synastry", "synastry_launch"])
       .eq("payment_status", "paid")
-      .not("synastry_session_id", "is", null);
+      .not("synastry_session_id", "is", null)
+      .is("synastry_sessions.full_report", null)
+      .order("created_at", { ascending: false })
+      .limit(RECOVERY_BATCH_LIMIT);
+    if (synError) {
+      // Do not throw: Sweep A and B results must still be returned.
+      console.error("[recover-pending-reports] synastry sweep query failed:", synError.message);
+    }
 
-    const synCandidates = (synRows || []).filter((row: any) => {
-      const ss = row.synastry_sessions;
-      if (!ss) return false;
-      if (ss.full_report) return false;
-      // Sia "synastry_ready" sia "failed" sia altri stati che non sono "report_ready"
-      // sono candidati per il retry, purche non siano "report_processing" recente
-      // (controllo gestito dal CAS lock di generate-synastry-report).
-      return true;
-    });
+    // "synastry_ready", "failed" and any other state that is not "report_ready" are
+    // retry candidates, as long as they are not a recent "report_processing"
+    // (that check is handled by the CAS lock of generate-synastry-report).
+    const synCandidates = (synRows || []).filter((row: any) => Boolean(row.synastry_sessions));
 
     for (const row of synCandidates) {
       const synId = (row as any).synastry_session_id as string;
