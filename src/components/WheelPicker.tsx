@@ -25,7 +25,7 @@ interface WheelPickerProps {
 //
 // It never auto-commits: `onChange` fires only from a real gesture (scroll settle
 // or row tap), never from the initial positioning, so the anchor shown at rest is
-// never submitted until the user actually engages the wheel.
+// never confirmed until the user actually engages the wheel.
 export default function WheelPicker({
   items,
   value,
@@ -37,7 +37,13 @@ export default function WheelPicker({
   className,
 }: WheelPickerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const readyRef = useRef(false);
+  // Commit-from-scroll only runs after a real user gesture. The initial
+  // positioning writes el.scrollTop, and writing scrollTop emits a 'scroll'
+  // event: the previous guard re-opened after a requestAnimationFrame (~16ms)
+  // while the settle commit fires at 120ms, so every wheel whose anchor was not
+  // the first index confirmed its own value at mount (a user who touched
+  // nothing submitted 15/06/1980 12:00).
+  const gesturedRef = useRef(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const pad = (itemHeight * (visibleCount - 1)) / 2;
@@ -51,25 +57,24 @@ export default function WheelPicker({
 
   // Position the wheel on the current value (or anchor) without firing onChange.
   // Steps remount this component as the funnel advances, so this also covers the
-  // "navigate back" case. readyRef gates out the scroll events this triggers.
+  // "navigate back" case. gesturedRef gates out the scroll events this triggers.
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    readyRef.current = false;
     el.scrollTop = indexOfValue(value) * itemHeight;
-    const id = requestAnimationFrame(() => {
-      readyRef.current = true;
-    });
-    return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, anchor, items, itemHeight]);
 
   const commitFromScroll = () => {
     const el = scrollRef.current;
-    if (!el || !readyRef.current) return;
+    if (!el || !gesturedRef.current) return;
     const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / itemHeight)));
     const item = items[idx];
     if (item && item.value !== value) onChange(item.value);
+  };
+
+  const markGesture = () => {
+    gesturedRef.current = true;
   };
 
   const handleScroll = () => {
@@ -77,7 +82,10 @@ export default function WheelPicker({
     settleTimer.current = setTimeout(commitFromScroll, 120);
   };
 
-  const selectedValue = value ?? anchor;
+  // While value is null the wheel shows the anchor but no row gets the
+  // "chosen" style: otherwise an unconfirmed value looks identical to a real
+  // choice and the user cannot tell why Continue does not respond.
+  const hasValue = value !== null;
 
   return (
     <div
@@ -89,6 +97,10 @@ export default function WheelPicker({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
+        onPointerDown={markGesture}
+        onTouchStart={markGesture}
+        onWheel={markGesture}
+        onKeyDown={markGesture}
         className="h-full overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ scrollSnapType: 'y mandatory', touchAction: 'pan-y', overscrollBehavior: 'contain' }}
       >
@@ -100,13 +112,13 @@ export default function WheelPicker({
             role="option"
             aria-selected={value === it.value}
             onClick={() => {
-              readyRef.current = true;
+              gesturedRef.current = true;
               scrollRef.current?.scrollTo({ top: i * itemHeight, behavior: 'smooth' });
               if (it.value !== value) onChange(it.value);
             }}
             className={cn(
               'flex w-full shrink-0 items-center justify-center text-sm tabular-nums transition-colors',
-              selectedValue === it.value ? 'text-foreground font-medium' : 'text-muted-foreground',
+              hasValue && value === it.value ? 'text-foreground font-medium' : 'text-muted-foreground',
             )}
             style={{ height: itemHeight, scrollSnapAlign: 'center' }}
           >

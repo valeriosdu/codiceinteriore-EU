@@ -62,6 +62,10 @@ const quiz: Messages['quiz'] = {
       hour: 'Hour',
       minute: 'Minutes',
       hint: 'If you don’t know it exactly, pick the closest time you can.',
+      unknown: {
+        label: { self: 'I don’t know my time of birth', other: 'I don’t know their time of birth' },
+        note: 'We’ll use midday: your reading stays valid, but the Rising sign and houses will be approximate.',
+      },
     },
     place: {
       title: { self: 'Your place of birth', other: 'Their place of birth' },
@@ -93,6 +97,25 @@ const quiz: Messages['quiz'] = {
   helper: {
     focus: 'Almost there',
     name: 'One more step',
+  },
+  wheelHint: {
+    date: {
+      all: 'Swipe or tap the wheels to confirm day, month and year.',
+      some: (fields: string) => `Please check: ${fields}.`,
+    },
+    time: {
+      all: 'Swipe or tap the wheels to confirm hour and minutes.',
+      some: (fields: string) => `Please check: ${fields}.`,
+    },
+    fields: {
+      day: 'the day',
+      month: 'the month',
+      year: 'the year',
+      hour: 'the hour',
+      minute: 'the minutes',
+    },
+    join: (items: string[]) =>
+      items.length > 1 ? items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1] : (items[0] ?? ''),
   },
   cta: {
     continue: 'Continue',

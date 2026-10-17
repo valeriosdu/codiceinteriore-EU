@@ -57,8 +57,11 @@ const Processing = () => {
         // for back-compat, while attivazione writes its symptom + narrative
         // answers into quiz_answers and leaves the dedicated columns empty.
         const funnelSlug = data.funnelSlug || 'classica';
-        const quizAnswers: Record<string, string> = {};
+        const quizAnswers: Record<string, string | boolean> = {};
         if (data.desiredAngle) quizAnswers.intent = data.desiredAngle;
+        // birth_time still saves noon: without this flag "did not know the time"
+        // can no longer be told apart from "born at 12:00".
+        if (data.birthTimeUnknown) quizAnswers.birth_time_unknown = true;
         if (funnelSlug === 'attivazione') {
           if (data.symptomResponse) quizAnswers.symptom = data.symptomResponse;
           if (data.narrativeResponse) quizAnswers.narrative = data.narrativeResponse;

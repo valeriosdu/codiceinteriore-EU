@@ -51,6 +51,7 @@ const coppia: Messages['coppia'] = {
       titleA: 'When you were born',
       titleB: 'When your partner was born',
       hint: 'Scroll to pick day, month and year.',
+      confirmHint: 'Swipe or tap the wheels to confirm the date of birth.',
       day: 'Day',
       month: 'Month',
       year: 'Year',
@@ -64,6 +65,7 @@ const coppia: Messages['coppia'] = {
       unknownLabel: "I don't know it",
       unknownNote:
         "Without the birth time, the synastry will be partial for this person (no houses or Rising). Go ahead anyway, the rest of the analysis still holds.",
+      confirmHint: "Tap a wheel to confirm the time, or tick \"I don't know it\".",
     },
     place: {
       titleA: 'Where you were born',

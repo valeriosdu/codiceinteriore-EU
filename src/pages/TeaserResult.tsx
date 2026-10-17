@@ -373,7 +373,7 @@ const TeaserResult = () => {
                     {data.birthDate.year}
                   </span>
                 )}
-                {data.birthTime && (
+                {data.birthTime && !data.birthTimeUnknown && (
                   <span>
                     {" · "}
                     {String(data.birthTime.hour).padStart(2, "0")}:{String(data.birthTime.minute).padStart(2, "0")}

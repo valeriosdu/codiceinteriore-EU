@@ -3,6 +3,11 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 export interface QuizData {
   birthDate: { day: number; month: number; year: number } | null;
   birthTime: { hour: number; minute: number } | null;
+  // The user declared they do not know their birth time. birthTime still
+  // carries 12:00 (the astrological convention: it minimises the error on
+  // Ascendant and houses, which are unreliable without the exact time), so a
+  // separate flag tells it apart from someone who really picked noon.
+  birthTimeUnknown: boolean;
   birthPlace: string;
   birthLat: number | null;
   birthLng: number | null;
@@ -44,6 +49,7 @@ interface QuizContextType {
 const EMPTY_QUIZ_DATA: QuizData = {
   birthDate: null,
   birthTime: null,
+  birthTimeUnknown: false,
   birthPlace: '',
   birthLat: null,
   birthLng: null,

@@ -62,6 +62,10 @@ const quiz: Messages['quiz'] = {
       hour: 'Uur',
       minute: 'Minuten',
       hint: 'Weet je het niet precies, kies dan de tijd die er het dichtst bij komt.',
+      unknown: {
+        label: { self: 'Ik ken mijn geboortetijd niet', other: 'Ik ken de geboortetijd van de ander niet' },
+        note: 'We gebruiken 12:00 uur: je duiding blijft geldig, maar de ascendant en de huizen zijn indicatief.',
+      },
     },
     place: {
       title: { self: 'Je geboorteplaats', other: 'De geboorteplaats van de ander' },
@@ -98,6 +102,25 @@ const quiz: Messages['quiz'] = {
   helper: {
     focus: 'Bijna klaar',
     name: 'Nog één stap',
+  },
+  wheelHint: {
+    date: {
+      all: 'Veeg of tik op de wielen om dag, maand en jaar te bevestigen.',
+      some: (fields: string) => `Controleer nog: ${fields}.`,
+    },
+    time: {
+      all: 'Veeg of tik op de wielen om uur en minuten te bevestigen.',
+      some: (fields: string) => `Controleer nog: ${fields}.`,
+    },
+    fields: {
+      day: 'de dag',
+      month: 'de maand',
+      year: 'het jaar',
+      hour: 'het uur',
+      minute: 'de minuten',
+    },
+    join: (items: string[]) =>
+      items.length > 1 ? items.slice(0, -1).join(', ') + ' en ' + items[items.length - 1] : (items[0] ?? ''),
   },
   cta: {
     continue: 'Doorgaan',
