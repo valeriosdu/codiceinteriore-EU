@@ -94,6 +94,10 @@ const astrologyGuide: Messages['astrologyGuide'] = {
       `Koop ${packCredits} nieuwe vragen om verder de diepte in te gaan met je horoscoop.`,
     nearEndSub: (packCredits) =>
       `Voeg nog ${packCredits} vragen toe zodat je niet hoeft te stoppen net als het interessant wordt.`,
+    addHeadline: 'Voeg vragen toe aan je gids',
+    addSub: (packCredits) =>
+      `Nog ${packCredits} vragen om te gebruiken wanneer je wilt, zonder vervaldatum.`,
+    menuItem: (packCredits) => `Koop ${packCredits} vragen`,
     balance: (n) => `Huidig saldo: ${n} ${n === 1 ? 'vraag' : 'vragen'}.`,
     buyCta: (packCredits, priceLabel) => `Koop ${packCredits} vragen · ${priceLabel}`,
   },

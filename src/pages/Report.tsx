@@ -33,6 +33,7 @@ import TransitsUpsellCard from "@/components/TransitsUpsellCard";
 import { AstrologyGuideProvider } from "@/components/astrology-guide/AstrologyGuideContext";
 import AstrologyGuideWidget from "@/components/astrology-guide/AstrologyGuideWidget";
 import AskAboutSectionButton from "@/components/astrology-guide/AskAboutSectionButton";
+import BuyPackMenuItem from "@/components/astrology-guide/BuyPackMenuItem";
 import { isLovablePreview, DEMO_FULL_REPORT, DEMO_USER_NAME, DEMO_EMAIL } from "@/lib/preview-mode";
 import { getFunnelContent } from "@/funnels/registry";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -963,6 +964,7 @@ const Report = () => {
                     <UserPlus className="mr-2 h-4 w-4" />
                     {r.header.buyAnother}
                   </DropdownMenuItem>
+                  <BuyPackMenuItem />
                   {subActive ? (
                     <DropdownMenuItem onSelect={() => openTransitPortal()} disabled={portalLoading}>
                       <Settings className="mr-2 h-4 w-4" />

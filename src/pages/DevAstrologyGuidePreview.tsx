@@ -188,6 +188,7 @@ const DevAstrologyGuidePreview = () => {
       credits,
       questions,
       isOpen,
+      showPackOffer: false,
       pendingSectionId,
       pendingPrefill,
       submitting: false,
