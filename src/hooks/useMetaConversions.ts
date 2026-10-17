@@ -1,6 +1,7 @@
 import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAnonymousId } from "@/lib/analytics";
+import { planBrowserPurchase } from "@/lib/meta-events";
 import { MARKET } from "@/markets";
 import type { Language } from "@/markets";
 
@@ -110,6 +111,12 @@ function getSessionFallbackId(): string {
  * Deterministic event_id so Meta deduplicates the same logical event even
  * if it is sent multiple times (page refresh, effect re-run, retried capture).
  * Format: <event>:<externalId|sessionFallback>[:<purchaseType>]
+ *
+ * Il fallback su sessionStorage va bene per gli eventi di funnel, che nascono
+ * solo qui. NON va bene per Purchase: quello lo spara anche il server
+ * (_shared/fire-meta-purchase.ts) con `purchase:<sessionId>:<purchaseType>`, e
+ * un id casuale al posto del session id produrrebbe due Purchase distinti per
+ * lo stesso ordine. Vedi buildPurchaseEventId.
  */
 function buildEventId(eventName: string, externalId?: string, purchaseType?: string): string {
   const base = externalId && externalId.length > 0 ? externalId : getSessionFallbackId();
@@ -131,6 +138,9 @@ interface TrackOptions {
   purchaseType?: string;
   birthDate?: BirthDate | null;
   customData?: Record<string, unknown>;
+  /** Sostituisce l'event_id derivato: serve al Purchase, che deve combaciare
+   *  con quello del server. */
+  eventId?: string;
 }
 
 const OFFER_VALUES: Record<string, number> = {
@@ -168,7 +178,7 @@ export function getMetaBrowserIds(): { fbc?: string; fbp?: string } {
 }
 
 async function trackEvent(eventName: string, options: TrackOptions = {}) {
-  const eventId = buildEventId(eventName, options.externalId, options.purchaseType);
+  const eventId = options.eventId ?? buildEventId(eventName, options.externalId, options.purchaseType);
 
   // Doppio invio browser + CAPI con lo STESSO event_id, come raccomanda Meta:
   // il pixel porta segnali che il server non ha (cookie di prima parte, sessione
@@ -224,7 +234,7 @@ export function useMetaConversions() {
 
   const trackOnce = useCallback((eventName: string, options: TrackOptions = {}) => {
     // Local in-memory guard — saves a roundtrip. Server-side dedup uses event_id.
-    const key = buildEventId(eventName, options.externalId, options.purchaseType);
+    const key = options.eventId ?? buildEventId(eventName, options.externalId, options.purchaseType);
     if (firedRef.current.has(key)) return;
     firedRef.current.add(key);
     trackEvent(eventName, options);
@@ -297,7 +307,20 @@ export function useMetaConversions() {
   }, [trackOnce]);
 
   const trackPurchase = useCallback((options: { value: number; currency: string; email?: string; firstName?: string; sessionId?: string; purchaseType?: string; birthDate?: BirthDate | null }) => {
+    // Quando l'id non è ricostruibile identico a quello del server si
+    // rinuncia al ramo browser (il webhook copre l'ordine), tranne per le
+    // coppie Stripe che non hanno un gemello server-side: vedi
+    // planBrowserPurchase.
+    const plan = planBrowserPurchase(options.sessionId, options.purchaseType);
+    if (!plan.fire) {
+      console.warn(
+        "[meta] Purchase not tracked from the browser: missing sessionId or purchaseType. The webhook covers it.",
+      );
+      return;
+    }
+
     trackOnce("Purchase", {
+      eventId: plan.eventId,
       email: options.email,
       firstName: options.firstName,
       externalId: options.sessionId,
