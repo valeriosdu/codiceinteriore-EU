@@ -4,6 +4,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { capturePaypalOrder, getPaypalOrder, opaqueIdToPaypal, resolvePaypalCreds } from "../_shared/paypal.ts";
 import { reconcilePaidStripeSession } from "../_shared/stripe-reconcile.ts";
 import { getMarket } from "../_shared/markets.ts";
+import { ASTROLOGY_GUIDE_PURCHASE_TYPE } from "../_shared/astrology-products.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -607,6 +608,29 @@ serve(async (req) => {
         stripeSessionId: checkout.id,
         purchaseType: checkout.purchaseType,
         delegatedToSubscriptionWebhook: true,
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ---- ASTROLOGY GUIDE PACK EARLY RETURN ----
+    // Il pacchetto domande non è una lettura: non ha user_reports, non ha
+    // entitlement, non tocca profiles.stripe_session_id. Senza questo ramo
+    // cadeva nel percorso natal generico, che marcava is_active sul report
+    // sbagliato (trigger ensure_single_active_user_report) e creava un
+    // entitlement natal_report fantasma intestato alla sessione del pacchetto.
+    // I crediti NON si concedono qui: li concede stripe-reconcile (Stripe).
+    // Un secondo percorso di grant sarebbe una superficie di idempotenza in più
+    // da tenere allineata.
+    if (checkout.purchaseType === ASTROLOGY_GUIDE_PURCHASE_TYPE) {
+      await supabaseAdmin.from("checkout_sessions").update({
+        claimed_profile_id: profile.id,
+        claimed_at: new Date().toISOString(),
+        customer_email: checkout.customerEmail || profile.email,
+      }).eq("stripe_session_id", checkout.id);
+      return new Response(JSON.stringify({
+        synced: true,
+        stripeSessionId: checkout.id,
+        purchaseType: checkout.purchaseType,
+        isAstrologyPack: true,
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
