@@ -53,6 +53,10 @@ type AstrologyGuideState = {
   credits: AstrologyGuideCredits | null;
   questions: AstrologyGuideQuestion[];
   isOpen: boolean;
+  // Forces the pack card even with credits available. Only the ?openGuide=pack
+  // link and the user-menu entry set it: otherwise the offer shows up on its
+  // own only when credits run low, so a customer could not be sent to buy it.
+  showPackOffer: boolean;
   pendingSectionId: string | null;
   pendingPrefill: string | null;
   submitting: boolean;
@@ -60,7 +64,12 @@ type AstrologyGuideState = {
 };
 
 type AstrologyGuideActions = {
-  open: (options?: { sectionId?: string | null; prefill?: string | null }) => void;
+  open: (options?: {
+    sectionId?: string | null;
+    prefill?: string | null;
+    /** Show the pack offer even with credits available. */
+    packOffer?: boolean;
+  }) => void;
   close: () => void;
   toggle: () => void;
   consumePendingPrefill: () => void;
@@ -110,6 +119,7 @@ export const AstrologyGuideProvider = ({
   const [credits, setCredits] = useState<AstrologyGuideCredits | null>(null);
   const [questions, setQuestions] = useState<AstrologyGuideQuestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [showPackOffer, setShowPackOffer] = useState(false);
   const [pendingSectionId, setPendingSectionId] = useState<string | null>(null);
   const [pendingPrefill, setPendingPrefill] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -304,14 +314,17 @@ export const AstrologyGuideProvider = ({
   }, [quizSessionId]);
 
   // Auto-open the widget when arriving from the transit PDF CTA link
-  // (?openGuide=1). We strip the param after opening so a refresh of the
-  // page does not retrigger the open in a loop. Any other URL params
-  // (e.g. ?source=transit-pdf used for analytics) are preserved.
+  // (?openGuide=1). ?openGuide=pack opens it and also shows the pack offer,
+  // which is otherwise not linkable. We strip the param after opening so a
+  // refresh of the page does not retrigger the open in a loop. Any other URL
+  // params (e.g. ?source=transit-pdf used for analytics) are preserved.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("openGuide") !== "1") return;
+    const openGuide = params.get("openGuide");
+    if (openGuide !== "1" && openGuide !== "pack") return;
     setIsOpen(true);
+    if (openGuide === "pack") setShowPackOffer(true);
     params.delete("openGuide");
     const search = params.toString();
     const newUrl =
@@ -324,6 +337,7 @@ export const AstrologyGuideProvider = ({
   const open: AstrologyGuideActions["open"] = useCallback((options) => {
     if (options?.sectionId !== undefined) setPendingSectionId(options.sectionId);
     if (options?.prefill !== undefined) setPendingPrefill(options.prefill);
+    if (options?.packOffer) setShowPackOffer(true);
     setIsOpen(true);
   }, []);
 
@@ -434,6 +448,7 @@ export const AstrologyGuideProvider = ({
       credits,
       questions,
       isOpen,
+      showPackOffer,
       pendingSectionId,
       pendingPrefill,
       submitting,
@@ -453,6 +468,7 @@ export const AstrologyGuideProvider = ({
       credits,
       questions,
       isOpen,
+      showPackOffer,
       pendingSectionId,
       pendingPrefill,
       submitting,

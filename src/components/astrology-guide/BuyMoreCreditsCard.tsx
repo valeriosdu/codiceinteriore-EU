@@ -11,10 +11,20 @@ const BuyMoreCreditsCard = () => {
   const packPrice = m.common.priceLabel(market.prices.astroPack);
   const balance = credits?.balance ?? 0;
   const isExhausted = balance <= 0;
-  const headline = isExhausted ? g.buyMore.exhaustedHeadline : g.buyMore.nearEndHeadline;
+  // With a comfortable balance the card only appears via ?openGuide=pack or the
+  // menu entry: "about to run out" would be false and the balance line below
+  // would contradict it.
+  const isRunningLow = balance > 0 && balance <= 2;
+  const headline = isExhausted
+    ? g.buyMore.exhaustedHeadline
+    : isRunningLow
+      ? g.buyMore.nearEndHeadline
+      : g.buyMore.addHeadline;
   const sub = isExhausted
     ? g.buyMore.exhaustedSub(PACK_CREDITS)
-    : g.buyMore.nearEndSub(PACK_CREDITS);
+    : isRunningLow
+      ? g.buyMore.nearEndSub(PACK_CREDITS)
+      : g.buyMore.addSub(PACK_CREDITS);
 
   return (
     <div className="border-t border-border/60 bg-secondary/40 p-4 space-y-3">

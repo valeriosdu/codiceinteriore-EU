@@ -92,6 +92,10 @@ const astrologyGuide = {
       `Acquista ${packCredits} nuove domande per continuare ad approfondire la tua carta.`,
     nearEndSub: (packCredits: number) =>
       `Aggiungi altre ${packCredits} domande così non ti fermi proprio sul più bello.`,
+    addHeadline: 'Aggiungi domande alla tua Guida',
+    addSub: (packCredits: number) =>
+      `Altre ${packCredits} domande da usare quando vuoi, senza scadenza.`,
+    menuItem: (packCredits: number) => `Acquista ${packCredits} domande`,
     balance: (n: number) => `Saldo attuale: ${n} ${n === 1 ? 'domanda' : 'domande'}.`,
     buyCta: (packCredits: number, priceLabel: string) =>
       `Acquista ${packCredits} domande · ${priceLabel}`,

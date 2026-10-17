@@ -8,7 +8,7 @@ import { INCLUDED_FREE_CREDITS, PACK_CREDITS } from "./constants";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const AstrologyGuideWidget = () => {
-  const { isOpen, toggle, close, questions, credits, loading } = useAstrologyGuide();
+  const { isOpen, toggle, close, questions, credits, loading, showPackOffer } = useAstrologyGuide();
   const { m, market } = useI18n();
   const g = m.astrologyGuide;
   const packPrice = m.common.priceLabel(market.prices.astroPack);
@@ -148,9 +148,10 @@ const AstrologyGuideWidget = () => {
 
             {noCredits ? <BuyMoreCreditsCard /> : <AstrologyGuideComposer />}
 
-            {!noCredits && balance <= 2 && totalGranted > 0 && totalUsed > 0 && (
-              <BuyMoreCreditsCard />
-            )}
+            {!noCredits &&
+              (showPackOffer || (balance <= 2 && totalGranted > 0 && totalUsed > 0)) && (
+                <BuyMoreCreditsCard />
+              )}
           </div>
         </div>
       )}

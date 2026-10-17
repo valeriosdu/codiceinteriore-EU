@@ -94,6 +94,10 @@ const astrologyGuide: Messages['astrologyGuide'] = {
       `Buy ${packCredits} new questions to keep exploring your chart.`,
     nearEndSub: (packCredits) =>
       `Add another ${packCredits} questions so you don't stop right at the best part.`,
+    addHeadline: 'Add questions to your guide',
+    addSub: (packCredits) =>
+      `Another ${packCredits} questions to use whenever you like, with no expiry.`,
+    menuItem: (packCredits) => `Buy ${packCredits} questions`,
     balance: (n) => `Current balance: ${n} ${n === 1 ? 'question' : 'questions'}.`,
     buyCta: (packCredits, priceLabel) =>
       `Buy ${packCredits} questions · ${priceLabel}`,
