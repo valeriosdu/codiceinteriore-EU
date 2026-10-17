@@ -99,8 +99,10 @@
   }
 
   /* === Manoscritto contemporaneo: utilities tipografiche editoriali ===
-     Usate solo nelle pagine /coppia/* per dare una voce visiva distinta
-     al prodotto sinastria, allineata al brand "astrologia colta italiana". */
+     Nate per le pagine /coppia/*, per dare una voce visiva distinta al
+     prodotto sinastria, allineata al brand "astrologia colta italiana".
+     `font-editorial` serve anche i numeri di capitolo di InsightCard, che
+     riprendono la grafica delle landing /lp/*. */
 
   .font-editorial {
     font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
