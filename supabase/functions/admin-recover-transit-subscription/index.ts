@@ -14,6 +14,7 @@ import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
 import { getSubscriptionPeriod } from "../_shared/stripe-basil.ts";
 import { getMarket } from "../_shared/markets.ts";
+import { resolvePromptLang } from "../_shared/prompts/lang.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -119,6 +120,10 @@ serve(async (req) => {
         break;
       } catch (err) {
         lastStripeError = err;
+        // Solo "non esiste su questo account" passa al prossimo: un 401/429 o un
+        // errore di rete sull'account giusto va mostrato, non coperto dal
+        // "No such subscription" dell'account sbagliato.
+        if ((err as { code?: string }).code !== "resource_missing") throw err;
       }
     }
     if (!subscription) throw lastStripeError;
@@ -169,7 +174,7 @@ serve(async (req) => {
 
     const { data: quizSession, error: quizErr } = await supabaseAdmin
       .from("quiz_sessions")
-      .select("id, user_name, birth_timezone")
+      .select("id, user_name, birth_timezone, language, market")
       .eq("id", quizSessionId)
       .maybeSingle();
     if (quizErr || !quizSession?.id) {
@@ -179,6 +184,10 @@ serve(async (req) => {
     }
 
     const { periodStart, periodEnd } = getSubscriptionPeriod(subscription);
+    // Come stripe-subscription-webhook: lingua e mercato viaggiano sulla riga,
+    // li leggono il ciclo transiti e il promemoria di rinnovo.
+    const lang = resolvePromptLang((quizSession as { language?: string | null }).language);
+    const marketId = getMarket((quizSession as { market?: string | null }).market).id;
     const priceId = subscription.items.data[0]?.price?.id || null;
     const syntheticSessionId = `sub_${subscriptionId}__${Math.floor(periodStart.getTime() / 1000)}`;
 
@@ -197,6 +206,8 @@ serve(async (req) => {
         canceled_at: subscription.canceled_at
           ? new Date(subscription.canceled_at * 1000).toISOString()
           : null,
+        language: lang,
+        market: marketId,
       },
       { onConflict: "stripe_subscription_id" },
     );
@@ -274,7 +285,7 @@ serve(async (req) => {
         templateName: "transits-activated",
         recipientEmail: customerEmail,
         idempotencyKey: `transits-activated-${syntheticSessionId}`,
-        templateData: { name: quizSession.user_name || "", isRenewal: false },
+        templateData: { name: quizSession.user_name || "", isRenewal: false, lang, market: marketId },
       });
       syncBrevoContactBackground({
         email: customerEmail,
