@@ -19,9 +19,13 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 // anche le virgolette curve (”’) perché in inglese e olandese la frase finisce
 // spesso dentro la citazione. Niente lookbehind per le abbreviazioni: lancia
 // SyntaxError a parse time sui Safari iOS vecchi e farebbe cadere l'intero bundle.
-const splitLead = (body: string): [string, string] => {
-  const match = body.trim().match(/^(.+?[.!?…]["'»”’)]?)\s+(.+)$/s);
-  return match ? [match[1], match[2]] : [body.trim(), ''];
+// Al suo posto un lookahead: si stacca solo se la frase dopo comincia con una
+// maiuscola (o ¿ ¡ « “), cosi' "bijv. erkenning" o "Forse... non" restano interi.
+// body puo' mancare: process-session-insights non valida i singoli item.
+const splitLead = (body: string | undefined): [string, string] => {
+  const text = (body ?? '').trim();
+  const match = text.match(/^(.+?[.!?…]["'»”’)]?)\s+(?=[\p{Lu}¿¡"“«(])(.+)$/su);
+  return match ? [match[1], match[2]] : [text, ''];
 };
 
 const InsightCard = ({ title, body, index = 0 }: InsightCardProps) => {
@@ -32,7 +36,7 @@ const InsightCard = ({ title, body, index = 0 }: InsightCardProps) => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.15, duration: 0.5 }}
-      className="rounded-xl border border-border bg-card px-6 py-4 md:px-7 md:py-5 h-full transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+      className="rounded-xl border border-border bg-card px-6 py-4 md:px-7 md:py-5 h-full transition-[border-color,box-shadow] duration-300 hover:border-primary/30 hover:shadow-md"
     >
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="min-w-0 font-display text-lg md:text-xl font-semibold leading-snug text-foreground">

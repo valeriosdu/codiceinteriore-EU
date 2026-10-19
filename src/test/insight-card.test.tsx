@@ -77,6 +77,34 @@ describe("InsightCard, frase di apertura", () => {
   });
 });
 
+describe("InsightCard, testi che non vanno spezzati", () => {
+  it("non stacca dopo un'abbreviazione seguita da minuscola", () => {
+    const { container } = render(
+      <InsightCard title="Erkenning" body="Je zoekt bijv. erkenning bij anderen. Dat kost energie." />,
+    );
+    expect(paragrafi(container)).toEqual([
+      "Je zoekt bijv. erkenning bij anderen.",
+      "Dat kost energie.",
+    ]);
+  });
+
+  it("non stacca sui puntini di sospensione a meta' frase", () => {
+    const { container } = render(<InsightCard title="Dubbio" body="Forse... non lo sai ancora." />);
+    expect(paragrafi(container)).toEqual(["Forse... non lo sai ancora."]);
+  });
+
+  it("non stacca dentro un numero decimale", () => {
+    const { container } = render(<InsightCard title="Ritmo" body="Hai 3.5 anni di ciclo. Poi cambia." />);
+    expect(paragrafi(container)).toEqual(["Hai 3.5 anni di ciclo.", "Poi cambia."]);
+  });
+
+  it("un item senza body non fa cadere la pagina", () => {
+    const body = undefined as unknown as string;
+    const { container } = render(<InsightCard title="Solo titolo" body={body} />);
+    expect(paragrafi(container)).toEqual([""]);
+  });
+});
+
 describe("InsightCard, numero di capitolo", () => {
   const numero = (index: number) => {
     const { container } = render(<InsightCard title="T" body="Frase uno. Frase due." index={index} />);
