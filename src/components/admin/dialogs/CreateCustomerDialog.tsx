@@ -16,13 +16,17 @@ import BirthDataFields, {
   useResetOnOpen,
   validateBirthFields,
 } from "./BirthDataFields";
+import MarketField from "./MarketField";
+import { useMarketOnOpen } from "@/components/admin/markets";
 import type { CreateCustomerPayload } from "@/hooks/admin/useAdminMutations";
+import type { MarketId } from "@/markets/types";
 
 interface CreateCustomerDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (payload: CreateCustomerPayload) => void;
   busy: boolean;
+  defaultMarket?: MarketId;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,9 +36,11 @@ export default function CreateCustomerDialog({
   onClose,
   onSubmit,
   busy,
+  defaultMarket,
 }: CreateCustomerDialogProps) {
   const [state, setState] = useResetOnOpen(open, () => buildInitialState());
   const [email, setEmail] = useState("");
+  const [market, setMarket] = useMarketOnOpen(open, defaultMarket);
 
   useEffect(() => {
     if (open) setEmail("");
@@ -48,6 +54,10 @@ export default function CreateCustomerDialog({
     }
     if (!state.userName.trim()) {
       toast.error("Il nome è obbligatorio.");
+      return;
+    }
+    if (!market) {
+      toast.error("Seleziona il mercato del cliente.");
       return;
     }
 
@@ -64,6 +74,7 @@ export default function CreateCustomerDialog({
     const payload: CreateCustomerPayload = {
       email: trimmedEmail,
       userName: state.userName.trim(),
+      market,
     };
 
     if (hasAnyBirth) {
@@ -118,6 +129,8 @@ export default function CreateCustomerDialog({
               placeholder="cliente@esempio.com"
             />
           </div>
+
+          <MarketField value={market} onChange={setMarket} disabled={busy} />
 
           <BirthDataFields
             state={state}

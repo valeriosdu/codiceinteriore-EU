@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import CustomerBadges from "./CustomerBadges";
 import type { CustomerSummary } from "@/hooks/admin/useAdminCustomersList";
+import type { MarketId } from "@/markets/types";
 
 interface CustomerListTableProps {
   customers: CustomerSummary[];
@@ -20,6 +21,9 @@ interface CustomerListTableProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   error: string | null;
+  // Filtro mercato attivo nella lista: la scheda cliente lo usa come mercato
+  // di default quando l'admin crea un nuovo report.
+  market?: MarketId;
 }
 
 const euroFmt = new Intl.NumberFormat("it-IT", {
@@ -55,6 +59,7 @@ export default function CustomerListTable({
   pageSize,
   onPageChange,
   error,
+  market,
 }: CustomerListTableProps) {
   const navigate = useNavigate();
 
@@ -63,7 +68,8 @@ export default function CustomerListTable({
   const to = Math.min(page * pageSize, total);
 
   const goToCustomer = (email: string) => {
-    navigate(`/admin/clienti/${encodeURIComponent(email)}`);
+    const qs = market ? `?market=${market}` : "";
+    navigate(`/admin/clienti/${encodeURIComponent(email)}${qs}`);
   };
 
   if (error) {

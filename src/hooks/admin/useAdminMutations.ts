@@ -3,6 +3,7 @@
 // (prefix ['admin','customers']) così la pagina lista vede subito gli effetti.
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { MarketId } from "@/markets/types";
 
 const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -63,6 +64,7 @@ export interface CreateReportPayload {
   birthTimezone: number;
   focusArea?: string;
   attachmentResponse?: string;
+  market?: MarketId;
 }
 
 // Anagrafica-only customer registration (no report, no Gemini cost). Email is
@@ -79,6 +81,7 @@ export interface CreateCustomerPayload {
   birthTimezone?: number;
   focusArea?: string;
   attachmentResponse?: string;
+  market?: MarketId;
 }
 
 export interface CreateTransitPayload {
@@ -103,6 +106,7 @@ export interface CreateSynastryPayload {
   relationshipDuration?: string;
   personA: SynastryPersonPayload;
   personB: SynastryPersonPayload;
+  market?: MarketId;
 }
 
 export function useAdminMutations({ secret, email, onAuthError }: UseAdminMutationsArgs) {

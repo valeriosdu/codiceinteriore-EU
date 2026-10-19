@@ -18,12 +18,15 @@ import BirthDataFields, {
   validateBirthFields,
   type BirthDataFormState,
 } from "./BirthDataFields";
+import MarketField from "./MarketField";
+import { useMarketOnOpen } from "@/components/admin/markets";
 import type {
   CreateReportPayload,
   CreateSynastryPayload,
   CreateTransitPayload,
 } from "@/hooks/admin/useAdminMutations";
 import type { QuizSessionDetail } from "@/hooks/admin/useAdminCustomerDetail";
+import type { MarketId } from "@/markets/types";
 
 type CreateKind = "natal" | "transit" | "synastry";
 
@@ -37,6 +40,7 @@ interface CreateReportDialogProps {
   busyTransit: boolean;
   busySynastry: boolean;
   prefilledEmail?: string;
+  defaultMarket?: MarketId;
   availableReports: QuizSessionDetail[];
 }
 
@@ -50,6 +54,7 @@ export default function CreateReportDialog({
   busyTransit,
   busySynastry,
   prefilledEmail,
+  defaultMarket,
   availableReports,
 }: CreateReportDialogProps) {
   const [kind, setKind] = useState<CreateKind>("natal");
@@ -76,6 +81,7 @@ export default function CreateReportDialog({
             open={open}
             busy={busyNatal}
             prefilledEmail={prefilledEmail}
+            defaultMarket={defaultMarket}
             onCancel={onClose}
             onSubmit={onSubmitNatal}
           />
@@ -93,6 +99,7 @@ export default function CreateReportDialog({
             open={open}
             busy={busySynastry}
             customerEmail={prefilledEmail}
+            defaultMarket={defaultMarket}
             onCancel={onClose}
             onSubmit={onSubmitSynastry}
           />
@@ -145,17 +152,20 @@ function NatalForm({
   open,
   busy,
   prefilledEmail,
+  defaultMarket,
   onCancel,
   onSubmit,
 }: {
   open: boolean;
   busy: boolean;
   prefilledEmail?: string;
+  defaultMarket?: MarketId;
   onCancel: () => void;
   onSubmit: (payload: CreateReportPayload) => void;
 }) {
   const [state, setState] = useResetOnOpen(open, () => buildInitialState());
   const [email, setEmail] = useState(prefilledEmail ?? "");
+  const [market, setMarket] = useMarketOnOpen(open, defaultMarket);
 
   useEffect(() => {
     if (open) setEmail(prefilledEmail ?? "");
@@ -175,8 +185,13 @@ function NatalForm({
       toast.error("Seleziona il luogo dalla lista per risolvere le coordinate.");
       return;
     }
+    if (!market) {
+      toast.error("Seleziona il mercato del cliente.");
+      return;
+    }
 
     onSubmit({
+      market,
       email: email.trim() || undefined,
       userName: state.userName.trim(),
       birthDate: {
@@ -209,6 +224,8 @@ function NatalForm({
           placeholder="cliente@esempio.com"
         />
       </div>
+
+      <MarketField value={market} onChange={setMarket} disabled={busy} />
 
       <BirthDataFields state={state} onChange={setState} disabled={busy} />
 
@@ -331,12 +348,14 @@ function SynastryForm({
   open,
   busy,
   customerEmail,
+  defaultMarket,
   onCancel,
   onSubmit,
 }: {
   open: boolean;
   busy: boolean;
   customerEmail?: string;
+  defaultMarket?: MarketId;
   onCancel: () => void;
   onSubmit: (payload: CreateSynastryPayload) => void;
 }) {
@@ -345,6 +364,7 @@ function SynastryForm({
   const [timeAKnown, setTimeAKnown] = useState(true);
   const [timeBKnown, setTimeBKnown] = useState(true);
   const [relationshipDuration, setRelationshipDuration] = useState("");
+  const [market, setMarket] = useMarketOnOpen(open, defaultMarket);
 
   useEffect(() => {
     if (open) {
@@ -382,6 +402,10 @@ function SynastryForm({
       toast.error("Manca l'email del cliente.");
       return;
     }
+    if (!market) {
+      toast.error("Seleziona il mercato del cliente.");
+      return;
+    }
     const errA = validatePerson(personA, timeAKnown, "Persona A");
     if (errA) {
       toast.error(errA);
@@ -395,6 +419,7 @@ function SynastryForm({
 
     onSubmit({
       customerEmail,
+      market,
       relationshipDuration: relationshipDuration.trim() || undefined,
       personA: {
         name: personA.userName.trim(),
@@ -440,6 +465,8 @@ function SynastryForm({
         <strong className="text-foreground break-all">{customerEmail ?? "—"}</strong> via
         checkout comped, così compare nel tab Coppia del cliente.
       </div>
+
+      <MarketField value={market} onChange={setMarket} disabled={busy} />
 
       <div className="space-y-1.5">
         <label className="text-xs text-muted-foreground">

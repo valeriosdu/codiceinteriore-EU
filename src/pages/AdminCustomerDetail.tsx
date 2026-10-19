@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, ArrowLeft, LayoutDashboard, LifeBuoy, Loader2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +19,7 @@ import TriggerTransitDialog from "@/components/admin/dialogs/TriggerTransitDialo
 import NewTransitCycleDialog from "@/components/admin/dialogs/NewTransitCycleDialog";
 import EditEmailDialog from "@/components/admin/dialogs/EditEmailDialog";
 import MergeCustomerDialog from "@/components/admin/dialogs/MergeCustomerDialog";
+import { toAdminMarket } from "@/components/admin/markets";
 import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import {
   useAdminCustomerDetail,
@@ -35,6 +36,8 @@ export default function AdminCustomerDetail() {
   const { secret, isAuthed, login, clearOnAuthError } = useAdminAuth();
   const navigate = useNavigate();
   const { emailEncoded } = useParams<{ emailEncoded: string }>();
+  const [searchParams] = useSearchParams();
+  const knownMarket = toAdminMarket(searchParams.get("market"));
   // decodeURIComponent throwa su sequenze % malformate. Difensivo perché un
   // bookmark vecchio o un link guasto non deve crashare la pagina.
   const email = useMemo(() => {
@@ -380,6 +383,7 @@ export default function AdminCustomerDetail() {
         busyTransit={mutations.createTransit.isPending}
         busySynastry={mutations.createSynastry.isPending}
         prefilledEmail={email}
+        defaultMarket={knownMarket}
         availableReports={query.data?.quiz_sessions ?? []}
         onSubmitNatal={(payload) => {
           mutations.createReport.mutate(payload, {
