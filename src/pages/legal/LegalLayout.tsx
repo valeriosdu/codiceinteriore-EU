@@ -9,7 +9,10 @@ import { MARKET } from "@/markets";
 // Dati legali per-mercato, condivisi dalle pagine legali (Privacy/Termini).
 export const legalDomain = new URL(MARKET.siteUrl).hostname.replace(/^www\./, "");
 export const infoEmail = MARKET.contactEmail;
-export const privacyEmail = `privacy@${legalDomain}`;
+// Dal dominio della casella di contatto, non dal sito: i mercati su
+// sottodominio (us, nl, fi) mostravano privacy@nl.cartainterior.com, una
+// casella che non esiste. it ed es restano identici.
+export const privacyEmail = `privacy@${MARKET.contactEmail.split("@")[1] ?? legalDomain}`;
 export const legalEntity = MARKET.legal;
 
 interface LegalPageProps {
