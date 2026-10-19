@@ -9,7 +9,7 @@ const landing: Messages['landing'] = {
   hero: {
     titlePre: 'Je',
     titleEm: 'geboortehoroscoop',
-    titlePost: ', helder uitgelegd',
+    titlePost: ' helder uitgelegd',
     subtitle:
       'Ontdek wat er uit je innerlijke structuur naar boven komt, vanuit je geboortegegevens. Gratis en zonder account.',
     cta: 'Start de vragenlijst',
