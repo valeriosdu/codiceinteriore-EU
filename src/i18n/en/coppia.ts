@@ -64,7 +64,7 @@ const coppia: Messages['coppia'] = {
       unknownLabel: "I don't know it",
       unknownNote:
         "Without the birth time, the synastry will be partial for this person (no houses or Rising). Go ahead anyway, the rest of the analysis still holds.",
-      confirmHint: "Tap a wheel to confirm the time, or tick \"I don't know it\".",
+      confirmHint: "Tap a wheel to confirm the time, or check \"I don't know it\".",
     },
     place: {
       placeholder: 'e.g. New York, Chicago, Los Angeles...',
@@ -114,7 +114,7 @@ const coppia: Messages['coppia'] = {
     },
     times: {
       title: 'What time were you each born?',
-      hint: "It's the detail that gives houses and Rising sign. If you don't know it, we carry on anyway.",
+      hint: "It's the detail that gives houses and Rising sign. If you don't know it, we'll continue anyway.",
       you: 'You',
       partner: 'Your partner',
     },
@@ -124,7 +124,7 @@ const coppia: Messages['coppia'] = {
     },
     missing: {
       date: 'Pick day, month and year to confirm the date of birth.',
-      time: "Pick hour and minutes to confirm the time, or tick \"I don't know it\".",
+      time: "Pick hour and minutes to confirm the time, or check \"I don't know it\".",
     },
     back: 'Back',
     next: 'Next',

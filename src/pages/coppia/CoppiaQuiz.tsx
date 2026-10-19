@@ -176,6 +176,7 @@ export default function CoppiaQuiz() {
   })();
 
   const handleNext = async () => {
+    const from = step;
     // Sulle schermate persona: prima di avanzare, garantisci che le coordinate
     // corrispondano al testo digitato (auto-resolve come fa Quiz.tsx).
     if (target) {
@@ -213,11 +214,13 @@ export default function CoppiaQuiz() {
       if (data.personB.timeKnown) updatePersonB({ birthTime: filledTime(data.personB.birthTime) });
     }
 
-    if (step === STEPS.length) {
+    if (from === STEPS.length) {
       navigate(ROUTES.coupleProcessing);
       return;
     }
-    setStep((s) => s + 1);
+    // Come advanceFrom: un doppio tap mentre resolve() e' in volo farebbe
+    // avanzare due volte e saltare una schermata.
+    setStep((s) => (s === from ? from + 1 : s));
   };
 
   // Tap-to-advance delle card: salva la risposta e avanza dopo un attimo, cosi
@@ -269,35 +272,6 @@ export default function CoppiaQuiz() {
         />
       </div>
 
-      {/* Niente etichetta di gruppo "Data di nascita": Giorno/Mese/Anno la
-          rendono ridondante, e sono 24px che servono altrove. */}
-      <div className="grid grid-cols-3 gap-2">
-        <PickerField
-          label={cq.date.day}
-          items={DAY_ITEMS}
-          value={person.birthDate.day}
-          anchor={DAY_ANCHOR}
-          visibleCount={WHEEL_ROWS}
-          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, day: v } })}
-        />
-        <PickerField
-          label={cq.date.month}
-          items={MONTH_ITEMS}
-          value={person.birthDate.month}
-          anchor={MONTH_ANCHOR}
-          visibleCount={WHEEL_ROWS}
-          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, month: v } })}
-        />
-        <PickerField
-          label={cq.date.year}
-          items={YEAR_ITEMS}
-          value={person.birthDate.year}
-          anchor={YEAR_ANCHOR}
-          visibleCount={WHEEL_ROWS}
-          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, year: v } })}
-        />
-      </div>
-
       <div className="space-y-1.5">
         <label className="text-xs text-muted-foreground">{cq.people.placeLabel}</label>
         <PlaceAutocomplete
@@ -343,6 +317,35 @@ export default function CoppiaQuiz() {
           <p className="text-xs text-muted-foreground">{cq.place.suggestionHint}</p>
         )}
       </div>
+      {/* Niente etichetta di gruppo "Data di nascita": Giorno/Mese/Anno la
+          rendono ridondante, e sono 24px che servono altrove. */}
+      <div className="grid grid-cols-3 gap-2">
+        <PickerField
+          label={cq.date.day}
+          items={DAY_ITEMS}
+          value={person.birthDate.day}
+          anchor={DAY_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, day: v } })}
+        />
+        <PickerField
+          label={cq.date.month}
+          items={MONTH_ITEMS}
+          value={person.birthDate.month}
+          anchor={MONTH_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, month: v } })}
+        />
+        <PickerField
+          label={cq.date.year}
+          items={YEAR_ITEMS}
+          value={person.birthDate.year}
+          anchor={YEAR_ANCHOR}
+          visibleCount={WHEEL_ROWS}
+          onChange={(v) => updateTarget({ birthDate: { ...person.birthDate, year: v } })}
+        />
+      </div>
+
     </>
   );
 
@@ -424,7 +427,9 @@ export default function CoppiaQuiz() {
       <div className="container max-w-md mx-auto flex-1 flex flex-col py-2 sm:py-4 min-h-0">
         <ProgressBar current={step} total={STEPS.length} label={helperText} />
 
-        <div className="flex-1 flex items-center py-3 sm:py-6 min-h-0 overflow-y-auto overflow-x-hidden">
+        {/* my-auto e non items-center: con items-center una schermata piu' alta
+            dell'area esce anche dall'alto, dove lo scroll non arriva. */}
+        <div className="flex-1 flex flex-col py-3 sm:py-6 min-h-0 overflow-y-auto overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepKey}
@@ -432,7 +437,7 @@ export default function CoppiaQuiz() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.3 }}
-              className="w-full space-y-5"
+              className="w-full my-auto space-y-5"
             >
               {stepKey === 'duration' && (
                 <>

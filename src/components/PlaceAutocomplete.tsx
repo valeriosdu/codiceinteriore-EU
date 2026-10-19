@@ -69,6 +69,7 @@ const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteP
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const resolvedTextRef = useRef<string>('');
+    const listRef = useRef<HTMLUListElement>(null);
 
     const fetchSuggestionsRaw = useCallback(async (query: string): Promise<GeoSuggestion[]> => {
       const q = query.trim();
@@ -174,6 +175,13 @@ const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteP
       return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    // Inside a scrolling quiz screen the list can open past the bottom edge,
+    // where it is clipped: bring it into view.
+    const listOpen = open && suggestions.length > 0;
+    useEffect(() => {
+      if (listOpen) listRef.current?.scrollIntoView?.({ block: 'nearest' });
+    }, [listOpen, suggestions]);
+
     return (
       <div ref={wrapperRef} className="relative">
         <input
@@ -199,7 +207,7 @@ const PlaceAutocomplete = forwardRef<PlaceAutocompleteHandle, PlaceAutocompleteP
           </div>
         )}
         {open && suggestions.length > 0 && (
-          <ul className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+          <ul ref={listRef} className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-lg overflow-hidden">
             {suggestions.map((s) => (
               <li
                 key={suggestionKey(s)}

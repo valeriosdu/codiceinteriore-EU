@@ -124,7 +124,7 @@ const coppia: Messages['coppia'] = {
     },
     missing: {
       date: 'Elige día, mes y año para confirmar la fecha de nacimiento.',
-      time: 'Elige hora y minutos para confirmar la hora, o marca "No la conozco".',
+      time: 'Elige hora y minutos para confirmarla, o marca "No la conozco".',
     },
     back: 'Atrás',
     next: 'Siguiente',
