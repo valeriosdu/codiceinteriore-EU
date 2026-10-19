@@ -32,6 +32,7 @@ const CUSTOMER_MARKETS: Array<{ key: string; label: string }> = [
   { key: "es", label: "Spagna" },
   { key: "us", label: "Stati Uniti" },
   { key: "nl", label: "Paesi Bassi" },
+  { key: "fi", label: "Finlandia" },
 ];
 
 export default function AdminCustomersList() {

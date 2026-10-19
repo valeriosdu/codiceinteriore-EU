@@ -38,6 +38,7 @@ const ZOHO_ENV_SUFFIX: Record<MarketId, string> = {
   es: "__ES",
   us: "__ES",
   nl: "__ES",
+  fi: "__ES",
 };
 
 function envName(base: string, market: MarketId): string {

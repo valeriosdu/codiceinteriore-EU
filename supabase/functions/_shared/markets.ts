@@ -18,8 +18,8 @@ import {
 } from "./transit-products.ts";
 import { ASTROLOGY_GUIDE_PACK_PRICE_ID } from "./astrology-products.ts";
 
-export type MarketId = "it" | "es" | "us" | "nl";
-export type Language = "it" | "es" | "en" | "nl";
+export type MarketId = "it" | "es" | "us" | "nl" | "fi";
+export type Language = "it" | "es" | "en" | "nl" | "fi";
 
 export type StripeProduct =
   | "base"
@@ -236,11 +236,54 @@ const NL_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__NL",
 };
 
+// Mercato finlandese: stesso impianto di nl (vedi sopra). Secret __FI che
+// puntano all'account Stripe/PayPal ES, 7 price ID nuovi in finlandese, nessun
+// webhook dedicato: l'endpoint ?market=es serve anche fi.
+const FI_MARKET: BackendMarketConfig = {
+  id: "fi",
+  language: "fi",
+  locale: "fi-FI",
+  siteUrl: "https://fi.cartainterior.com",
+  siteName: "Carta Interior",
+  senderDomain: "notifiche.cartainterior.com",
+  fromDomain: "cartainterior.com",
+  contactEmail: "info@cartainterior.com",
+  currency: "EUR",
+  countryCode: "FI",
+  stripe: {
+    secretKeyEnv: "STRIPE_SECRET_KEY__FI",
+    secretKeyTestEnv: "STRIPE_SECRET_KEY_TEST__FI",
+    webhookSecretEnv: "STRIPE_WEBHOOK_SECRET__FI",
+    webhookSecretTestEnv: "STRIPE_WEBHOOK_SECRET_TEST__FI",
+    subscriptionWebhookSecretEnv: "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__FI",
+    priceEnv: {
+      base: "STRIPE_PRICE_BASE__FI",
+      premium: "STRIPE_PRICE_PREMIUM__FI",
+      synastry: "STRIPE_PRICE_SYNASTRY__FI",
+      synastryLaunch: "STRIPE_PRICE_SYNASTRY_LAUNCH__FI",
+      transitOneTime: "STRIPE_PRICE_TRANSIT_ONE_TIME__FI",
+      transitSubscription: "STRIPE_PRICE_TRANSIT_SUBSCRIPTION__FI",
+      astroPack: "STRIPE_PRICE_ASTRO_PACK__FI",
+    },
+    priceDefaults: {},
+  },
+  paypal: {
+    envEnv: "PAYPAL_ENV__FI",
+    clientIdEnv: "PAYPAL_CLIENT_ID__FI",
+    clientSecretEnv: "PAYPAL_CLIENT_SECRET__FI",
+    webhookIdEnv: "PAYPAL_WEBHOOK_ID__FI",
+  },
+  brevoApiKeyEnv: "BREVO_API_KEY__FI",
+  metaPixelIdEnv: "META_PIXEL_ID__FI",
+  metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__FI",
+};
+
 const MARKETS: Record<MarketId, BackendMarketConfig> = {
   it: IT_MARKET,
   es: ES_MARKET,
   us: US_MARKET,
   nl: NL_MARKET,
+  fi: FI_MARKET,
 };
 
 // Ogni membro della union deve comparire qui: TypeScript non verifica che la
@@ -248,7 +291,7 @@ const MARKETS: Record<MarketId, BackendMarketConfig> = {
 // cade silenziosamente su MARKETS.it (report, email e conto Stripe italiani).
 // Protetto dal test di parita mercati.
 export function isMarketId(value: unknown): value is MarketId {
-  return value === "it" || value === "es" || value === "us" || value === "nl";
+  return value === "it" || value === "es" || value === "us" || value === "nl" || value === "fi";
 }
 
 export function getMarket(id?: string | null): BackendMarketConfig {
@@ -330,6 +373,7 @@ const DOC_NOUN: Record<Language, { couple: string; transits: string }> = {
   es: { couple: "pareja", transits: "transitos" },
   en: { couple: "couple", transits: "transits" },
   nl: { couple: "koppel", transits: "transits" },
+  fi: { couple: "pari", transits: "transiitit" },
 };
 
 export function docNoun(

@@ -97,7 +97,7 @@ serve(async (req) => {
     const hideEmpty = raw.hide_empty === true;
     // Allowlist esplicita: il valore finisce in una RPC, e "all"/vuoto devono
     // significare nessun filtro, non un mercato chiamato "all".
-    const ALLOWED_MARKETS = ["it", "es", "us", "nl"];
+    const ALLOWED_MARKETS = ["it", "es", "us", "nl", "fi"];
     const market = ALLOWED_MARKETS.includes(String(raw.market))
       ? String(raw.market)
       : null;

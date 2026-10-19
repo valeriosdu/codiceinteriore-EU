@@ -12,8 +12,8 @@ export const LOGO_URL = `${Deno.env.get('SUPABASE_URL') || ''}/storage/v1/object
 // Lingua di un template email. Ogni template la risolveva con una catena di
 // ternari (lang === 'en' ? ... : 'it'), dove una lingua nuova cadeva in silenzio
 // sull italiano — e il subject, risolto a parte, poteva divergere dal corpo.
-export type EmailLang = 'it' | 'es' | 'en' | 'nl'
-const EMAIL_LANGS: readonly string[] = ['it', 'es', 'en', 'nl']
+export type EmailLang = 'it' | 'es' | 'en' | 'nl' | 'fi'
+const EMAIL_LANGS: readonly string[] = ['it', 'es', 'en', 'nl', 'fi']
 export function resolveEmailLang(lang?: string | null): EmailLang {
   return EMAIL_LANGS.includes(lang ?? '') ? (lang as EmailLang) : 'it'
 }

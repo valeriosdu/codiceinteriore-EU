@@ -120,7 +120,7 @@ function parseRange(url: URL): { from: string; to: string; tz: string } {
 // Mercato selezionato. Assente o "all" = comportamento storico, cioe' tutti i
 // mercati sommati: la dashboard esistente continua a rispondere identica a
 // prima per chi non passa il parametro.
-const MARKET_IDS = ["it", "es", "us", "nl"] as const;
+const MARKET_IDS = ["it", "es", "us", "nl", "fi"] as const;
 type MarketFilter = (typeof MARKET_IDS)[number] | null;
 
 function parseMarket(url: URL): MarketFilter {

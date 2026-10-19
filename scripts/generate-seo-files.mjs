@@ -55,6 +55,13 @@ const SLUGS_BY_MARKET = {
     terms: "/voorwaarden",
     gift: "/cadeau",
   },
+  fi: {
+    lpClassica: "/lp/klassinen",
+    lpAttivazione: "/lp/aktivointi",
+    contact: "/yhteystiedot",
+    terms: "/kayttoehdot",
+    gift: "/lahja",
+  },
 };
 const slug = SLUGS_BY_MARKET[MARKET] || SLUGS_IT;
 

@@ -32,6 +32,12 @@ const OFFER_CONTENT_NAMES: Record<Language, Record<OfferKey, string>> = {
     synastry: "Synastrie voor koppels",
     synastry_launch: "Synastrie voor koppels (lancering)",
   },
+  fi: {
+    base: "Koko tulkinta",
+    premium: "Koko tulkinta + transiitit",
+    synastry: "Parin synastria",
+    synastry_launch: "Parin synastria (lanseeraus)",
+  },
 };
 
 function getCookie(name: string): string | undefined {

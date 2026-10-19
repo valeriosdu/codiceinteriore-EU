@@ -9,7 +9,7 @@ import type { Language } from '@/markets';
 // vivono SOLO i pochi slug che erano italiani.
 //
 // it ed es continuano a usare gli slug italiani storici → nessuna regressione
-// per loro; en (us) usa quelli inglesi già in produzione; nl ha i suoi. La
+// per loro; en (us) usa quelli inglesi già in produzione; nl e fi hanno i loro. La
 // tabella ha sostituito un booleano `EN`: con un flag binario una lingua nuova
 // ereditava in silenzio gli slug italiani, e un sito olandese su /coppia e
 // /termini è la cosa peggiore sia per la SEO sia per la fiducia del visitatore.
@@ -51,6 +51,14 @@ export const SLUGS_BY_LANG: Record<Language, SlugSet> = {
     gift: '/cadeau',
     lpClassica: '/lp/klassiek',
     lpAttivazione: '/lp/activatie',
+  },
+  fi: {
+    couple: '/pari',
+    contact: '/yhteystiedot',
+    terms: '/kayttoehdot',
+    gift: '/lahja',
+    lpClassica: '/lp/klassinen',
+    lpAttivazione: '/lp/aktivointi',
   },
 };
 

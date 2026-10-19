@@ -4,12 +4,13 @@
 // forza il modello a produrre tutto nella lingua del mercato, trattando
 // eventuali parole/etichette italiane nel prompt come solo illustrative.
 
-export type PromptLang = "it" | "es" | "en" | "nl";
+export type PromptLang = "it" | "es" | "en" | "nl" | "fi";
 
 export function resolvePromptLang(value: unknown): PromptLang {
   if (value === "es") return "es";
   if (value === "en") return "en";
   if (value === "nl") return "nl";
+  if (value === "fi") return "fi";
   return "it";
 }
 

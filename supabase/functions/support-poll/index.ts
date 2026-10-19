@@ -43,7 +43,8 @@ const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
 // ZOHO_ENV_SUFFIX in _shared/zoho.ts) ed e' quindi escluso: le mail olandesi
 // entrano come ticket es e support-draft firma nella lingua rilevata. Per dare
 // a nl una casella propria: creare i secret ZOHO_*__NL con un ZOHO_FOLDER_ID__NL
-// dedicato, mettere nl: "__NL" in zoho.ts e aggiungere "nl" qui.
+// dedicato, mettere nl: "__NL" in zoho.ts e aggiungere "nl" qui. Lo stesso
+// vale per fi, che condivide la stessa casella.
 const MARKETS: MarketId[] = ["it", "es", "us"];
 const LIST_LIMIT = 25;
 const MAX_NEW_PER_RUN = 10; // cap content fetches / drafts per market per tick

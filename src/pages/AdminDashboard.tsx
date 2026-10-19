@@ -25,7 +25,7 @@ import { clearAdminSecret, getAdminSecret, setAdminSecret } from "@/hooks/admin/
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-dashboard`;
 const AI_METRICS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-metrics`;
 
-type MarketId = "it" | "es" | "us" | "nl";
+type MarketId = "it" | "es" | "us" | "nl" | "fi";
 type MarketChoice = "all" | MarketId;
 
 // Etichette dei mercati. Il dominio serve a ricordare quale sito si sta
@@ -36,6 +36,7 @@ const MARKETS: Array<{ key: MarketChoice; label: string; host: string }> = [
   { key: "es", label: "Spagna", host: "cartainterior.com" },
   { key: "us", label: "Stati Uniti", host: "us.cartainterior.com" },
   { key: "nl", label: "Paesi Bassi", host: "nl.cartainterior.com" },
+  { key: "fi", label: "Finlandia", host: "fi.cartainterior.com" },
 ];
 
 type DashboardData = {

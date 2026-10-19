@@ -46,6 +46,8 @@ const SLIDE_IMAGES_BY_LANG: Record<string, typeof SLIDE_IMAGES_IT> = {
   es: SLIDE_IMAGES_IT,
   en: SLIDE_IMAGES_EN,
   nl: SLIDE_IMAGES_NL,
+  // Niente estratti finlandesi ancora: meglio quelli inglesi che gli italiani.
+  fi: SLIDE_IMAGES_EN,
 };
 
 const ReportPreviewCarousel = () => {

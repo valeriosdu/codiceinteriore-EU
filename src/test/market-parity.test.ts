@@ -20,8 +20,8 @@ const FUNCTIONS_DIR = "supabase/functions";
 
 // Mercati e lingue attesi. Allargare queste due liste e' il primo passo di un
 // mercato nuovo: da quel momento i test elencano tutto cio' che manca.
-const MARKETS = ["it", "es", "us", "nl"] as const;
-const LANGUAGES = ["it", "es", "en", "nl"] as const;
+const MARKETS = ["it", "es", "us", "nl", "fi"] as const;
+const LANGUAGES = ["it", "es", "en", "nl", "fi"] as const;
 const LANG_KEYS = new Set<string>([...MARKETS, ...LANGUAGES]);
 
 const DQ = String.fromCharCode(34);
@@ -122,18 +122,24 @@ function objectLiterals(src: string): Frame[] {
 const backendFiles = walk(FUNCTIONS_DIR);
 
 describe("parita multi-mercato — backend", () => {
-  it("ogni mappa per-lingua o per-mercato ha la voce nl", () => {
+  // nl e fi sono sia mercato sia lingua: una mappa che ha voci di lingua o di
+  // mercato deve averle entrambe. (us/en no: una mappa per-lingua non ha us.)
+  const REQUIRED_KEYS = ["nl", "fi"];
+  it("ogni mappa per-lingua o per-mercato ha le voci nl e fi", () => {
     const missing: string[] = [];
     for (const file of backendFiles) {
       const src = readFileSync(file, "utf8");
       for (const frame of objectLiterals(src)) {
         const langKeys = [...frame.keys].filter((k) => LANG_KEYS.has(k));
         // Due o piu' chiavi di lingua/mercato nello stesso oggetto: e' una mappa,
-        // non una coincidenza. La voce nl deve esserci.
-        if (langKeys.length >= 2 && !frame.keys.has("nl")) {
-          missing.push(
-            file + ":" + frame.line + " — chiavi [" + langKeys.sort().join(", ") + "], manca nl",
-          );
+        // non una coincidenza. Le voci nl e fi devono esserci.
+        if (langKeys.length < 2) continue;
+        for (const k of REQUIRED_KEYS) {
+          if (!frame.keys.has(k)) {
+            missing.push(
+              file + ":" + frame.line + " — chiavi [" + langKeys.sort().join(", ") + "], manca " + k,
+            );
+          }
         }
       }
     }
@@ -166,17 +172,18 @@ describe("parita multi-mercato — backend", () => {
     expect(parse(be, "Language")).toEqual([...LANGUAGES].sort());
   });
 
-  it("i secret del blocco nl finiscono tutti in __NL", () => {
+  it.each(["NL", "FI"])("i secret del blocco %s finiscono tutti nel proprio suffisso", (id) => {
     const src = readFileSync("supabase/functions/_shared/markets.ts", "utf8");
-    const start = src.indexOf("const NL_MARKET");
+    const start = src.indexOf("const " + id + "_MARKET");
     expect(start).toBeGreaterThan(-1);
-    const block = src.slice(start, src.indexOf("const MARKETS", start));
+    const end = src.indexOf("\n};", start);
+    const block = src.slice(start, end);
     // Solo i nomi di env var (contengono sempre un underscore): esclude valori
     // letterali come "EUR" o "NL".
     const names = (block.match(/"[A-Z][A-Z0-9]*_[A-Z0-9_]+"/g) || []).map((s) => s.replace(/"/g, ""));
     expect(names.length).toBeGreaterThan(15);
-    // Un blocco copiato da ES manderebbe gli incassi olandesi sul conto spagnolo.
-    expect(names.filter((n) => !n.endsWith("__NL"))).toEqual([]);
+    // Un blocco copiato da un altro mercato fatturerebbe sul conto sbagliato.
+    expect(names.filter((n) => !n.endsWith("__" + id))).toEqual([]);
   });
 
   it("support-poll spiega per iscritto i mercati che non interroga", () => {
@@ -234,12 +241,15 @@ describe("parita multi-mercato — slug URL", () => {
     expect({ ...buildRoutes("es") }).toEqual(atteso);
   });
 
-  it("en e nl hanno slug propri e distinti dagli italiani", () => {
+  it("en, nl e fi hanno slug propri e distinti dagli italiani", () => {
     expect(buildRoutes("en").couple).toBe("/couple");
     expect(buildRoutes("nl").couple).toBe("/koppel");
     expect(buildRoutes("nl").terms).toBe("/voorwaarden");
     expect(buildRoutes("nl").gift).toBe("/cadeau");
     expect(buildRoutes("nl").coupleActivate).toBe("/koppel/activate");
+    expect(buildRoutes("fi").couple).toBe("/pari");
+    expect(buildRoutes("fi").terms).toBe("/kayttoehdot");
+    expect(buildRoutes("fi").contact).toBe("/yhteystiedot");
   });
 
   it("lo script SEO usa esattamente gli stessi slug di routes.ts", () => {
@@ -249,7 +259,7 @@ describe("parita multi-mercato — slug URL", () => {
     const start = src.indexOf("const SLUGS_BY_MARKET = {");
     expect(start).toBeGreaterThan(-1);
     const blocco = src.slice(start, src.indexOf("const slug =", start));
-    const langPerMercato: Record<string, Language> = { it: "it", es: "es", us: "en", nl: "nl" };
+    const langPerMercato: Record<string, Language> = { it: "it", es: "es", us: "en", nl: "nl", fi: "fi" };
     for (const [mercato, lang] of Object.entries(langPerMercato)) {
       const m = blocco.match(new RegExp(mercato + ": \{([^}]*)\}"));
       const atteso = buildRoutes(lang);
