@@ -81,7 +81,8 @@ export default function CoppiaLanding() {
       (entries) => {
         for (const entry of entries) {
           if (entry.target === hero) {
-            state.heroVisible = entry.isIntersecting;
+            // Ancora sotto la piega (telefoni bassi, orizzontale) conta come visibile.
+            state.heroVisible = entry.isIntersecting || entry.boundingClientRect.top > 0;
           } else if (entry.target === final) {
             // `top > 0` = la chiusa e' ancora sotto la piega; se e' sopra siamo
             // gia' nel footer e la barra resta nascosta.

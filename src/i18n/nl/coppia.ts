@@ -42,14 +42,14 @@ const coppia: Messages['coppia'] = {
       'We berekenen ieders geboortehoroscoop en analyseren hoe ze over elkaar heen liggen: dat is de synastrie.',
       'Jullie krijgen het volledige rapport: ongeveer 10 pagina\'s in het Nederlands.',
     ],
-    ctaNote: 'Een paar korte vragen · Gratis voorproef, zonder account',
+    ctaNote: 'Een paar korte vragen · Gratis voorproefje, zonder account',
     plateCaption: 'Plaat I · Synastriekaart',
     quotePlateCaption: 'Plaat II',
     quote:
-      'Twee geboortehoroscopen tel je niet op: ze leggen zich over elkaar. In die overlap wordt een relatie leesbaar.',
+      'Twee geboortehoroscopen tel je niet op: ze liggen over elkaar heen. In die overlap wordt een relatie leesbaar.',
     closingLine: 'Begin bij jullie twee geboortehoroscopen. De rest van het verhaal lees je daar.',
     seoDescription:
-      'De synastrie legt jullie twee geboortehoroscopen over elkaar en laat zien waarom je elkaar in sommige dingen meteen aanvoelt en in andere niet. Archetype van het koppel, zes compatibiliteitsscores en acht delen duiding, in het Nederlands.',
+      'De synastrie legt jullie twee geboortehoroscopen over elkaar en laat zien waarom je elkaar in sommige dingen meteen aanvoelt en in andere niet. Archetype van het koppel, zes compatibiliteitsscores en acht hoofdstukken duiding, in het Nederlands.',
   },
   quiz: {
     date: {

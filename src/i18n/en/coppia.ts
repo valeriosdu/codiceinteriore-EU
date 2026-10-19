@@ -46,7 +46,7 @@ const coppia: Messages['coppia'] = {
     plateCaption: 'Plate I · Synastry chart',
     quotePlateCaption: 'Plate II',
     quote:
-      "Two birth charts don't add up: they overlap. It's in the overlap that a relationship becomes readable.",
+      "Two birth charts aren't simply added together: they overlap. It's in the overlap that a relationship becomes readable.",
     closingLine: 'Start from your two charts. The rest of the story is read there.',
     seoDescription:
       'Synastry compares your two birth charts and explains why you click instantly on some things and not on others. Couple archetype, six compatibility scores and eight reading sections, in English.',
