@@ -67,9 +67,9 @@ const COPY = {
     email: 'Sähköposti',
     reason: 'Aihe',
     message: 'Viesti',
-    sentVia: (siteName: string) => `Lähetetty sivuston ${siteName} yhteydenottolomakkeella`,
+    sentVia: (siteName: string) => `Lähetetty ${siteName} -sivuston yhteydenottolomakkeella`,
     subject: (siteName: string, name?: string) =>
-      `Uusi viesti sivustolta ${siteName}${name ? ` — ${name}` : ''}`,
+      `Uusi viesti ${siteName} -sivustolta${name ? ` — ${name}` : ''}`,
   },
 } as const
 

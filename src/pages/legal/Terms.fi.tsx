@@ -5,14 +5,14 @@ import { LegalPage, LegalEntityBox, Section, MailLink, SiteLink, infoEmail } fro
 const TermsFi = () => (
   <LegalPage
     seoTitle={`Käyttöehdot — ${MARKET.siteName}`}
-    seoDescription={`Sivuston ${MARKET.siteName} käyttöehdot ja tarjottujen digitaalisten palvelujen ehdot.`}
+    seoDescription={`${MARKET.siteName} -sivuston käyttöehdot ja tarjottujen digitaalisten palvelujen ehdot.`}
     path="/kayttoehdot"
     backAria="Takaisin"
     heading="Käyttöehdot"
     lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-4">
-      Nämä käyttöehdot koskevat sivuston <SiteLink /> käyttöä sekä tuotemerkin {MARKET.siteName} alla tarjottujen
+      Nämä käyttöehdot koskevat sivuston <SiteLink /> käyttöä sekä {MARKET.siteName} -tuotemerkillä tarjottujen
       digitaalisten palvelujen ostamista.
     </p>
     <p className="text-base leading-relaxed text-foreground/90 mb-10">
@@ -24,7 +24,7 @@ const TermsFi = () => (
       <p>Palvelua tarjoaa:</p>
       <LegalEntityBox />
       <p>
-        Sivustolla käytettävä kauppanimi: <strong>{MARKET.siteName}</strong>
+        Sivustolla käytettävä tuotemerkki: <strong>{MARKET.siteName}</strong>
       </p>
       <p>
         Yhteystiedot: <MailLink email={infoEmail} />
@@ -40,7 +40,7 @@ const TermsFi = () => (
       <ul>
         <li>henkilökohtaiset astrologiset raportit</li>
         <li>viikoittaista tai jaksoittaista sisältöä</li>
-        <li>pääsyn henkilökohtaiselle käyttäjäalueelle</li>
+        <li>pääsyn omalle käyttäjätilille</li>
         <li>mahdollista lisäsisältöä</li>
         <li>mahdollisia muita digitaalisia lisätoimintoja, jotka liittyvät ostettuun palveluun</li>
       </ul>
@@ -52,8 +52,8 @@ const TermsFi = () => (
 
     <Section title="3. Palvelun luonne">
       <p>
-        Palvelun, jota {MARKET.siteName} tarjoaa, tarkoitus on tiedottaa, tukea itsetutkiskelua ja viihdyttää
-        syvällisemmällä tavalla.
+        {MARKET.siteName} -palvelun tarkoitus on antaa tietoa, tukea itsetutkiskelua ja tarjota ajatuksia herättävää
+        viihdettä.
       </p>
       <p>Palvelun sisältö:</p>
       <ul>
@@ -77,8 +77,8 @@ const TermsFi = () => (
 
     <Section title="5. Käyttäjän antamat tiedot">
       <p>
-        Palvelun toimittamiseksi käyttäjän on ehkä annettava henkilötietoja ja tietoja, joita tarvitaan sisällön
-        henkilökohtaistamiseen, esimerkiksi:
+        Palvelun toimittamista varten käyttäjää voidaan pyytää antamaan henkilötietoja ja muita tietoja, joita
+        tarvitaan sisällön räätälöimiseen, esimerkiksi:
       </p>
       <ul>
         <li>nimi</li>
@@ -106,20 +106,20 @@ const TermsFi = () => (
         <li>olennaiset tiedot peruuttamisesta ja digitaalisesta toimituksesta, soveltuvin osin</li>
       </ul>
       <p>
-        Sopimus katsotaan tehdyksi, kun maksu on asianmukaisesti valtuutettu ja järjestelmä tai palveluntarjoaja on
-        vahvistanut tilauksen.
+        Sopimus katsotaan tehdyksi, kun maksu on hyväksytty ja järjestelmä tai palveluntarjoaja on vahvistanut
+        tilauksen.
       </p>
     </Section>
 
     <Section title="7. Hinnat ja maksut">
-      <p>Kaikki sivustolla ilmoitetut hinnat on ilmoitettu ostosivulla mainitussa valuutassa.</p>
+      <p>Kaikki sivustolla näkyvät hinnat ilmoitetaan ostosivulla mainitussa valuutassa.</p>
       <p>Maksuja voivat käsitellä kolmannet osapuolet, muun muassa:</p>
       <ul>
         <li>Stripe</li>
         <li>PayPal</li>
       </ul>
       <p>
-        {MARKET.siteName} ei käsittele maksukortin täydellisiä tietoja itse. Maksupalveluntarjoajat käsittelevät ne
+        {MARKET.siteName} ei itse käsittele maksukorttien täydellisiä tietoja. Maksupalveluntarjoajat käsittelevät ne
         omien ehtojensa ja tietosuojaselosteidensa mukaisesti.
       </p>
       <p>
@@ -143,7 +143,7 @@ const TermsFi = () => (
       </p>
       <p>
         Jollei toisin mainita, palveluntarjoaja ei takaa välitöntä reaaliaikaista toimitusta, mutta sitoutuu
-        toimittamaan palvelun kohtuullisessa ajassa, joka vastaa tuotteen teknistä rakennetta.
+        toimittamaan palvelun ajassa, joka on tuotteen tekninen toteutus huomioon ottaen kohtuullinen.
       </p>
     </Section>
 
@@ -154,67 +154,69 @@ const TermsFi = () => (
       </p>
       <p>Käyttäjä sitoutuu:</p>
       <ul>
-        <li>olemaan jakamatta kirjautumistietojaan kolmansille</li>
+        <li>olemaan jakamatta kirjautumistietojaan kolmansille osapuolille</li>
         <li>olemaan käyttämättä muiden tilejä</li>
-        <li>ilmoittamaan viipymättä luvattomasta pääsystä tai tietoturvaloukkauksesta</li>
+        <li>ilmoittamaan viipymättä tilin luvattomasta käytöstä tai tietoturvaloukkauksesta</li>
       </ul>
       <p>
-        Palveluntarjoaja pidättää oikeuden keskeyttää tai rajoittaa pääsyä väärinkäytön, petosepäilyn, näiden ehtojen
-        rikkomisen tai palvelun moitteetonta toimintaa vaarantavan toiminnan yhteydessä.
+        Palveluntarjoaja pidättää oikeuden keskeyttää tai rajoittaa pääsyä palveluun väärinkäytön, petosepäilyn, näiden
+        ehtojen rikkomisen tai palvelun moitteetonta toimintaa vaarantavan toiminnan vuoksi.
       </p>
     </Section>
 
     <Section title="10. Peruuttamisoikeus">
       <p>
-        Jos käyttäjä ostaa kuluttajana, hän voi vedota peruuttamisoikeuteen laissa säädetyissä tapauksissa.
+        Jos käyttäjä ostaa kuluttajana, hänellä on peruuttamisoikeus laissa säädetyissä tapauksissa.
       </p>
       <p>
-        Etäsopimuksissa peruuttamisoikeus on yleensä 14 päivää. Digitaalisen sisällön osalta, jota ei toimiteta
-        aineellisella välineellä, peruuttamisoikeus voi kuitenkin raueta, kun:
+        Etämyynnissä peruuttamisaika on pääsääntöisesti 14 päivää. Kun kyse on digitaalisesta sisällöstä, jota ei
+        toimiteta aineellisella tallenteella, peruuttamisoikeus voi kuitenkin raueta, kun:
       </p>
       <ul>
-        <li>palvelun suorittaminen on aloitettu peruuttamisajan kuluessa</li>
+        <li>sopimuksen täyttäminen on aloitettu peruuttamisaikana</li>
         <li>käyttäjä on antanut siihen nimenomaisen ennakkosuostumuksensa</li>
-        <li>käyttäjä on vahvistanut menettävänsä peruuttamisoikeutensa</li>
-        <li>elinkeinonharjoittaja on antanut sopimuksen vahvistuksen laissa vaaditulla tavalla</li>
+        <li>käyttäjä on hyväksynyt sen, että hän menettää peruuttamisoikeutensa</li>
+        <li>elinkeinonharjoittaja on toimittanut sopimuksen vahvistuksen laissa edellytetyllä tavalla</li>
       </ul>
       <p>
-        Jos käyttäjä siis pyytää tai hyväksyy henkilökohtaisen digitaalisen palvelun välittömän aktivoinnin, raportin
-        laatimisen tai digitaalisen sisällön välittömän saataville asettamisen, hän hyväksyy, että suorittaminen alkaa
-        ennen peruuttamisajan päättymistä, ja tunnustaa laissa säädetyissä rajoissa voivansa menettää
-        peruuttamisoikeutensa heti, kun palvelun suorittaminen on aloitettu. Tämä vastaa kuluttajansuojalain 6 luvun
-        säännöksiä.
+        Jos käyttäjä siis pyytää tai hyväksyy, että henkilökohtainen digitaalinen palvelu aktivoidaan, raportti
+        laaditaan tai digitaalinen sisältö asetetaan saataville heti, hän hyväksyy, että sopimuksen täyttäminen alkaa
+        ennen peruuttamisajan päättymistä, ja hyväksyy laissa säädetyissä rajoissa, että hän voi menettää
+        peruuttamisoikeutensa, kun täyttäminen on aloitettu. Tämä vastaa kuluttajansuojalain 6 luvun säännöksiä.
       </p>
     </Section>
 
-    <Section title="11. Hyvitys">
+    <Section title="11. Maksun palauttaminen">
       <p>
-        Lakisääteisen peruuttamisen osalta viitataan edellä olevaan kohtaan 10. Näiden tapausten ulkopuolella ja lain
-        säännökset huomioiden jo toimitettuja, aktivoituja, henkilökohtaistettuja tai käyttäjän saataville asetettuja
-        digitaalisia palveluja ei pääsääntöisesti hyvitetä.
+        Lakisääteisen peruuttamisoikeuden osalta viitataan edellä olevaan kohtaan 10. Muissa tapauksissa jo
+        toimitetuista, aktivoiduista, yksilöllisesti laadituista tai käyttäjän saataville asetetuista digitaalisista
+        palveluista ei pääsääntöisesti palauteta maksua, jollei laista muuta johdu.
       </p>
       <p>
         <strong>Kaupallinen tyytyväisyystakuu ”rahat takaisin” (14 päivää).</strong> Laissa säädettyjen oikeuksien
         lisäksi palveluntarjoaja antaa vapaaehtoisen kaupallisen takuun: jos käyttäjä katsoo 14 päivän kuluessa
-        raportin toimituksesta, että tulkinta on yleispätevä tai ei vastaa annettuja syntymätietoja, hän voi pyytää
-        koko maksetun summan takaisin kirjoittamalla osoitteeseen <MailLink email={infoEmail} /> ostoksessa
+        raportin toimituksesta, että tulkinta on liian yleisluontoinen tai ei vastaa annettuja syntymätietoja, hän voi
+        pyytää koko maksamansa summan takaisin kirjoittamalla osoitteeseen <MailLink email={infoEmail} /> ostossa
         käyttämästään sähköpostiosoitteesta.
       </p>
       <p>
-        Hyvitys maksetaan sen jälkeen, kun se on myönnetty, samalle maksutavalle, jota ostossa käytettiin, ilman
-        kustannuksia käyttäjälle. Takuu on voimassa kerran asiakasta kohden ja koskee yksinomaan syntymäkartan
-        tulkinnan ensimmäistä ostoa (myös versiota, johon sisältyy ensimmäinen kuukausi transiitteja). Transiittitilauksen
-        myöhemmät uusiutumiset eivät kuulu takuun piiriin, ja niitä koskee jäljempänä oleva kohta 12.
+        Hyväksytty palautus maksetaan samalla maksutavalla, jota ostossa käytettiin, eikä siitä aiheudu käyttäjälle
+        kuluja. Takuun voi käyttää kerran asiakasta kohden, ja se koskee ainoastaan syntymäkartan tulkinnan
+        ensimmäistä ostoa (myös versiota, johon sisältyy transiittien ensimmäinen kuukausi). Transiittitilauksen
+        myöhemmät uusiutumiset eivät kuulu takuun piiriin, ja niihin sovelletaan jäljempänä olevaa kohtaa 12.
       </p>
       <p>
-        Muut tukipyynnöt tai valitukset voi lähettää samaan osoitteeseen tai sivustolla ilmoitettuihin yhteystietoihin.
-        Palveluntarjoaja arvioi vilpittömässä mielessä tekniset häiriöt, kaksoismaksut tai sen, ettei palvelua ole
-        todellisuudessa toimitettu.
+        Muut tukipyynnöt ja reklamaatiot voi lähettää samaan osoitteeseen tai sivustolla ilmoitettuja yhteystietoja
+        käyttäen. Palveluntarjoaja käsittelee vilpittömässä mielessä tekniset häiriöt, päällekkäiset veloitukset ja
+        tapaukset, joissa palvelua ei ole tosiasiassa toimitettu.
       </p>
     </Section>
 
-    <Section title="12. Tilaukset ja toistuva sisältö">
-      <p>Jos ostettuun palveluun sisältyy jaksoittaista sisältöä, toistuva pääsy tai tilausmuoto, sovelletaan seuraavaa:</p>
+    <Section title="12. Kestotilaukset ja toistuva sisältö">
+      <p>
+        Jos ostettuun palveluun sisältyy jaksoittaista sisältöä, toistuva käyttöoikeus tai kestotilaus, sovelletaan
+        seuraavaa:
+      </p>
       <ul>
         <li>toimitusväli, hinta ja olennaiset ominaisuudet ilmoitetaan kyseisellä tarjoussivulla</li>
         <li>käyttäjä vastaa siitä, että tarkistaa ennen tilauksen vahvistamista, onko osto toistuva</li>
@@ -224,22 +226,28 @@ const TermsFi = () => (
         </li>
       </ul>
       <p>
-        Jos toistuva paketti uusiutuu automaattisesti, tästä on ilmoitettava selkeästi kassalla tai tarjoussivulla
+        Jos toistuva tilaus uusiutuu automaattisesti, tästä on ilmoitettava selkeästi kassalla tai tarjoussivulla
         ennen ostoa.
       </p>
     </Section>
 
     <Section title="13. Palvelun sallittu käyttö">
       <p>
-        Käyttäjä saa käyttää ostettua sisältöä vain henkilökohtaisiin, ei-kaupallisiin tarkoituksiin, ellei kirjallisesti
-        toisin sovita.
+        Käyttäjä saa käyttää ostettua sisältöä vain henkilökohtaisiin, muihin kuin kaupallisiin tarkoituksiin, ellei
+        kirjallisesti toisin sovita.
       </p>
       <p>Kiellettyä on:</p>
       <ul>
         <li>sisällön kopioiminen, jäljentäminen, levittäminen tai edelleen myyminen</li>
-        <li>raporttien, aineistojen, tulosten, käyttöpolkujen tai suojattujen alueiden järjestelmällinen julkinen jakaminen</li>
-        <li>palvelun käyttäminen laittomiin tai vilpillisiin tarkoituksiin tai kolmansien oikeuksia loukkaaviin tarkoituksiin</li>
-        <li>teknisten, tietoturvaan liittyvien tai pääsyä rajoittavien suojausten kiertämisyritykset</li>
+        <li>
+          raporttien, aineistojen, tulosten, palvelun vaiheiden tai suojattujen osioiden järjestelmällinen julkinen
+          jakaminen
+        </li>
+        <li>
+          palvelun käyttäminen laittomiin tai vilpillisiin tarkoituksiin tai tavalla, joka loukkaa kolmansien
+          osapuolten oikeuksia
+        </li>
+        <li>yritykset kiertää teknisiä, tietoturvaan liittyviä tai käyttöoikeutta rajoittavia suojauksia</li>
       </ul>
     </Section>
 
@@ -247,7 +255,7 @@ const TermsFi = () => (
       <p>
         Kaikki sivuston sisältö ja palvelun kautta toimitettu sisältö, mukaan lukien tekstit, tuotteen rakenne,
         aineistot, käyttöliittymät, graafiset elementit, logot, kauppanimet, jäsennellyt tulokset, ulkoasu ja
-        toimituksellinen sisältö, on varattu palveluntarjoajalle tai kullekin oikeudenhaltijalle.
+        toimituksellinen sisältö, kuuluu palveluntarjoajalle tai asianomaisille oikeudenhaltijoille.
       </p>
       <p>
         Palvelun ostaminen ei siirrä käyttäjälle mitään immateriaalioikeuksia sivustoon tai sisältöön, lukuun ottamatta
@@ -266,7 +274,7 @@ const TermsFi = () => (
         <li>tekniset päivitykset</li>
         <li>verkko- tai infrastruktuuriongelmat</li>
         <li>tapahtumat, joihin palveluntarjoaja ei kohtuudella voi vaikuttaa</li>
-        <li>keskeisten ulkopuolisten toimittajien palvelujen poissaolo</li>
+        <li>keskeisten ulkopuolisten toimittajien palvelujen käyttökatkot</li>
       </ul>
     </Section>
 
@@ -286,24 +294,25 @@ const TermsFi = () => (
         <li>tilapäisestä yhteensopimattomuudesta käyttäjän laitteiden, selainten tai teknisten asetusten kanssa</li>
       </ul>
       <p>
-        Sovellettavan kuluttajansuojasääntelyn mukainen pakottava vastuu säilyy ennallaan.
+        Tämä ei rajoita vastuuta, josta ei voida kuluttajansuojalainsäädännön pakottavien säännösten mukaan
+        poiketa.
       </p>
     </Section>
 
     <Section title="17. Tietosuoja ja henkilötiedot">
       <p>
-        Käyttäjän henkilötietojen käsittelyä koskee sivustolla julkaistu{" "}
+        Käyttäjän henkilötietojen käsittelyyn sovelletaan sivustolla julkaistua{" "}
         <a href="/privacy" className="text-primary underline-offset-4 hover:underline">
-          Tietosuojaseloste ja evästekäytäntö
+          tietosuojaselostetta ja evästekäytäntöä
         </a>
-        , joka on soveltuvin osin olennainen osa sopimussuhdetta.
+        , joka on soveltuvin osin erottamaton osa sopimussuhdetta.
       </p>
     </Section>
 
     <Section title="18. Ehtojen muutokset">
       <p>Palveluntarjoaja voi päivittää tai muuttaa näitä käyttöehtoja milloin tahansa.</p>
       <p>
-        Muutokset tulevat voimaan sivustolla julkaisun päivämäärästä, jollei toisin mainita. Jo tehtyihin tilauksiin
+        Muutokset tulevat voimaan, kun ne on julkaistu sivustolla, jollei toisin mainita. Jo tehtyihin tilauksiin
         sovelletaan pääsääntöisesti ostohetkellä voimassa olleita ehtoja.
       </p>
     </Section>
@@ -314,12 +323,12 @@ const TermsFi = () => (
         soveltuvin osin kuluttajansuojan pakottavia säännöksiä.
       </p>
       <p>
-        Jos käyttäjä toimii kuluttajana, ne oikeudet säilyvät ennallaan, jotka hänen vakinaisen asuinmaansa pakottavat
-        säännökset mahdollisesti hänelle myöntävät.
+        Jos käyttäjä on kuluttaja, hän säilyttää kaikki oikeudet, jotka hänen vakinaisen asuinmaansa pakottavat
+        säännökset hänelle mahdollisesti antavat.
       </p>
       <p>
-        Kaikissa näiden ehtojen tulkintaa, pätevyyttä tai täytäntöönpanoa koskevissa riidoissa toimivaltainen on, jos
-        käyttäjä on kuluttaja, tuomioistuin, jonka sovellettava laki pakottavasti määrää.
+        Jos käyttäjä on kuluttaja, näiden ehtojen tulkintaa, pätevyyttä tai täytäntöönpanoa koskevat riidat käsittelee
+        se tuomioistuin, jonka sovellettava laki pakottavasti määrää toimivaltaiseksi.
       </p>
     </Section>
 

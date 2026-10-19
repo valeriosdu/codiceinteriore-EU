@@ -56,12 +56,12 @@ const COPY = {
   },
   fi: {
     locale: 'fi-FI',
-    preview: 'Uudet kuukauden transiittisi ovat tulossa',
-    h1: 'Pian uusi transiittitulkintasi',
+    preview: 'Seuraavan kuukauden transiittisi ovat tulossa',
+    h1: 'Uusi transiittitulkintasi on pian valmis',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
-    body: 'Uusi transiittikuukautesi alkaa pian: tuore tulkinta siitä, miten planeettojen liikkeet osuvat syntymäkarttasi keskeisiin kohtiin. Mukana on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan.',
+    body: 'Uusi transiittikuukautesi alkaa pian. Saat tuoreen tulkinnan siitä, miten planeettojen liikkeet koskettavat syntymäkarttasi keskeisiä kohtia, ja se on jaettu neljään jaksoon, jotka auttavat sinua hahmottamaan kuukautta viikko kerrallaan.',
     cta: 'Hallitse tilausta',
-    nextCharge: (date: string) => `Seuraava veloitus (9,90 €) tehdään ${date}. Sinun ei tarvitse tehdä mitään; jos haluat muuttaa jotain, voit hallita tilaustasi milloin tahansa.`,
+    nextCharge: (date: string) => `Seuraava veloitus (9,90 €) tehdään ${date}. Sinun ei tarvitse tehdä mitään. Jos haluat muuttaa jotain, voit hallita tilaustasi milloin tahansa.`,
     closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
   },
 } as const

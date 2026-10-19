@@ -5,22 +5,22 @@ import { LegalPage, LegalEntityBox, Section, SubSection, MailLink, SiteLink, pri
 const PrivacyPolicyFi = () => (
   <LegalPage
     seoTitle={`Tietosuojaseloste ja evästekäytäntö — ${MARKET.siteName}`}
-    seoDescription={`Tietoa sivuston ${MARKET.siteName} käyttäjien henkilötietojen käsittelystä.`}
+    seoDescription={`Tietoa siitä, miten ${MARKET.siteName} -sivuston käyttäjien henkilötietoja käsitellään.`}
     path="/privacy"
     backAria="Takaisin"
     heading="Tietosuojaseloste ja evästekäytäntö"
     lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-10">
-      Tässä selosteessa kerrotaan, miten käsitellään niiden käyttäjien henkilötietoja, jotka vierailevat sivustolla{" "}
-      <SiteLink /> ja käyttävät tuotemerkin {MARKET.siteName} alla tarjottavia palveluja.
+      Tässä selosteessa kerrotaan, miten käsittelemme niiden käyttäjien henkilötietoja, jotka vierailevat sivustolla{" "}
+      <SiteLink /> ja käyttävät {MARKET.siteName} -tuotemerkillä tarjottavia palveluja.
     </p>
 
     <Section title="1. Rekisterinpitäjä">
       <p>Rekisterinpitäjä on:</p>
       <LegalEntityBox />
       <p>
-        Kaikissa henkilötietojen käsittelyä koskevissa pyynnöissä voit kirjoittaa osoitteeseen:{" "}
+        Kaikissa henkilötietojen käsittelyä koskevissa asioissa voit ottaa yhteyttä osoitteeseen:{" "}
         <MailLink email={privacyEmail} />
       </p>
     </Section>
@@ -32,14 +32,14 @@ const PrivacyPolicyFi = () => (
         <li>kysely ja sivut, joilla tietoja kerätään</li>
         <li>kassa ja ostosivut</li>
         <li>mahdolliset yhteydenottolomakkeet</li>
-        <li>toiminnallisten sähköpostien, viikoittaisen sisällön ja markkinointiviestien lähettäminen</li>
-        <li>palveluun mahdollisesti liitetty käyttäjäalue</li>
+        <li>palveluun liittyvien sähköpostien, viikoittaisen sisällön ja markkinointiviestien lähettäminen</li>
+        <li>palveluun mahdollisesti liittyvä oma tili</li>
       </ul>
     </Section>
 
     <Section title="3. Käsiteltävät tietoryhmät">
       <p>Voimme käsitellä seuraavia henkilötietoryhmiä:</p>
-      <SubSection title="a) Tunnistamis- ja yhteystiedot">
+      <SubSection title="a) Tunniste- ja yhteystiedot">
         <ul>
           <li>nimi</li>
           <li>sähköpostiosoite</li>
@@ -61,7 +61,7 @@ const PrivacyPolicyFi = () => (
           <li>maksupalveluntarjoajien välittämät tapahtumatunnisteet</li>
         </ul>
         <p className="text-sm text-muted-foreground italic mt-2">
-          Huomaa: rekisterinpitäjä ei käsittele maksukortin täydellisiä tietoja itse, vaan ne käsittelevät käytetyt
+          Huomaa: rekisterinpitäjä ei itse käsittele maksukorttien täydellisiä tietoja. Niitä käsittelevät käytetyt
           maksupalveluntarjoajat.
         </p>
       </SubSection>
@@ -89,8 +89,8 @@ const PrivacyPolicyFi = () => (
         <li>käyttäjätilin hallinta, jos tili on käytettävissä</li>
         <li>kassan, maksujen ja tilaushistorian hallinta</li>
         <li>
-          toiminnallisten viestien, kuten tilausvahvistusten, sisältöön pääsyn, tuen ja palveluilmoitusten,
-          lähettäminen
+          palveluviestien lähettäminen, esimerkiksi tilausvahvistukset, sisällön avaamiseen liittyvät viestit,
+          tukiviestit ja palveluilmoitukset
         </li>
         <li>sähköpostitse tai yhteydenottolomakkeella lähettämiesi pyyntöjen käsittely</li>
         <li>uutiskirjeen ja mainosviestien lähettäminen</li>
@@ -104,42 +104,42 @@ const PrivacyPolicyFi = () => (
       <p>Henkilötietojen käsittely perustuu tapauksesta riippuen seuraaviin oikeusperusteisiin:</p>
       <ul>
         <li>
-          <strong>sopimuksen täyttäminen</strong> tai sopimusta edeltävät toimet: raportin toimittamiseen, kyselyn
-          käsittelyyn siltä osin kuin se palvelee pyydettyä palvelua, tilin hallintaan, ostoihin, maksuihin,
-          toiminnallisten sähköpostien lähettämiseen ja asiakastukeen
+          <strong>sopimuksen täytäntöönpano</strong> tai sopimuksen tekemistä edeltävät toimenpiteet: raportin
+          toimittamiseen, kyselyn käsittelyyn siltä osin kuin se on tarpeen pyydetyn palvelun kannalta, tilin
+          hallintaan, ostoihin, maksuihin, palveluviestien lähettämiseen ja asiakastukeen
         </li>
         <li>
           <strong>rekisteröidyn suostumus</strong>: uutiskirjeen ja markkinointiviestien lähettämiseen sekä muiden
           kuin teknisten evästeiden ja seurantatyökalujen käyttöön, silloin kun sovellettava sääntely sitä edellyttää
         </li>
         <li>
-          <strong>rekisterinpitäjän oikeutettu etu</strong>: tietoturvaan, oikeuksien puolustamiseen, petosten
-          ehkäisyyn, sivuston tekniseen hallintaan ja palvelujen toimintaa koskeviin koosteisiin analyyseihin lain
-          sallimissa rajoissa
+          <strong>rekisterinpitäjän oikeutettu etu</strong>: tietoturvaan, rekisterinpitäjän oikeuksien
+          puolustamiseen, petosten ehkäisyyn, sivuston tekniseen hallintaan ja palvelujen toimintaa koskeviin,
+          koostetietoihin perustuviin analyyseihin lain sallimissa rajoissa
         </li>
       </ul>
     </Section>
 
     <Section title="6. Tietojen antaminen: pakollista vai vapaaehtoista">
-      <p>Pakollisiksi merkittyjen tietojen antaminen on pakollista, kun tietoja tarvitaan:</p>
+      <p>Pakollisiksi merkityt tiedot on annettava, kun niitä tarvitaan:</p>
       <ul>
         <li>pyydetyn raportin laatimiseen</li>
         <li>oston käsittelyyn</li>
         <li>tilin luomiseen tai hallintaan</li>
         <li>tuen antamiseen</li>
-        <li>toiminnallisten viestien lähettämiseen</li>
+        <li>palveluviestien lähettämiseen</li>
       </ul>
-      <p>Jos näitä tietoja ei anneta, palvelua ei ehkä voida toimittaa.</p>
+      <p>Jos näitä tietoja ei anneta, palvelua ei välttämättä voida toimittaa.</p>
       <p>
-        Markkinointitarkoituksiin tai muita kuin välttämättömiä evästeitä varten annettavat tiedot ovat sen sijaan
+        Markkinointia tai muita kuin välttämättömiä evästeitä varten annettavat tiedot ovat sen sijaan
         vapaaehtoisia. Kieltäytyminen ei estä sivuston selaamista eikä peruspalvelun ostamista, lukuun ottamatta
-        ehdottoman välttämättömiä teknisiä rajoituksia.
+        teknisesti välttämättömiä rajoituksia.
       </p>
     </Section>
 
     <Section title="7. Käsittelytavat">
       <p>
-        Käsittely tehdään tietojen luonteeseen sopivilla digitaalisilla ja organisatorisilla keinoilla
+        Tietoja käsitellään niiden luonteeseen sopivin sähköisin välinein ja organisatorisin toimenpitein
         lainmukaisuuden, kohtuullisuuden, läpinäkyvyyden, tietojen minimoinnin ja säilytyksen rajoittamisen
         periaatteiden mukaisesti.
       </p>
@@ -147,20 +147,19 @@ const PrivacyPolicyFi = () => (
 
     <Section title="8. Tietojen vastaanottajat">
       <p>
-        Tietoja voidaan luovuttaa tai tehdä käytettäviksi tahoille, jotka toimivat tapauksesta riippuen henkilötietojen
-        käsittelijöinä, itsenäisinä rekisterinpitäjinä tai valtuutettuina henkilöinä.
+        Tietoja voidaan luovuttaa tai antaa käsiteltäväksi tahoille, jotka toimivat tapauksesta riippuen
+        henkilötietojen käsittelijöinä, itsenäisinä rekisterinpitäjinä tai rekisterinpitäjän valtuuttamina
+        henkilöinä.
       </p>
       <p>Tietoja voidaan käsitellä erityisesti seuraavien toimittajien tai toimittajaryhmien kautta:</p>
       <ul>
-        <li>palvelinpalvelujen ja infrastruktuurin sekä käyttöliittymän toimittajat</li>
-        <li>Supabase tietokantaa ja sovellusinfrastruktuuria varten</li>
-        <li>Stripe ja PayPal maksujen käsittelyyn</li>
-        <li>
-          Google teknologiapalveluihin ja tarvittaessa ulkoisilla tekoälymalleilla tapahtuvaan käsittelyyn
-        </li>
-        <li>FreeAstroAPI palvelun tarvitsemien astrologisten tietojen käsittelyyn</li>
-        <li>Meta mainostyökaluihin, pikseleihin ja uudelleenmarkkinointiin</li>
-        <li>Google Analytics sivuston liikenteen tilastolliseen analyysiin</li>
+        <li>hosting-, infrastruktuuri- ja käyttöliittymäpalvelujen toimittajat</li>
+        <li>Supabase (tietokanta ja sovellusinfrastruktuuri)</li>
+        <li>Stripe ja PayPal (maksujen käsittely)</li>
+        <li>Google (teknologiapalvelut ja tarvittaessa käsittely ulkoisilla tekoälymalleilla)</li>
+        <li>FreeAstroAPI (palvelun tarvitsemien astrologisten tietojen käsittely)</li>
+        <li>Meta (mainostyökalut, pikselit ja uudelleenmarkkinointi)</li>
+        <li>Google Analytics (sivuston liikenteen tilastollinen analyysi)</li>
         <li>
           mahdolliset sähköpostin toimituksen, teknisen tuen ja palveluihin liittyvän operatiivisen hallinnan
           toimittajat
@@ -177,7 +176,7 @@ const PrivacyPolicyFi = () => (
       </p>
       <p>
         Rekisterinpitäjä noudattaa minimoinnin periaatetta: ulkoisille toimittajille välitetään vain ne tiedot, jotka
-        tarvitaan pyydetyn sisällön luomiseen tai tarkoitetun teknisen toiminnon suorittamiseen.
+        tarvitaan pyydetyn sisällön luomiseen tai kyseisen teknisen toiminnon suorittamiseen.
       </p>
     </Section>
 
@@ -187,8 +186,8 @@ const PrivacyPolicyFi = () => (
         tietoja sen ulkopuolella, myös Yhdysvalloissa tai muissa kolmansissa maissa.
       </p>
       <p>
-        Tarvittaessa siirrot tehdään voimassa olevassa sääntelyssä edellytettyjä välineitä noudattaen, mukaan lukien
-        mahdolliset sopimusmekanismit tai muut lain edellyttämät suojatoimet.
+        Tällaiset siirrot tehdään voimassa olevan lainsäädännön edellyttämällä tavalla, esimerkiksi
+        sopimusperusteisin järjestelyin tai muin laissa edellytetyin suojatoimin.
       </p>
       <p>
         Lisätietoja mahdollisista siirroista ja niihin liittyvistä suojatoimista saat kirjoittamalla osoitteeseen{" "}
@@ -216,12 +215,12 @@ const PrivacyPolicyFi = () => (
           käsittelyä
         </li>
         <li>
-          tekniset ja lokitiedot säilytetään vain sen ajan, joka on ehdottoman välttämätön järjestelmien toiminnan,
-          turvallisuuden ja analysoinnin kannalta
+          teknisiä tietoja ja lokitietoja säilytetään vain niin kauan kuin järjestelmien toiminta, turvallisuus ja
+          analysointi ehdottomasti edellyttävät
         </li>
         <li>
-          analytiikkaan ja evästeisiin liittyvät tiedot riippuvat kyseisen työkalun asetuksista ja ilmoittamistasi
-          valinnoista
+          analytiikkaan ja evästeisiin liittyvien tietojen säilytysaika riippuu kyseisen työkalun asetuksista ja
+          tekemistäsi valinnoista
         </li>
       </ul>
     </Section>
@@ -238,7 +237,7 @@ const PrivacyPolicyFi = () => (
           voidaan tallentaa ja lähettää takaisin samoille sivustoille seuraavalla vierailulla.
         </p>
         <p>
-          Vastaavat tekniikat, kuten pikselit, tunnisteet, skriptit tai tunnistimet, voivat hoitaa samoja tehtäviä
+          Vastaavat tekniikat, kuten pikselit, tagit, skriptit tai tunnisteet, voivat hoitaa samoja tehtäviä
           tietojen keräämisessä tai välittämisessä.
         </p>
       </SubSection>
@@ -265,8 +264,8 @@ const PrivacyPolicyFi = () => (
         </ul>
         <p>
           Sivusto voi käyttää analytiikkatyökaluja, kuten Google Analyticsia. Jos näitä työkaluja ei ole määritetty
-          ehdottoman koosteisiksi tai anonymisoiduiksi sovellettavan sääntelyn vaatimien standardien mukaisesti, niiden
-          käyttö voi edellyttää suostumustasi.
+          keräämään tietoja pelkästään koostetusti tai anonymisoidusti sovellettavan sääntelyn edellyttämällä tavalla,
+          niiden käyttö voi edellyttää suostumustasi.
         </p>
         <h4 className="font-serif text-lg font-medium mt-5 mb-2">c) Markkinointi-, profilointi- ja uudelleenmarkkinointievästeet</h4>
         <p>Niiden tarkoituksena on:</p>
@@ -278,7 +277,7 @@ const PrivacyPolicyFi = () => (
         </ul>
         <p>
           Tähän ryhmään voi kuulua työkaluja, kuten Meta Pixel, sekä muita mainontaan liittyviä skriptejä tai
-          tunnisteita. Tällaiset evästeet eivät ole tarpeen sivuston toiminnalle, ja niitä käytetään vain suostumuksen
+          tageja. Tällaiset evästeet eivät ole tarpeen sivuston toiminnalle, ja niitä käytetään vain suostumuksen
           perusteella silloin, kun sovellettava sääntely sitä edellyttää.
         </p>
       </SubSection>
@@ -292,14 +291,15 @@ const PrivacyPolicyFi = () => (
           </li>
         </ul>
         <p>
-          Kolmannen osapuolen evästeiden keräämiin tietoihin sovelletaan myös kyseisten toimittajien omia selosteita.
+          Kolmannen osapuolen evästeiden keräämiin tietoihin sovelletaan myös kyseisten toimittajien omia
+          tietosuojaselosteita.
         </p>
       </SubSection>
       <SubSection title="12.4 Evästeiden käytön oikeusperuste">
         <p>Teknisten evästeiden käyttö perustuu tarpeeseen tarjota sivusto ja pyydetyt palvelut.</p>
         <p>
-          Sellaisten analytiikkaevästeiden, jotka eivät ole ehdottoman teknisiä, sekä markkinointievästeiden,
-          pikselien, tunnisteiden ja muiden seurantatyökalujen käyttö perustuu suostumukseesi silloin, kun sovellettava
+          Sellaisten analytiikkaevästeiden, jotka eivät ole teknisesti välttämättömiä, sekä markkinointievästeiden,
+          pikselien, tagien ja muiden seurantatyökalujen käyttö perustuu suostumukseesi silloin, kun sovellettava
           sääntely sitä edellyttää.
         </p>
       </SubSection>
@@ -312,8 +312,8 @@ const PrivacyPolicyFi = () => (
         </ul>
         <p>
           Voit milloin tahansa muuttaa tai peruuttaa valintasi sivuston tarjoamilla keinoilla, jos sellaisia on, tai
-          selaimen asetuksista. Huomaa, että joidenkin evästeiden estäminen voi vaikuttaa joidenkin ei-välttämättömien
-          toimintojen toimintaan.
+          selaimen asetuksista. Huomaa, että joidenkin evästeiden estäminen voi vaikuttaa joihinkin muihin kuin
+          välttämättömiin toimintoihin.
         </p>
       </SubSection>
       <SubSection title="12.6 Käytöstä poistaminen selaimessa">
@@ -323,9 +323,9 @@ const PrivacyPolicyFi = () => (
         </p>
       </SubSection>
       <SubSection title="12.7 Evästeiden säilytysaika">
-        <p>Evästeiden elinikä vaihtelee:</p>
+        <p>Evästeiden voimassaoloaika vaihtelee:</p>
         <ul>
-          <li>jotkin poistetaan automaattisesti, kun suljet selaimen</li>
+          <li>jotkin poistuvat automaattisesti, kun suljet selaimen</li>
           <li>
             toiset säilyvät pidempään, ja ajan määrää kukin toimittaja tai sivuston tekninen määritys
           </li>
@@ -350,7 +350,7 @@ const PrivacyPolicyFi = () => (
           suostumuksen perusteella tehdyn käsittelyn lainmukaisuuteen
         </li>
         <li>
-          valituksen tekeminen toimivaltaiselle valvontaviranomaiselle, Suomessa tietosuojavaltuutetun toimistolle
+          valituksen tekeminen toimivaltaiselle valvontaviranomaiselle, Suomessa Tietosuojavaltuutetun toimistolle
           (tietosuoja.fi)
         </li>
       </ul>
@@ -361,8 +361,8 @@ const PrivacyPolicyFi = () => (
 
     <Section title="14. Alaikäiset">
       <p>
-        Palvelua ei ole tarkoitettu alaikäisille. Rekisterinpitäjä pyytää, ettet käytä sivustoa äläkä anna
-        henkilötietoja, jos et ole täysi-ikäinen tai jos sinulla ei muutoin ole sovellettavan sääntelyn mukaan
+        Palvelua ei ole tarkoitettu alaikäisille. Rekisterinpitäjä pyytää, ettet käytä sivustoa etkä anna
+        henkilötietojasi, jos et ole täysi-ikäinen tai jos sinulla ei muutoin ole sovellettavan sääntelyn mukaan
         kelpoisuutta antaa pätevää suostumusta.
       </p>
     </Section>

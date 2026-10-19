@@ -55,13 +55,13 @@ const COPY = {
     closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
   },
   fi: {
-    headingRenewal: 'Uudet kuukauden transiittisi ovat valmiina',
+    headingRenewal: 'Uuden kuukauden transiittisi ovat valmiina',
     headingNew: 'Transiittitilauksesi on aktivoitu',
-    introRenewal: 'Olemme valmistelleet transiittitulkintasi uudelle kuukaudelle. Se perustuu planeettojen todellisiin liikkeisiin, jotka on laskettu syntymäkarttasi mukaan, ja siinä on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan.',
-    introNew: 'Olet aktivoinut kuukausittaisen transiittitilauksen (9,90 € kuukaudessa). Valmistelemme sinulle joka kuukausi uuden tulkinnan siitä, miten planeettojen liikkeet osuvat syntymäkarttasi keskeisiin kohtiin. Mukana on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan. Voit hallita tilausta tai perua sen milloin tahansa tililtäsi.',
+    introRenewal: 'Olemme laatineet sinulle transiittitulkinnan alkavalle kuukaudelle. Se perustuu planeettojen todellisiin liikkeisiin suhteessa syntymäkarttaasi, ja se on jaettu neljään jaksoon, jotka auttavat sinua hahmottamaan kuukautta viikko kerrallaan.',
+    introNew: 'Kuukausittainen transiittitilauksesi on nyt käytössä (9,90 € kuukaudessa). Saat joka kuukausi uuden tulkinnan siitä, miten planeettojen liikkeet koskettavat syntymäkarttasi keskeisiä kohtia. Tulkinta on jaettu neljään jaksoon, jotka auttavat sinua hahmottamaan kuukautta viikko kerrallaan. Voit hallita tilaustasi tai lopettaa sen milloin tahansa omalta tililtäsi.',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
     cta: 'Avaa tulkintasi',
-    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimen osoiteriville:',
     closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
   },
 } as const

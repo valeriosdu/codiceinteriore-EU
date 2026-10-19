@@ -83,7 +83,7 @@ const COPY = {
     noCredits: 'Olet käyttänyt kaikki kysymyksesi.',
     cta: 'Avaa astrologiopas',
     closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
-    subject: (q: string) => (q ? `Kysymyksestäsi: ${truncate(q, 60)}` : 'Vastauksesi on valmis'),
+    subject: (q: string) => (q ? `Vastaus kysymykseesi: ${truncate(q, 60)}` : 'Vastauksesi on valmis'),
   },
 } as const
 
