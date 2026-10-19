@@ -32,6 +32,15 @@ import schemiNl from "@/assets/report-preview/5-schemi-nl.webp";
 import consigliNl from "@/assets/report-preview/6-consigli-nl.webp";
 import poesiaNl from "@/assets/report-preview/7-poesia-nl.webp";
 
+import heroFi from "@/assets/report-preview/hero-fi.webp";
+import identitaFi from "@/assets/report-preview/1-identita-fi.webp";
+import emozioniFi from "@/assets/report-preview/2-emozioni-fi.webp";
+import relazioniFi from "@/assets/report-preview/3-relazioni-fi.webp";
+import lavoroFi from "@/assets/report-preview/4-lavoro-fi.webp";
+import schemiFi from "@/assets/report-preview/5-schemi-fi.webp";
+import consigliFi from "@/assets/report-preview/6-consigli-fi.webp";
+import poesiaFi from "@/assets/report-preview/7-poesia-fi.webp";
+
 // Screenshot del report: asset per-lingua, da sostituire quando un nuovo
 // mercato avrà i propri estratti (es oggi riusa ancora quelli italiani).
 const SLIDE_IMAGES_IT = [hero, identita, emozioni, relazioni, lavoro, schemi, consigli, poesia];
@@ -40,14 +49,17 @@ const SLIDE_IMAGES_EN = [heroEn, identitaEn, emozioniEn, relazioniEn, lavoroEn, 
 // L'ordine segue slideAlts di src/i18n/nl/social.ts: ogni immagine sta nello slot
 // il cui alt text porta lo stesso titolo di sezione.
 const SLIDE_IMAGES_NL = [heroNl, identitaNl, emozioniNl, relazioniNl, lavoroNl, schemiNl, consigliNl, poesiaNl];
+// Estratti di un report FI generato dalla pipeline reale per una persona
+// inventata (Aino Virtanen), filigranati "Esimerkkitiedot"; stesso ordine di
+// slideAlts in src/i18n/fi/social.ts.
+const SLIDE_IMAGES_FI = [heroFi, identitaFi, emozioniFi, relazioniFi, lavoroFi, schemiFi, consigliFi, poesiaFi];
 
 const SLIDE_IMAGES_BY_LANG: Record<string, typeof SLIDE_IMAGES_IT> = {
   it: SLIDE_IMAGES_IT,
   es: SLIDE_IMAGES_IT,
   en: SLIDE_IMAGES_EN,
   nl: SLIDE_IMAGES_NL,
-  // Niente estratti finlandesi ancora: meglio quelli inglesi che gli italiani.
-  fi: SLIDE_IMAGES_EN,
+  fi: SLIDE_IMAGES_FI,
 };
 
 const ReportPreviewCarousel = () => {

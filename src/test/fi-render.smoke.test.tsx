@@ -70,11 +70,26 @@ suite("rendering mercato fi", () => {
     expect(document.body.textContent).toMatch(/tietosuoja/i);
   });
 
-  it("senza estratti finlandesi il carosello usa quelli inglesi, non gli italiani", () => {
+  it("il carosello mostra gli estratti FI, ognuno sotto la propria alt text", () => {
+    const atteso: [string, RegExp][] = [
+      ["hero-fi", /koko Carta Interior -raportista/i],
+      ["1-identita-fi", /Syvä identiteetti/i],
+      ["2-emozioni-fi", /Tunnedynamiikka/i],
+      ["3-relazioni-fi", /Ihmissuhteet ja rakkaus/i],
+      ["4-lavoro-fi", /Työ ja suunta/i],
+      ["5-schemi-fi", /Toistuvat kuviot ja esteet/i],
+      ["6-consigli-fi", /Käytännön neuvot/i],
+      ["7-poesia-fi", /muutosrunosta/i],
+    ];
+
     mount(<ReportPreviewCarousel />);
-    const srcs = [...document.querySelectorAll("img")].map((img) => img.getAttribute("src") ?? "");
-    expect(srcs.length).toBe(8);
-    expect(srcs.every((s) => !/identita\.|emozioni\.|-nl\./.test(s))).toBe(true);
+    const imgs = [...document.querySelectorAll("img")];
+    expect(imgs).toHaveLength(atteso.length);
+    imgs.forEach((img, i) => {
+      const [file, alt] = atteso[i];
+      expect(img.getAttribute("src"), `slide ${i + 1}: asset sbagliato`).toContain(file);
+      expect(img.getAttribute("alt") ?? "", `slide ${i + 1}: alt text non corrisponde a ${file}`).toMatch(alt);
+    });
   });
 
   it("i prezzi sono formattati alla finlandese: virgola decimale, simbolo dopo", () => {
