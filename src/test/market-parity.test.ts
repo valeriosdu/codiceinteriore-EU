@@ -183,7 +183,18 @@ describe("parita multi-mercato — backend", () => {
     const names = (block.match(/"[A-Z][A-Z0-9]*_[A-Z0-9_]+"/g) || []).map((s) => s.replace(/"/g, ""));
     expect(names.length).toBeGreaterThan(15);
     // Un blocco copiato da un altro mercato fatturerebbe sul conto sbagliato.
-    expect(names.filter((n) => !n.endsWith("__" + id))).toEqual([]);
+    // Unica eccezione voluta: fi usa l'account Stripe/PayPal di es e ne legge
+    // le credenziali di account (non i prezzi, non Meta) dai secret __ES.
+    const SHARED_ACCOUNT: Record<string, string[]> = {
+      FI: [
+        "STRIPE_SECRET_KEY__ES", "STRIPE_SECRET_KEY_TEST__ES", "STRIPE_WEBHOOK_SECRET__ES",
+        "STRIPE_WEBHOOK_SECRET_TEST__ES", "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES",
+        "PAYPAL_ENV__ES", "PAYPAL_CLIENT_ID__ES", "PAYPAL_CLIENT_SECRET__ES", "PAYPAL_WEBHOOK_ID__ES",
+      ],
+    };
+    const allowed = new Set(SHARED_ACCOUNT[id] ?? []);
+    expect(names.filter((n) => !n.endsWith("__" + id) && !allowed.has(n))).toEqual([]);
+    expect(names.filter((n) => n.includes("PRICE") || n.startsWith("META_")).every((n) => n.endsWith("__" + id))).toBe(true);
   });
 
   it("support-poll spiega per iscritto i mercati che non interroga", () => {

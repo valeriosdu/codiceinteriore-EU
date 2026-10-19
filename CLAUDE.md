@@ -132,7 +132,7 @@ Many of these are market-aware: they read `market` from the session/checkout row
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENV`
 - `META_PIXEL_ID`, `META_CONVERSIONS_API_TOKEN`
 - `ADMIN_SECRET` — gates admin bypass endpoints
-- **Per-market variants** with a `__<MARKET>` suffix (`__ES`, `__US`, `__NL`, `__FI`) exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`.
+- **Per-market variants** with a `__<MARKET>` suffix (`__ES`, `__US`, `__NL`, `__FI`) exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`. Exception: `fi` runs on the ES Stripe/PayPal account and reads those account credentials from the `__ES` names directly (see the comment on `FI_MARKET` in `markets.ts`); only its 7 `STRIPE_PRICE_*__FI` and the `META_*__FI` are its own.
 
 If a secret is missing, edge functions tend to fail silently — check function logs (MCP `get_logs` or the dashboard) before assuming the code is broken.
 

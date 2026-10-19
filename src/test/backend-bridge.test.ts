@@ -112,18 +112,16 @@ describe("backend: lingue supportate", () => {
     expect(docNoun("fi", "couple")).toBe("pari");
   });
 
-  it.each([["nl", "__NL"], ["fi", "__FI"]] as const)("i secret del mercato %s non puntano al conto di un altro mercato", (id, suffix) => {
-    const nl = getMarket(id);
-    const envNames = [
-      nl.stripe.secretKeyEnv,
-      nl.stripe.secretKeyTestEnv,
-      ...Object.values(nl.stripe.priceEnv),
-      nl.paypal.clientIdEnv,
-      nl.paypal.clientSecretEnv,
-      nl.paypal.envEnv,
-      nl.metaPixelIdEnv,
-      nl.metaAccessTokenEnv,
-    ];
-    for (const name of envNames) expect(name.endsWith(suffix)).toBe(true);
-  });
+  it.each([["nl", "__NL", "__NL"], ["fi", "__FI", "__ES"]] as const)(
+    "i secret del mercato %s: prezzi e Meta propri, credenziali dell'account giusto",
+    (id, own, account) => {
+      const m = getMarket(id);
+      // fi condivide l'account Stripe/PayPal di es: le credenziali di account
+      // sono le __ES, i prezzi (prodotti finlandesi) e Meta restano __FI.
+      const ownNames = [...Object.values(m.stripe.priceEnv), m.metaPixelIdEnv, m.metaAccessTokenEnv];
+      const accountNames = [m.stripe.secretKeyEnv, m.stripe.secretKeyTestEnv, m.paypal.clientIdEnv, m.paypal.clientSecretEnv, m.paypal.envEnv];
+      for (const name of ownNames) expect(name.endsWith(own)).toBe(true);
+      for (const name of accountNames) expect(name.endsWith(account)).toBe(true);
+    },
+  );
 });

@@ -236,9 +236,12 @@ const NL_MARKET: BackendMarketConfig = {
   metaAccessTokenEnv: "META_CONVERSIONS_API_TOKEN__NL",
 };
 
-// Mercato finlandese: stesso impianto di nl (vedi sopra). Secret __FI che
-// puntano all'account Stripe/PayPal ES, 7 price ID nuovi in finlandese, nessun
-// webhook dedicato: l'endpoint ?market=es serve anche fi.
+// Mercato finlandese: stesso account Stripe/PayPal di es (e nl), e lo dice
+// esplicitamente: le credenziali di account leggono i secret __ES invece di
+// duplicarli in __FI. Restano __FI solo cio' che e' davvero finlandese: i 7
+// price ID (prodotti con nome finlandese) e pixel/token Meta. Nessun webhook
+// dedicato: l'endpoint ?market=es serve anche fi, e il mercato si legge dalla
+// riga DB. Il test di parita' accetta __ES solo per questi nomi di account.
 const FI_MARKET: BackendMarketConfig = {
   id: "fi",
   language: "fi",
@@ -251,11 +254,11 @@ const FI_MARKET: BackendMarketConfig = {
   currency: "EUR",
   countryCode: "FI",
   stripe: {
-    secretKeyEnv: "STRIPE_SECRET_KEY__FI",
-    secretKeyTestEnv: "STRIPE_SECRET_KEY_TEST__FI",
-    webhookSecretEnv: "STRIPE_WEBHOOK_SECRET__FI",
-    webhookSecretTestEnv: "STRIPE_WEBHOOK_SECRET_TEST__FI",
-    subscriptionWebhookSecretEnv: "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__FI",
+    secretKeyEnv: "STRIPE_SECRET_KEY__ES",
+    secretKeyTestEnv: "STRIPE_SECRET_KEY_TEST__ES",
+    webhookSecretEnv: "STRIPE_WEBHOOK_SECRET__ES",
+    webhookSecretTestEnv: "STRIPE_WEBHOOK_SECRET_TEST__ES",
+    subscriptionWebhookSecretEnv: "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES",
     priceEnv: {
       base: "STRIPE_PRICE_BASE__FI",
       premium: "STRIPE_PRICE_PREMIUM__FI",
@@ -268,10 +271,10 @@ const FI_MARKET: BackendMarketConfig = {
     priceDefaults: {},
   },
   paypal: {
-    envEnv: "PAYPAL_ENV__FI",
-    clientIdEnv: "PAYPAL_CLIENT_ID__FI",
-    clientSecretEnv: "PAYPAL_CLIENT_SECRET__FI",
-    webhookIdEnv: "PAYPAL_WEBHOOK_ID__FI",
+    envEnv: "PAYPAL_ENV__ES",
+    clientIdEnv: "PAYPAL_CLIENT_ID__ES",
+    clientSecretEnv: "PAYPAL_CLIENT_SECRET__ES",
+    webhookIdEnv: "PAYPAL_WEBHOOK_ID__ES",
   },
   brevoApiKeyEnv: "BREVO_API_KEY__FI",
   metaPixelIdEnv: "META_PIXEL_ID__FI",
