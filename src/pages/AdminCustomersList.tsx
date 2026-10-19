@@ -6,6 +6,7 @@ import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import CustomerSearchBar from "@/components/admin/CustomerSearchBar";
 import CustomerListTable from "@/components/admin/CustomerListTable";
 import CreateCustomerDialog from "@/components/admin/dialogs/CreateCustomerDialog";
+import { ADMIN_MARKETS, toAdminMarket } from "@/components/admin/markets";
 import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import { useAdminMutations } from "@/hooks/admin/useAdminMutations";
 import {
@@ -25,14 +26,9 @@ function useDebounced<T>(value: T, ms: number): T {
   return debounced;
 }
 
-// Mercati selezionabili. Etichette allineate a quelle della dashboard.
 const CUSTOMER_MARKETS: Array<{ key: string; label: string }> = [
   { key: "all", label: "Tutti" },
-  { key: "it", label: "Italia" },
-  { key: "es", label: "Spagna" },
-  { key: "us", label: "Stati Uniti" },
-  { key: "nl", label: "Paesi Bassi" },
-  { key: "fi", label: "Finlandia" },
+  ...ADMIN_MARKETS,
 ];
 
 export default function AdminCustomersList() {
@@ -182,6 +178,7 @@ export default function AdminCustomersList() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             error={errorMessage}
+            market={toAdminMarket(market)}
           />
         </main>
       </div>
@@ -190,11 +187,13 @@ export default function AdminCustomersList() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         busy={mutations.createCustomer.isPending}
+        defaultMarket={toAdminMarket(market)}
         onSubmit={(payload) => {
           mutations.createCustomer.mutate(payload, {
             onSuccess: () => {
               setCreateOpen(false);
-              navigate(`/admin/clienti/${encodeURIComponent(payload.email)}`);
+              const qs = payload.market ? `?market=${payload.market}` : "";
+              navigate(`/admin/clienti/${encodeURIComponent(payload.email)}${qs}`);
             },
           });
         }}
