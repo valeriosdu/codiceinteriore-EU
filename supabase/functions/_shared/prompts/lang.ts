@@ -43,7 +43,7 @@ const REGISTER_NOTE: Record<PromptLang, string> = {
   es: "",
   en: "",
   nl: "\nAddress the reader informally as je/jij/jouw/jou — never the formal u/uw.",
-  fi: "\nAddress a single reader informally in the singular as sinä/sinun/sinua (with -si endings) — never the formal Te/Teidän; the plural te is correct only when a text speaks to both partners of a couple together. Never use the words sielu, kohtalo, taivas, pyhä, henkinen (or any compound or inflected form of them).",
+  fi: "\nAddress a single reader informally in the singular as sinä/sinun/sinua (with -si endings) — never the formal Te/Teidän; the plural te is correct only when a text speaks to both partners of a couple together. Never use the words sielu, kohtalo, taivas, pyhä, henkinen (or any compound or inflected form of them). Inflect the zodiac signs correctly; \"<planet> in <sign>\" takes these inessive forms: Oinaassa, Härässä, Kaksosissa, Ravussa, Leijonassa, Neitsyessä, Vaa'assa, Skorpionissa, Jousimiehessä, Kauriissa, Vesimiehessä, Kaloissa (e.g. Kuu Vaa'assa, never Vaaoissa).",
 };
 
 // Direttiva da anteporre a un system prompt per blindare la lingua di output.
