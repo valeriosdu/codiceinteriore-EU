@@ -55,14 +55,14 @@ const COPY = {
     subject: 'Je betaling is bevestigd — activeer je duiding',
   },
   fi: {
-    preview: 'Maksusi on vahvistettu — aktivoi tulkintasi',
+    preview: 'Maksusi on vahvistettu – aktivoi tulkintasi',
     h1: 'Maksusi on vahvistettu',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
     body: 'Tilauksesi on vastaanotettu. Luo tili tällä sähköpostiosoitteella, niin pääset avaamaan raporttisi ja löydät sen myöhemminkin helposti. Tulkintasi liitetään tiliin automaattisesti.',
     cta: 'Aktivoi ja avaa raporttisi',
     fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimen osoiteriville:',
     closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
-    subject: 'Maksusi on vahvistettu — aktivoi tulkintasi',
+    subject: 'Maksusi on vahvistettu – aktivoi tulkintasi',
   },
 } as const
 

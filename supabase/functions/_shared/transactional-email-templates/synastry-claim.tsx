@@ -55,14 +55,14 @@ const COPY = {
     subject: 'Jullie betaling is bevestigd — activeer jullie synastrie voor koppels',
   },
   fi: {
-    preview: 'Maksunne on vahvistettu — aktivoikaa synastrianne',
+    preview: 'Maksunne on vahvistettu – aktivoikaa synastrianne',
     h1: 'Maksunne on vahvistettu',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
     body: 'Tilauksenne on vastaanotettu. Luokaa tili tällä sähköpostiosoitteella, niin pääsette avaamaan parin synastrian ja löydätte sen myöhemminkin helposti. Tulkinta liitetään tiliin automaattisesti.',
     cta: 'Aktivoi ja avaa parin synastria',
     fallback: 'Jos painike ei toimi, linkin voi kopioida selaimen osoiteriville:',
     closing: 'Jos tarvitsette apua, vastatkaa tähän viestiin.',
-    subject: 'Maksunne on vahvistettu — aktivoikaa synastrianne',
+    subject: 'Maksunne on vahvistettu – aktivoikaa synastrianne',
   },
 } as const
 

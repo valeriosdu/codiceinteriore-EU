@@ -63,7 +63,7 @@ const COPY = {
     subject: 'Je duiding is klaar — log in op je ruimte',
   },
   fi: {
-    preview: (siteName: string) => `Tulkintasi on valmis — ${siteName}`,
+    preview: (siteName: string) => `Tulkintasi on valmis – ${siteName}`,
     h1: 'Tulkintasi on valmis',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
     p1: 'Raportissa on koko tulkinta syntymäkartastasi. Se ei kerro vain siitä, mikä toistuu ihmissuhteissasi, vaan myös tunteista, jotka ohjaavat sinua, esteistä, joilla on todella väliä, ja suunnasta, joka on vähitellen hahmottumassa.',
@@ -72,7 +72,7 @@ const COPY = {
     cta: 'Kirjaudu ja avaa raporttisi',
     fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimen osoiteriville:',
     closing: 'Jatkossa löydät sen myös omalta tililtäsi, aina kun haluat palata siihen.',
-    subject: 'Tulkintasi on valmis — kirjaudu tilillesi',
+    subject: 'Tulkintasi on valmis – kirjaudu tilillesi',
   },
 } as const
 

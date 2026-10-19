@@ -59,7 +59,7 @@ const COPY = {
     subject: 'Jullie synastrie is klaar — log in op jullie ruimte',
   },
   fi: {
-    preview: (siteName: string) => `Parisuhteenne tulkinta on valmis — ${siteName}`,
+    preview: (siteName: string) => `Parisuhteenne tulkinta on valmis – ${siteName}`,
     h1: 'Synastrianne on valmis',
     greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
     p1: 'Parisuhteenne tulkinta on valmis. Siitä löydätte suhteenne arkkityypin, yhteensopivuuspisteet kuudella osa-alueella ja kahdeksan osiota, jotka kulkevat parinne muotokuvasta siihen, mihin suuntaan suhteenne on menossa.',
@@ -67,7 +67,7 @@ const COPY = {
     cta: 'Avaa parin synastria',
     fallback: 'Jos painike ei toimi, linkin voi kopioida selaimen osoiteriville:',
     closing: 'Jatkossa löydätte sen omalta tililtänne, aina kun haluatte palata siihen.',
-    subject: 'Synastrianne on valmis — kirjautukaa tilillenne',
+    subject: 'Synastrianne on valmis – kirjautukaa tilillenne',
   },
 } as const
 
