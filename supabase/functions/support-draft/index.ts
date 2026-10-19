@@ -18,7 +18,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { recordAiMetric } from "../_shared/ai-metrics.ts";
-import { getMarket, type MarketId } from "../_shared/markets.ts";
+import { getMarket, isMarketId, type MarketId } from "../_shared/markets.ts";
 import { resolvePromptLang, type PromptLang } from "../_shared/prompts/lang.ts";
 import {
   supportSystemPrompt,
@@ -114,6 +114,43 @@ async function claimTicket(
     .maybeSingle();
   if (!claimed) return { claimed: false, reason: "race_lost" };
   return { claimed: true, retry: nextRetry };
+}
+
+// nl/fi share the ES Zoho mailbox, so ticket.market is the inbox the email landed
+// in, not the site the customer bought on. The draft's knowledge base, brand and
+// links must follow the latter: profile's quiz session first, else latest checkout.
+async function resolveCustomerMarket(
+  admin: ReturnType<typeof createClient>,
+  profileId: string,
+): Promise<MarketId | null> {
+  const { data: profile, error: profileErr } = await admin
+    .from("profiles")
+    .select("quiz_session_id")
+    .eq("id", profileId)
+    .maybeSingle();
+  if (profileErr) console.error("[support-draft] profile market lookup failed:", profileErr.message);
+  const quizSessionId = (profile as { quiz_session_id: string | null } | null)?.quiz_session_id;
+  if (quizSessionId) {
+    const { data: session, error: sessionErr } = await admin
+      .from("quiz_sessions")
+      .select("market")
+      .eq("id", quizSessionId)
+      .maybeSingle();
+    if (sessionErr) console.error("[support-draft] quiz_session market lookup failed:", sessionErr.message);
+    const sessionMarket = (session as { market: string | null } | null)?.market;
+    if (isMarketId(sessionMarket)) return sessionMarket;
+  }
+
+  const { data: checkout, error: checkoutErr } = await admin
+    .from("checkout_sessions")
+    .select("market")
+    .eq("claimed_profile_id", profileId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (checkoutErr) console.error("[support-draft] checkout market lookup failed:", checkoutErr.message);
+  const checkoutMarket = (checkout as { market: string | null } | null)?.market;
+  return isMarketId(checkoutMarket) ? checkoutMarket : null;
 }
 
 // Compact admin_customer_detail to order/account status only. Never report or
@@ -438,10 +475,6 @@ serve(async (req) => {
       force_support: boolean | null;
     };
 
-    const market = getMarket(ticket.market);
-    const marketId: MarketId = market.id;
-    const lang = resolvePromptLang(market.language);
-
     // ── Resolve the sender, or build candidate matches ──────────────────────
     let resolvedEmail: string | null = null;
     let resolvedProfileId: string | null = null;
@@ -490,6 +523,10 @@ serve(async (req) => {
         }
       }
     }
+
+    const customerMarket = resolvedProfileId ? await resolveCustomerMarket(admin, resolvedProfileId) : null;
+    const market = getMarket(customerMarket ?? ticket.market);
+    const lang = resolvePromptLang(market.language);
 
     // ── Customer data (only when matched) ───────────────────────────────────
     let compact: Record<string, unknown> = { matched: false };
