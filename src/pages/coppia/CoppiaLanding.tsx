@@ -158,7 +158,7 @@ export default function CoppiaLanding() {
                   className="text-[38px] sm:text-[48px] md:text-[56px] lg:text-[62px] font-normal text-foreground leading-[1.05] tracking-[-0.012em]"
                   style={{ fontFamily: FONT_DISPLAY }}
                 >
-                  {cl.heroLine1}
+                  {cl.heroLine1}{' '}
                   <br className="hidden sm:block" />
                   <em className="font-medium" style={{ color: INK }}>
                     {cl.heroLine2}
