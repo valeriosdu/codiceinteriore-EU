@@ -42,6 +42,22 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
+async function sessionRowExists(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  session: Stripe.Checkout.Session,
+): Promise<boolean> {
+  const purchaseType = session.metadata?.purchase_type;
+  const isSynastry = purchaseType === "synastry" || purchaseType === "synastry_launch";
+  const id = isSynastry ? session.metadata?.synastry_session_id : session.metadata?.quiz_session_id;
+  if (!id) return false;
+  const { data } = await supabaseAdmin
+    .from(isSynastry ? "synastry_sessions" : "quiz_sessions")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+  return Boolean(data);
+}
+
 /**
  * Safety net runner. Performs two idempotent sweeps:
  *
@@ -116,6 +132,7 @@ Deno.serve(async (req) => {
     // report-retry Sweep B below keeps running on every tick.
     const runStripeSweep = new Date().getUTCMinutes() % 9 < 3;
     const reconciliation: Array<{ sessionId: string; status: string; reason?: string }> = [];
+    let foreignSkipped = 0;
     if (isAdmin && runStripeSweep) {
       for (const stripeKey of STRIPE_SECRET_KEYS) {
         try {
@@ -149,6 +166,16 @@ Deno.serve(async (req) => {
                 continue;
               }
 
+              // A swept Stripe account can also hold another app's checkouts
+              // (seen on the non-IT keys). Ours always have a checkout_sessions
+              // row from create-*-checkout, or at least their quiz/synastry row
+              // here; reconciling anything else fires Brevo purchase events and
+              // report jobs for people who never bought from this project.
+              if (!row && !(await sessionRowExists(supabaseAdmin, session))) {
+                foreignSkipped += 1;
+                continue;
+              }
+
               try {
                 const result = await reconcilePaidStripeSession(stripe, session);
                 reconciliation.push({ sessionId: session.id, ...result });
@@ -171,6 +198,11 @@ Deno.serve(async (req) => {
             e instanceof Error ? e.message : String(e),
           );
         }
+      }
+      if (foreignSkipped) {
+        console.log(
+          `[recover-pending-reports] Sweep A skipped ${foreignSkipped} paid checkouts with no checkout or session row in this project`,
+        );
       }
     }
 
