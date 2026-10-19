@@ -58,6 +58,7 @@ const report = {
     sectionTitle: (name?: string | null) =>
       name ? `Kuukauden transiitit – ${name}` : 'Kuukauden transiitit',
     period: 'Ajanjakso:',
+    periodName: (n: number) => `Jakso ${n}`,
     downloadPdf: 'Lataa PDF',
     preparing: 'Valmistellaan...',
     changeMonth: 'Vaihda kuukautta',

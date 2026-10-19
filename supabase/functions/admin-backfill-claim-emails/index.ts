@@ -9,6 +9,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
     // 1. Pull paid checkouts in the window.
     const { data: paidRows, error: paidError } = await supabase
       .from("checkout_sessions")
-      .select("stripe_session_id, customer_email, payment_completed_at")
+      .select("stripe_session_id, customer_email, payment_completed_at, market")
       .eq("payment_status", "paid")
       .gte("payment_completed_at", since)
       .not("customer_email", "is", null);
@@ -86,7 +87,14 @@ Deno.serve(async (req) => {
           templateName: "report-claim",
           recipientEmail: row.customer_email!,
           idempotencyKey: `report-claim-${row.stripe_session_id}`,
-          templateData: { sessionId: row.stripe_session_id, name: "" },
+          // Senza lang/market il template ricade su it (lingua, brand, link di
+          // attivazione su codiceinteriore.it), come fa stripe-reconcile.
+          templateData: {
+            sessionId: row.stripe_session_id,
+            name: "",
+            lang: getMarket(row.market).language,
+            market: getMarket(row.market).id,
+          },
         });
         sent.push({ email: row.customer_email!, sessionId: row.stripe_session_id });
       }

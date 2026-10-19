@@ -17,7 +17,7 @@ import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
-import { SYNASTRY_PDF_STRINGS } from "./pdf-i18n.ts";
+import { SYNASTRY_PDF_STRINGS, PDF_PAGE_ABBR } from "./pdf-i18n.ts";
 import { getArchetypeLabel } from "./synastry-archetypes.ts";
 
 export const SYNASTRY_PDF_VERSION = "synastry-v12-i18n";
@@ -199,7 +199,7 @@ export async function generateSynastryPdf(input: SynastryPdfInput): Promise<Uint
       color: paleLine,
     });
     const footerText = sanitizePdfText(
-      `${brandUpper}  ·  p. ${pageNumber}  ·  ${domain}`,
+      `${brandUpper}  ·  ${PDF_PAGE_ABBR[lang]} ${pageNumber}  ·  ${domain}`,
     );
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }

@@ -106,6 +106,23 @@ export const REPORT_SECTION_TITLES: Record<PromptLang, { classica: PdfSectionTit
   },
 };
 
+// Abbreviazione di "pagina" nei footer dei tre PDF. "p." va bene per it, es,
+// en e nl; in finlandese e' "s." (sivu).
+export const PDF_PAGE_ABBR: Record<PromptLang, string> = {
+  it: "p.",
+  es: "p.",
+  en: "p.",
+  nl: "p.",
+  fi: "s.",
+};
+
+// Il prompt di process-transit-cycle chiede al modello etichette letterali
+// "Periodo 1".."Periodo 4": chi le mostra le traduce con periodName.
+export function localizePeriodLabel(label: string, toLabel: (n: number) => string): string {
+  const m = /^\s*periodo\s+(\d+)\s*$/i.exec(label);
+  return m ? toLabel(Number(m[1])) : label;
+}
+
 export const REPORT_PDF_STRINGS: Record<PromptLang, {
   metaTitle: (name: string) => string;
   metaSubject: string;
@@ -245,6 +262,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
   indexTitle: string;
   sectionPrefix: string;
   weekFallback: (n: number) => string;
+  periodName: (n: number) => string;
   index: { summary: string; reading: string; periods: string; dialogue: string };
   headers: {
     mainThemes: string; monthReading: string; monthPeriods: string; intro: string;
@@ -268,6 +286,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     indexTitle: "Indice",
     sectionPrefix: "SEZIONE",
     weekFallback: (n) => `Settimana ${n}`,
+    periodName: (n) => `Periodo ${n}`,
     index: { summary: "Temi principali", reading: "Lettura del mese", periods: "Periodi del mese", dialogue: "Continua il dialogo" },
     headers: {
       mainThemes: "Temi principali", monthReading: "Lettura del mese", monthPeriods: "Periodi del mese",
@@ -296,6 +315,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     indexTitle: "Índice",
     sectionPrefix: "SECCIÓN",
     weekFallback: (n) => `Semana ${n}`,
+    periodName: (n) => `Periodo ${n}`,
     index: { summary: "Temas principales", reading: "Lectura del mes", periods: "Periodos del mes", dialogue: "Continúa el diálogo" },
     headers: {
       mainThemes: "Temas principales", monthReading: "Lectura del mes", monthPeriods: "Periodos del mes",
@@ -324,6 +344,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     indexTitle: "Contents",
     sectionPrefix: "SECTION",
     weekFallback: (n) => `Week ${n}`,
+    periodName: (n) => `Period ${n}`,
     index: { summary: "Main themes", reading: "Reading of the month", periods: "Periods of the month", dialogue: "Continue the conversation" },
     headers: {
       mainThemes: "Main themes", monthReading: "Reading of the month", monthPeriods: "Periods of the month",
@@ -352,6 +373,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     indexTitle: "Inhoud",
     sectionPrefix: "DEEL",
     weekFallback: (n) => `Week ${n}`,
+    periodName: (n) => `Periode ${n}`,
     index: { summary: "Hoofdthema's", reading: "Duiding van de maand", periods: "Periodes van de maand", dialogue: "Zet het gesprek voort" },
     headers: {
       mainThemes: "Hoofdthema's", monthReading: "Duiding van de maand", monthPeriods: "Periodes van de maand",
@@ -380,6 +402,7 @@ export const TRANSIT_PDF_STRINGS: Record<PromptLang, {
     indexTitle: "Sisältö",
     sectionPrefix: "OSA",
     weekFallback: (n) => `Viikko ${n}`,
+    periodName: (n) => `Jakso ${n}`,
     index: { summary: "Pääteemat", reading: "Kuukauden tulkinta", periods: "Kuukauden jaksot", dialogue: "Jatka keskustelua" },
     headers: {
       mainThemes: "Pääteemat", monthReading: "Kuukauden tulkinta", monthPeriods: "Kuukauden jaksot",

@@ -13,7 +13,7 @@ import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
-import { TRANSIT_PDF_STRINGS } from "./pdf-i18n.ts";
+import { TRANSIT_PDF_STRINGS, PDF_PAGE_ABBR, localizePeriodLabel } from "./pdf-i18n.ts";
 
 // Bump whenever the transit PDF layout/fonts change so cached files
 // from older versions are invalidated automatically.
@@ -198,7 +198,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
       height: 0.3,
       color: paleLine,
     });
-    const footerText = sanitizePdfText(`${brandUpper}  -  p. ${pageNumber}  -  ${domain}`);
+    const footerText = sanitizePdfText(`${brandUpper}  -  ${PDF_PAGE_ABBR[lang]} ${pageNumber}  -  ${domain}`);
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }
 
@@ -317,7 +317,7 @@ export async function generateTransitPdf(input: GenerateTransitPdfInput): Promis
   }
 
   function drawPeriodBox(period: TransitPeriod, idx: number) {
-    const labelRaw = period.label || S.weekFallback(idx + 1);
+    const labelRaw = period.label ? localizePeriodLabel(period.label, S.periodName) : S.weekFallback(idx + 1);
     const label = `${labelRaw}${period.date_range ? `  -  ${period.date_range}` : ""}`;
     const headline = period.headline || "";
     const focus = period.focus || "";

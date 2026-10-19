@@ -3,6 +3,7 @@
 // age-band + relationship-duration modulation.
 
 import type { SynastryBrief } from "./synastry-brief.ts";
+import { OUTPUT_LANGUAGE_NAME, type PromptLang } from "./prompts/lang.ts";
 
 const blocco1Persona = (langName: string): string => `## Identity
 
@@ -91,29 +92,56 @@ ${gapBlock}
 ${durataBlock}`.trim();
 }
 
+// La frase va nel report cosi' com'e', quindi e' gia' nella lingua di uscita.
+// Indicizzata per codice lingua: il compilatore (via backend-bridge) segnala
+// una lingua nuova senza voce, invece di ricadere sull'italiano. Con entrambi
+// gli orari ignoti serve una frase propria: "entrambi" infilato nel modello
+// della persona singola dava "Without entrambi's exact birth time".
+const UNKNOWN_TIME_DECLARATION: Record<PromptLang, { one: (who: string) => string; both: string }> = {
+  it: {
+    one: (who) => `"Senza l'ora esatta di ${who}, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di ${who} non sono nel quadro."`,
+    both: `"Senza l'ora esatta di entrambi, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di entrambi non sono nel quadro."`,
+  },
+  es: {
+    one: (who) => `"Sin la hora exacta de ${who}, esta lectura se centra en los contactos planetarios, que son la columna vertebral de la sinastría. Las casas y el ascendente de ${who} no están en el cuadro."`,
+    both: `"Sin la hora exacta de ninguno de los dos, esta lectura se centra en los contactos planetarios, que son la columna vertebral de la sinastría. Las casas y los ascendentes no están en el cuadro."`,
+  },
+  en: {
+    one: (who) => `"Without ${who}'s exact birth time, this reading focuses on the planetary contacts, which are the backbone of synastry. ${who}'s houses and Ascendant are not part of the picture."`,
+    both: `"Without your exact birth times, this reading focuses on the planetary contacts, which are the backbone of synastry. Houses and Ascendants are not part of the picture."`,
+  },
+  nl: {
+    one: (who) => `"Zonder het exacte geboortetijdstip van ${who} richt deze duiding zich op de planetaire contacten, de ruggengraat van de synastrie. De huizen en de ascendant van ${who} vallen buiten het beeld."`,
+    both: `"Zonder jullie exacte geboortetijdstippen richt deze duiding zich op de planetaire contacten, de ruggengraat van de synastrie. Huizen en ascendanten vallen buiten het beeld."`,
+  },
+  fi: {
+    one: (who) => `"Koska henkilön ${who} tarkka syntymäaika ei ole tiedossa, tämä tulkinta keskittyy planeettojen välisiin kontakteihin, jotka ovat synastrian selkäranka. Henkilön ${who} huoneet ja nouseva merkki eivät ole mukana kuvassa."`,
+    both: `"Koska kummankaan tarkka syntymäaika ei ole tiedossa, tämä tulkinta keskittyy planeettojen välisiin kontakteihin, jotka ovat synastrian selkäranka. Huoneet ja nousevat merkit eivät ole mukana kuvassa."`,
+  },
+};
+
+export function unknownTimeDeclaration(langName: string, who: string | null): string {
+  const lang =
+    (Object.keys(OUTPUT_LANGUAGE_NAME) as PromptLang[]).find((l) => OUTPUT_LANGUAGE_NAME[l] === langName) ?? "it";
+  const d = UNKNOWN_TIME_DECLARATION[lang];
+  return who === null ? d.both : d.one(who);
+}
+
 function blocco5OraNascita(brief: SynastryBrief, langName: string): string {
   const aMissing = !brief.note_contesto.ora_nascita_a_known;
   const bMissing = !brief.note_contesto.ora_nascita_b_known;
   if (!aMissing && !bMissing) return "";
 
-  const who = aMissing && bMissing
-    ? "entrambi"
+  const name = aMissing && bMissing
+    ? null
     : aMissing
       ? brief.persone.a.split(",")[0]
       : brief.persone.b.split(",")[0];
-
-  // Per-language declaration: this sentence is emitted verbatim in the report,
-  // so it must already be in the output language (not translated by the model).
-  const declarations: Record<string, string> = {
-    Italian: `"Senza l'ora esatta di ${who}, questa lettura si concentra sui contatti planetari, che sono la spina dorsale della sinastria. Le case e l'ascendente di ${who} non sono nel quadro."`,
-    Spanish: `"Sin la hora exacta de ${who}, esta lectura se centra en los contactos planetarios, que son la columna vertebral de la sinastría. Las casas y el ascendente de ${who} no están en el cuadro."`,
-    English: `"Without ${who}'s exact birth time, this reading focuses on the planetary contacts, which are the backbone of synastry. ${who}'s houses and Ascendant are not part of the picture."`,
-  };
-  const declaration = declarations[langName] ?? declarations.Italian;
+  const declaration = unknownTimeDeclaration(langName, name);
 
   return `## Unknown birth time
 
-The birth time of ${who} is not known. In ritratto_coppia, declare this honestly, in ${langName}, using this exact sentence: ${declaration}
+${name ? `The birth time of ${name} is not known.` : "Neither partner's birth time is known."} In ritratto_coppia, declare this honestly, in ${langName}, using this exact sentence: ${declaration}
 
 - Do NOT mention house overlays for the person with unknown birth time.
 - Do NOT use terms equivalent to "incomplete" or "partial" that devalue the product.

@@ -24,7 +24,7 @@ const transits = {
     body: 'Syntymäkartta on sinun perusrakenteesi, joka määräytyy syntyessäsi: se ei muutu. Planeetat sen sijaan liikkuvat joka päivä. Päivittäin ne kulkevat syntymäkarttasi pisteiden (esimerkiksi Aurinkosi, Kuusi ja nouseva merkkisi) kohdalta ja aktivoivat kartan tiettyjä osia sen mukaan, minkä aspektin ne muodostavat.',
     monthlyListTitle: 'Joka kuukausi saat tulkinnan, joka kertoo:',
     monthlyList: [
-      'Mitkä syntymäkarttasi alueet ovat jännitteisiä, suosittuja tai paineen alla, ja mitä kannattaa tarkkailla',
+      'Mitkä syntymäkarttasi alueet ovat jännitteisiä, suotuisia tai paineen alla, ja mitä kannattaa tarkkailla',
       'Kuukauden tärkeät hetket tarkkoine päivämäärineen sekä mihin kannattaa panostaa viikko kerrallaan',
       'Kuinka kauan käynnissä oleva vaihe kestää ja mitä tulee sen jälkeen',
     ],

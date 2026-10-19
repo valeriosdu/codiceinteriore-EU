@@ -218,7 +218,7 @@ PALAUTUKSET
 - Voit SELITTÄÄ, että tämä takuu on olemassa, mutta ÄLÄ itse vahvista palautusta: kirjaa pyyntö, kerro että tiimi käsittelee sen, ja aseta flagForHuman = true.
 
 ALLEKIRJOITUS
-- Nimesi on Aino ja kuulut Carta Interiorin tiimiin. Allekirjoita aina nimellä «Aino» (esimerkiksi: "Ystävällisin terveisin, Aino"). Älä koskaan käytä hakasulkeita tai paikkamerkkejä kuten «[Nimesi]» tai «[Tiimi]».`;
+- Nimesi on Aino ja kuulut Carta Interiorin tiimiin. Allekirjoita aina nimellä «Aino» (lopputervehdys omalle rivilleen ilman pilkkua ja nimi seuraavalle: "Ystävällisin terveisin" ja rivinvaihdon jälkeen "Aino"). Älä koskaan käytä hakasulkeita tai paikkamerkkejä kuten «[Nimesi]» tai «[Tiimi]».`;
 
 const SUPPORT_KNOWLEDGE: Record<PromptLang, string> = {
   // IT is handled by external software (support-poll skips it); fill in if ever wired.
@@ -293,13 +293,13 @@ const SUPPORT_EXAMPLES_FI = `ESIMERKIT (tyyli, ei tiedot):
 Esimerkki 1 — "missä raporttini on?", tiedot saatavilla, category support, confidence high.
 EMAIL: «Hei, maksoin eilen mutta en löydä raporttiani. Voitteko auttaa?»
 TIEDOT: tilaus "natal_report_base" maksettu 12. kesäkuuta, raportti VALMIS, tili yhdistetty.
-LUONNOS: «Hei Marco, katsoin tilaustasi: 12. kesäkuuta tehty maksu meni läpi ja raporttisi on valmis. Löydät sen omalta tililtäsi kohdasta "Raporttini". Jos kirjauduit samalla sähköpostiosoitteella, jota käytit ostoksessa, näet sen heti. Jos kirjautuminen ei onnistu, kerro, niin käydään asia läpi vaihe vaiheelta. Ystävällisin terveisin, Aino.»
+LUONNOS: «Hei Marco, katsoin tilaustasi: 12. kesäkuuta tehty maksu meni läpi ja raporttisi on valmis. Löydät sen omalta tililtäsi kohdasta "Raporttini". Jos kirjauduit samalla sähköpostiosoitteella, jota käytit ostoksessa, näet sen heti. Jos kirjautuminen ei onnistu, kerro, niin käydään asia läpi vaihe vaiheelta. Ystävällisin terveisin\nAino»
 summary: "Raportti on valmis ja maksettu 12.6.; suora vastaus, ei epäselvyyttä."
 
 Esimerkki 2 — palautuspyyntö, category support, merkitse ihmiselle, confidence low.
 EMAIL: «Haluan rahani takaisin, raportti ei miellyttänyt minua.»
 TIEDOT: tilaus "natal_report_premium" maksettu, raportti valmis.
-LUONNOS: «Hei Anna, harmi, ettei raportti tuntunut omalta. Olen kirjannut pyyntösi ja välitän sen heti tiimimme jäsenelle, joka vastaa sinulle pian, jotta voimme selvittää asian yhdessä. Kiitos kärsivällisyydestäsi. Ystävällisin terveisin, Aino.»
+LUONNOS: «Hei Anna, harmi, ettei raportti tuntunut omalta. Olen kirjannut pyyntösi ja välitän sen heti tiimimme jäsenelle, joka vastaa sinulle pian, jotta voimme selvittää asian yhdessä. Kiitos kärsivällisyydestäsi. Ystävällisin terveisin\nAino»
 summary: "Palautuspyyntö: en lupaa mitään, välitän ihmiselle. Lippu päällä."`;
 
 const SUPPORT_EXAMPLES: Record<PromptLang, string> = {

@@ -246,7 +246,8 @@ const FAREWELL_BY_LANG: Record<PromptLang, string> = {
   es: "Un saludo,",
   en: "Best,",
   nl: "Hartelijke groet,",
-  fi: "Ystävällisin terveisin,",
+  // Nel finlandese la chiusa non vuole la virgola (Kielitoimisto).
+  fi: "Ystävällisin terveisin",
 };
 
 const FAREWELL_WORDS =

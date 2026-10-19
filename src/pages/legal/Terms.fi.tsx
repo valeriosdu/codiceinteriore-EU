@@ -9,7 +9,7 @@ const TermsFi = () => (
     path="/kayttoehdot"
     backAria="Takaisin"
     heading="Käyttöehdot"
-    lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
+    lastUpdated="Päivitetty viimeksi: 19. lokakuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-4">
       Nämä käyttöehdot koskevat sivuston <SiteLink /> käyttöä sekä {MARKET.siteName} -tuotemerkillä tarjottujen

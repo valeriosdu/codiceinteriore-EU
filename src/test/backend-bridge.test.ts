@@ -30,6 +30,7 @@ import {
 import { supportSystemPrompt } from "../../supabase/functions/_shared/prompts/support.ts";
 import { getArchetypeLabel } from "../../supabase/functions/_shared/synastry-archetypes.ts";
 import { docNoun, getMarket, isMarketId } from "../../supabase/functions/_shared/markets.ts";
+import { unknownTimeDeclaration } from "../../supabase/functions/_shared/synastry-system-prompt.ts";
 
 const LANGS: PromptLang[] = ["it", "es", "en", "nl", "fi"];
 
@@ -70,6 +71,17 @@ describe("backend: lingue supportate", () => {
     for (const w of ["sielu", "kohtalo", "taivas", "pyhä", "henkinen"]) expect(d).toContain(w);
     // Le direttive esistenti non cambiano di un byte.
     expect(outputLanguageDirective("it")).not.toMatch(/sinä/);
+  });
+
+  it("la frase sull'ora di nascita ignota esiste in ogni lingua, anche per entrambi", () => {
+    for (const lang of LANGS) {
+      const name = OUTPUT_LANGUAGE_NAME[lang];
+      expect(unknownTimeDeclaration(name, "Aino")).toContain("Aino");
+      // Con entrambi gli orari ignoti la parola italiana non deve finire
+      // dentro le altre lingue ("Without entrambi's exact birth time").
+      if (lang !== "it") expect(unknownTimeDeclaration(name, null)).not.toMatch(/entramb/);
+    }
+    expect(unknownTimeDeclaration("Finnish", "Aino")).toMatch(/henkilön Aino/);
   });
 
   it("le mappe dei PDF coprono ogni lingua", () => {

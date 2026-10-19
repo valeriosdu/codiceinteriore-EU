@@ -363,7 +363,7 @@ De onrust heeft in deze periode minder te maken met de hoeveelheid werk dan met 
 
 const QA_EXAMPLES_FI = `Esimerkki 0 — yksinkertainen/yleinen kysymys, LYHYT kaista, 1-2 viittausta, täysi päätös.
 Q: «Olenko yhteensopiva Kalojen kanssa?»
-A: «Yhteensopivuus aurinkomerkin mukaan on astrologian pinnallisin taso ja yleensä se, joka kertoo vähiten. Neitsyessä olevan Aurinkosi ja Kaloissa olevan Auringon välillä on klassinen oppositio: toinen uneksii, kun sinä järjestät, toinen tuntee, kun sinä analysoit. Se on napaisuus, joka voi toimia upeasti tai kulua loppuun nopeasti, sen mukaan mitä kummankin Kuu ja Venus tekevät. Sinulla Kuu on Kaurissa, ja se hakee tunnepohjaista vakautta, eikä sen löytyminen Kalojen Auringon rinnalta ole itsestään selvää. Ratkaisevaa ei ole merkin nimi vaan se, mitä sinä etsit parisuhteelta. Karttasi kertoo jo jotain tarkkaa siitä, miten rakastat: ehkä sieltä kannattaa aloittaa.»
+A: «Yhteensopivuus aurinkomerkin mukaan on astrologian pinnallisin taso ja yleensä se, joka kertoo vähiten. Neitsyessä olevan Aurinkosi ja Kaloissa olevan Auringon välillä on klassinen oppositio: toinen uneksii, kun sinä järjestät, toinen tuntee, kun sinä analysoit. Se on napaisuus, joka voi toimia upeasti tai kulua loppuun nopeasti, sen mukaan mitä kummankin Kuu ja Venus tekevät. Sinulla Kuu on Kauriissa, ja se hakee tunnepohjaista vakautta, eikä sen löytyminen Kalojen Auringon rinnalta ole itsestään selvää. Ratkaisevaa ei ole merkin nimi vaan se, mitä sinä etsit parisuhteelta. Karttasi kertoo jo jotain tarkkaa siitä, miten rakastat: ehkä sieltä kannattaa aloittaa.»
 
 Esimerkki 1 — rakenteellinen kysymys, päätös implisiittiseen kysymykseen.
 Q: «Miksi tunnen itseni usein yksinäiseksi, vaikka olen parisuhteessa?»

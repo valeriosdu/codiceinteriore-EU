@@ -59,6 +59,7 @@ const report = {
     sectionTitle: (name?: string | null) =>
       name ? `Transiti del mese di ${name}` : 'Transiti del mese',
     period: 'Periodo:',
+    periodName: (n: number) => `Periodo ${n}`,
     downloadPdf: 'Scarica PDF',
     preparing: 'Preparazione...',
     changeMonth: 'Cambia mese',

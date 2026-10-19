@@ -10,7 +10,7 @@ import { decodeLogoPng } from "./logo.ts";
 import { playfairItalic, playfairSemiBold, sourceSansRegular } from "./fonts.ts";
 import { getMarket, type MarketId } from "./markets.ts";
 import { type PromptLang, orderDateParts } from "./prompts/lang.ts";
-import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS } from "./pdf-i18n.ts";
+import { REPORT_SECTION_TITLES, REPORT_PDF_STRINGS, PDF_PAGE_ABBR } from "./pdf-i18n.ts";
 
 // Bump this version whenever the PDF layout, fonts, or chart rendering
 // changes. Cached PDFs from older versions are invalidated automatically
@@ -499,7 +499,7 @@ export async function generateReportPdf(input: GeneratePdfInput): Promise<Uint8A
       height: 0.3,
       color: paleLine,
     });
-    const footerText = sanitizePdfText(`${brandUpper}${S.footerSep}p. ${pageNumber}${S.footerSep}${domain}`);
+    const footerText = sanitizePdfText(`${brandUpper}${S.footerSep}${PDF_PAGE_ABBR[lang]} ${pageNumber}${S.footerSep}${domain}`);
     drawCenteredText(page, footerText, FOOTER_BASELINE, 7.5, timesRoman, mutedText);
   }
 

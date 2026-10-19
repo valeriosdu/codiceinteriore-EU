@@ -9,7 +9,7 @@ const PrivacyPolicyFi = () => (
     path="/privacy"
     backAria="Takaisin"
     heading="Tietosuojaseloste ja evästekäytäntö"
-    lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
+    lastUpdated="Päivitetty viimeksi: 19. lokakuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-10">
       Tässä selosteessa kerrotaan, miten käsittelemme niiden käyttäjien henkilötietoja, jotka vierailevat sivustolla{" "}

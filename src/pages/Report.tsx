@@ -92,6 +92,14 @@ type TransitState = {
   subscription: TransitSubscription | null;
 };
 
+// process-transit-cycle chiede al modello etichette letterali "Periodo 1".."4":
+// vanno mostrate nella lingua del lettore (stessa regola di localizePeriodLabel
+// in _shared/pdf-i18n.ts per il PDF).
+const localizePeriodLabel = (label: string, toLabel: (n: number) => string) => {
+  const m = /^\s*periodo\s+(\d+)\s*$/i.exec(label);
+  return m ? toLabel(Number(m[1])) : label;
+};
+
 const formatTransitPeriodWith = (
   r: Pick<Messages["report"], "dayMonthLabel">,
   start: string | null | undefined,
@@ -1202,7 +1210,7 @@ const Report = () => {
                           {transitState.cycle.interpreted_transits.periods.map((period, index) => (
                             <div key={index} className="border-l-2 border-primary/40 pl-4 space-y-1">
                               <p className="text-xs lg:text-sm font-medium uppercase tracking-wider text-primary">
-                                {period.label} · {period.date_range}
+                                {localizePeriodLabel(period.label, r.transits.periodName)} · {period.date_range}
                               </p>
                               <h4 className="font-display text-lg lg:text-xl font-semibold text-foreground">{period.headline}</h4>
                               <p>{period.focus}</p>

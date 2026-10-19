@@ -60,6 +60,7 @@ const report: Messages['report'] = {
   transits: {
     sectionTitle: (name) => (name ? `Transits van de maand van ${name}` : 'Transits van de maand'),
     period: 'Periode:',
+    periodName: (n: number) => `Periode ${n}`,
     downloadPdf: 'Download pdf',
     preparing: 'Klaarmaken...',
     changeMonth: 'Andere maand',
