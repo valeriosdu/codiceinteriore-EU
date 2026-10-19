@@ -14,7 +14,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { buildRoutes } from "@/lib/routes";
-import type { Language } from "@/markets";
+import { MARKETS as MARKET_CONFIGS, type Language } from "@/markets";
 
 const FUNCTIONS_DIR = "supabase/functions";
 
@@ -274,6 +274,22 @@ describe("parita multi-mercato — slug URL", () => {
         expect(valore, mercato + "." + chiave + " assente nello script SEO").not.toBeNull();
         expect(valore![1], "slug " + chiave + " divergente per " + mercato).toBe(atteso[chiave]);
       }
+    }
+  });
+});
+
+describe("parita multi-mercato — catalogo per build", () => {
+  it("ogni mercato porta nel proprio build il catalogo della propria lingua", () => {
+    // src/i18n/index.ts tiene nel bundle di produzione solo il catalogo del
+    // mercato del build. Un mercato assente cade sul ramo che li tiene tutti
+    // (sicuro, solo piu' pesante); un mercato mappato sulla lingua sbagliata
+    // mostrerebbe un sito intero nella lingua di un altro mercato.
+    const src = readFileSync("src/i18n/index.ts", "utf8");
+    const pairs = [...src.matchAll(/VITE_MARKET === '(\w+)'\s*\?\s*\{ (\w+) \}/g)].map((m) => [m[1], m[2]]);
+    const mapped = Object.fromEntries(pairs);
+    for (const [id, config] of Object.entries(MARKET_CONFIGS)) {
+      expect(mapped[id], "mercato " + id + " assente dalla selezione del catalogo").toBeDefined();
+      expect(mapped[id], "mercato " + id + " mappato sulla lingua sbagliata").toBe(config.language);
     }
   });
 });
