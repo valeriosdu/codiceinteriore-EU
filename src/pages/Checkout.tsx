@@ -9,7 +9,7 @@ import InsightCard from "@/components/InsightCard";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import CheckoutReview from "@/components/CheckoutReview";
-import { useQuiz, getStoredSessionId } from "@/context/QuizContext";
+import { useQuiz, getStoredSessionId, clearFunnelStorage } from "@/context/QuizContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchQuizSessionPublic } from "@/lib/sessionAccess";
 import { useMetaConversions } from "@/hooks/useMetaConversions";
@@ -294,7 +294,10 @@ const Checkout = () => {
             <p className="pt-2 text-xs text-muted-foreground/80">{birthSummary}</p>
           )}
           <button
-            onClick={() => navigate("/quiz")}
+            onClick={() => {
+              clearFunnelStorage();
+              navigate("/quiz");
+            }}
             className="text-xs text-primary/80 hover:text-primary underline underline-offset-2 transition-colors"
           >
             {c.hero.wrongData}

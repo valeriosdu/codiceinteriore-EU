@@ -11,7 +11,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { I18nProvider } from "@/i18n/I18nProvider";
-import { QuizProvider } from "@/context/QuizContext";
+import { QuizProvider, useQuiz } from "@/context/QuizContext";
 import Quiz from "@/pages/Quiz";
 import { ROUTES } from "@/lib/routes";
 
@@ -30,6 +30,26 @@ const Landing = () => {
   return <button onClick={() => navigate("/quiz")}>vai al quiz</button>;
 };
 
+// Fuori dalle Routes, cosi' resta montato mentre si naviga.
+const Controls = () => {
+  const navigate = useNavigate();
+  const { resetQuizForNewPurchase } = useQuiz();
+  return (
+    <>
+      <button
+        onClick={() => {
+          resetQuizForNewPurchase();
+          navigate("/quiz");
+        }}
+      >
+        nuova lettura per un altro
+      </button>
+      <button onClick={() => navigate("/checkout")}>vai al checkout</button>
+      <button onClick={() => navigate(-1)}>indietro</button>
+    </>
+  );
+};
+
 const mount = (entry: string) =>
   render(
     <HelmetProvider>
@@ -37,11 +57,14 @@ const mount = (entry: string) =>
         <I18nProvider>
           <QuizProvider>
             <Where />
+            <Controls />
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/quiz" element={<Quiz />} />
               <Route path={ROUTES.gift} element={<Quiz />} />
               <Route path="/teaser" element={<div>teaser</div>} />
+              <Route path="/checkout" element={<div>checkout</div>} />
+              <Route path="/activate" element={<div>activate</div>} />
             </Routes>
           </QuizProvider>
         </I18nProvider>
@@ -81,9 +104,31 @@ describe("quiz: tasto indietro dal teaser", () => {
     expect(where()).toBe("/quiz");
   });
 
-  it("la rotta regalo non viene rimbalzata al teaser", () => {
+  it("su POP chi ha pagato senza attivare va su /activate, prima del teaser", () => {
     seedReading();
+    localStorage.setItem("ci_purchase_session_id", "cs_test_123");
+    mount("/quiz");
+    expect(where()).toBe("/activate");
+  });
+
+  it("su POP chi compra per un altro torna al checkout, non al teaser", () => {
+    mount("/");
+    fireEvent.click(screen.getByText("nuova lettura per un altro"));
+    expect(where()).toBe("/quiz");
+    // Processing ha generato la sessione e si e' sostituito con /checkout.
+    seedReading();
+    fireEvent.click(screen.getByText("vai al checkout"));
+    fireEvent.click(screen.getByText("indietro"));
+    expect(where()).toBe("/checkout");
+  });
+
+  it("dalla rotta regalo il tasto indietro dal checkout resta sul regalo", () => {
     mount(ROUTES.gift);
+    expect(where()).toBe(ROUTES.gift);
+    seedReading();
+    fireEvent.click(screen.getByText("vai al checkout"));
+    expect(where()).toBe("/checkout");
+    fireEvent.click(screen.getByText("indietro"));
     expect(where()).toBe(ROUTES.gift);
   });
 });

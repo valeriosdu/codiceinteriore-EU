@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuiz, hasFreshFunnelSession } from '@/context/QuizContext';
+import { useQuiz, hasFreshFunnelSession, getPurchaseSessionId } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/ProgressBar';
 import PlaceAutocomplete, { type PlaceAutocompleteHandle } from '@/components/PlaceAutocomplete';
@@ -93,8 +93,9 @@ const Quiz = () => {
   // "I lost my reading". Worse, redoing the quiz with a different birth date
   // would hit Processing's session-reuse guard: the teaser would show the new
   // date with the old chart and insights, and checkout would bill the old
-  // session (CLAUDE.md, sensitive area #8). Anyone with a reading still ready
-  // goes straight back to the teaser.
+  // session (CLAUDE.md, sensitive area #8). Same order as Index and Header:
+  // anyone who paid and never activated goes to /activate, anyone with a
+  // reading still ready goes back to where Processing sent them.
   //
   // POP only: a CTA from a landing is a PUSH and must open the quiz. The
   // teaser's "wrong data?" link and Report's "new reading" CTA are immune
@@ -104,8 +105,13 @@ const Quiz = () => {
   const navigationType = useNavigationType();
   useEffect(() => {
     if (isGiftRoute || navigationType !== 'POP') return;
+    const purchaseSessionId = getPurchaseSessionId();
+    if (purchaseSessionId) {
+      navigate(`/activate?session_id=${encodeURIComponent(purchaseSessionId)}`, { replace: true });
+      return;
+    }
     if (hasFreshFunnelSession()) {
-      navigate('/teaser', { replace: true });
+      navigate(data.subjectIsOther ? '/checkout' : '/teaser', { replace: true });
     }
   }, []);
 
