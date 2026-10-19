@@ -13,6 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendTransactionalEmailBackground } from "../_shared/send-email.ts";
 import { syncBrevoContactBackground } from "../_shared/sync-brevo.ts";
 import { getSubscriptionPeriod } from "../_shared/stripe-basil.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 declare const EdgeRuntime: { waitUntil: (promise: Promise<unknown>) => void };
 
@@ -27,7 +28,13 @@ const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
+// One key per Stripe account, not per market: es/nl/fi share the ES account
+// (same key value). A subscription id exists on exactly one of them.
+const STRIPE_SECRET_KEYS = [...new Set(
+  (["it", "es", "us", "nl", "fi"] as const)
+    .map((id) => Deno.env.get(getMarket(id).stripe.secretKeyEnv) || "")
+    .filter(Boolean),
+)];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -100,11 +107,21 @@ serve(async (req) => {
     });
   }
 
-  const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId, { expand: ["customer"] });
+    let subscription: Stripe.Subscription | null = null;
+    let lastStripeError: unknown = new Error("No Stripe secret key configured");
+    for (const stripeKey of STRIPE_SECRET_KEYS) {
+      try {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        subscription = await stripe.subscriptions.retrieve(subscriptionId, { expand: ["customer"] });
+        break;
+      } catch (err) {
+        lastStripeError = err;
+      }
+    }
+    if (!subscription) throw lastStripeError;
     const customer = subscription.customer as Stripe.Customer | string;
     const customerId = typeof customer === "string" ? customer : customer.id;
     const customerEmail =

@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { reconcilePaidStripeSession } from "../_shared/stripe-reconcile.ts";
+import { getMarket } from "../_shared/markets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ADMIN_SECRET = Deno.env.get("ADMIN_SECRET") || "";
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
+// One key per Stripe account, not per market: es/nl/fi share the ES account
+// (same key value), so de-duplicating by value sweeps each account once.
+const STRIPE_SECRET_KEYS = [...new Set(
+  (["it", "es", "us", "nl", "fi"] as const)
+    .map((id) => Deno.env.get(getMarket(id).stripe.secretKeyEnv) || "")
+    .filter(Boolean),
+)];
 
 // Per-run cap for Sweep B and C. Normally the candidates are 0-3: the limit only
 // matters on a bad day, so we do not launch dozens of LLM generations at once.
@@ -33,6 +40,22 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+async function sessionRowExists(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  session: Stripe.Checkout.Session,
+): Promise<boolean> {
+  const purchaseType = session.metadata?.purchase_type;
+  const isSynastry = purchaseType === "synastry" || purchaseType === "synastry_launch";
+  const id = isSynastry ? session.metadata?.synastry_session_id : session.metadata?.quiz_session_id;
+  if (!id) return false;
+  const { data } = await supabaseAdmin
+    .from(isSynastry ? "synastry_sessions" : "quiz_sessions")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+  return Boolean(data);
 }
 
 /**
@@ -109,58 +132,76 @@ Deno.serve(async (req) => {
     // report-retry Sweep B below keeps running on every tick.
     const runStripeSweep = new Date().getUTCMinutes() % 9 < 3;
     const reconciliation: Array<{ sessionId: string; status: string; reason?: string }> = [];
-    if (isAdmin && STRIPE_SECRET_KEY && runStripeSweep) {
-      try {
-        const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
+    let foreignSkipped = 0;
+    if (isAdmin && runStripeSweep) {
+      for (const stripeKey of STRIPE_SECRET_KEYS) {
+        try {
+          const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-        // Window: last 30 days. Stripe paginates, but for our volume one page
-        // of 100 covers the period comfortably; keep the loop in case it grows.
-        const sinceSeconds = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30;
-        let startingAfter: string | undefined = undefined;
-        let pages = 0;
-        const MAX_PAGES = 5;
+          // Window: last 30 days. Stripe paginates, but for our volume one page
+          // of 100 covers the period comfortably; keep the loop in case it grows.
+          const sinceSeconds = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30;
+          let startingAfter: string | undefined = undefined;
+          let pages = 0;
+          const MAX_PAGES = 5;
 
-        while (pages < MAX_PAGES) {
-          pages += 1;
-          const list = await stripe.checkout.sessions.list({
-            limit: 100,
-            created: { gte: sinceSeconds },
-            ...(startingAfter ? { starting_after: startingAfter } : {}),
-          });
+          while (pages < MAX_PAGES) {
+            pages += 1;
+            const list = await stripe.checkout.sessions.list({
+              limit: 100,
+              created: { gte: sinceSeconds },
+              ...(startingAfter ? { starting_after: startingAfter } : {}),
+            });
 
-          for (const session of list.data) {
-            if (session.payment_status !== "paid") continue;
+            for (const session of list.data) {
+              if (session.payment_status !== "paid") continue;
 
-            // Skip if already paid+claimed in our DB.
-            const { data: row } = await supabaseAdmin
-              .from("checkout_sessions")
-              .select("payment_status, claimed_profile_id")
-              .eq("stripe_session_id", session.id)
-              .maybeSingle();
-            if (row?.payment_status === "paid" && row?.claimed_profile_id) {
-              continue;
+              // Skip if already paid+claimed in our DB.
+              const { data: row } = await supabaseAdmin
+                .from("checkout_sessions")
+                .select("payment_status, claimed_profile_id")
+                .eq("stripe_session_id", session.id)
+                .maybeSingle();
+              if (row?.payment_status === "paid" && row?.claimed_profile_id) {
+                continue;
+              }
+
+              // A swept Stripe account can also hold another app's checkouts
+              // (seen on the non-IT keys). Ours always have a checkout_sessions
+              // row from create-*-checkout, or at least their quiz/synastry row
+              // here; reconciling anything else fires Brevo purchase events and
+              // report jobs for people who never bought from this project.
+              if (!row && !(await sessionRowExists(supabaseAdmin, session))) {
+                foreignSkipped += 1;
+                continue;
+              }
+
+              try {
+                const result = await reconcilePaidStripeSession(stripe, session);
+                reconciliation.push({ sessionId: session.id, ...result });
+              } catch (e) {
+                reconciliation.push({
+                  sessionId: session.id,
+                  status: "error",
+                  reason: e instanceof Error ? e.message : String(e),
+                });
+              }
             }
 
-            try {
-              const result = await reconcilePaidStripeSession(stripe, session);
-              reconciliation.push({ sessionId: session.id, ...result });
-            } catch (e) {
-              reconciliation.push({
-                sessionId: session.id,
-                status: "error",
-                reason: e instanceof Error ? e.message : String(e),
-              });
-            }
+            if (!list.has_more) break;
+            startingAfter = list.data[list.data.length - 1]?.id;
+            if (!startingAfter) break;
           }
-
-          if (!list.has_more) break;
-          startingAfter = list.data[list.data.length - 1]?.id;
-          if (!startingAfter) break;
+        } catch (e) {
+          console.error(
+            "[recover-pending-reports] Stripe reconciliation sweep failed:",
+            e instanceof Error ? e.message : String(e),
+          );
         }
-      } catch (e) {
-        console.error(
-          "[recover-pending-reports] Stripe reconciliation sweep failed:",
-          e instanceof Error ? e.message : String(e),
+      }
+      if (foreignSkipped) {
+        console.log(
+          `[recover-pending-reports] Sweep A skipped ${foreignSkipped} paid checkouts with no checkout or session row in this project`,
         );
       }
     }
