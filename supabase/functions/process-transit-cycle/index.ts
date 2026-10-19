@@ -1591,6 +1591,46 @@ async function interpretTransits(
   throw new Error(lastError || "transit_interpretation_failed: all attempts exhausted");
 }
 
+function parseJwtClaims(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+
+  try {
+    const payload = parts[1]
+      .replaceAll("-", "+")
+      .replaceAll("_", "/")
+      .padEnd(Math.ceil(parts[1].length / 4) * 4, "=");
+
+    return JSON.parse(atob(payload)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+// Con le signing keys SUPABASE_SERVICE_ROLE_KEY qui e' un sb_secret_*, mentre il
+// cron retry-stuck-transit-cycles chiama con il JWT service_role del vault: il
+// confronto di stringhe non riesce mai, ogni retry prendeva 401 e un ciclo
+// fallito al primo tentativo restava in 'processing' per sempre.
+// Le altre funzioni del cron leggono il claim `role`, ma hanno verify_jwt=true:
+// la firma l'ha gia' verificata il gateway. Questa ha verify_jwt=false (i webhook
+// la chiamano con la chiave anon), quindi il claim da solo e' forgiabile. Serve
+// solo a scartare in fretta i token utente; a decidere e' l'API admin di Auth,
+// che risponde 200 soltanto a un service_role autentico.
+async function isServiceRoleToken(token: string): Promise<boolean> {
+  if (!token) return false;
+  if (SUPABASE_SERVICE_ROLE_KEY && token === SUPABASE_SERVICE_ROLE_KEY) return true;
+  if (parseJwtClaims(token)?.role !== "service_role") return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1`, {
+      headers: { apikey: token, Authorization: `Bearer ${token}` },
+    });
+    await res.body?.cancel();
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -1605,7 +1645,7 @@ serve(async (req) => {
     const token = (req.headers.get("Authorization") || "").replace("Bearer ", "").trim();
     // Treat service-role JWT (used by background invokes from other edge functions
     // and from pg_net triggers) as an admin request — it has full DB privileges.
-    const isServiceRoleRequest = Boolean(SUPABASE_SERVICE_ROLE_KEY && token && token === SUPABASE_SERVICE_ROLE_KEY);
+    const isServiceRoleRequest = !isAdminRequest && (await isServiceRoleToken(token));
     const isPrivilegedRequest = isAdminRequest || isServiceRoleRequest;
 
     if (!transitCycleId) throw new Error("transitCycleId is required");
