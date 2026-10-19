@@ -13,7 +13,10 @@ The owner has a Python/R/data-science background, not a frontend specialist — 
 - **Backend**: Supabase (Postgres + Auth + Edge Functions in `supabase/functions/`, migrations in `supabase/migrations/`). Project ref `sefjuhxxbiehqjewoqpp`.
 - **Auth**: Supabase Auth, Google OAuth only; transactional/auth email via Brevo (`auth-email-hook` is the optional per-user localized path)
 - **Payments**: Stripe (primary), PayPal (secondary)
-- **AI**: Google Gemini (`gemini-3.1-pro-preview`) called directly at `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` (OpenAI-compat endpoint), secret `GEMINI_API_KEY`. Prompts are per-language in `supabase/functions/_shared/prompts/`.
+- **AI**: two providers, both through OpenAI-compatible chat/completions.
+  - **Long reports** (`generate-report`, `generate-synastry-report`, `process-transit-cycle`): **DeepSeek V4 Pro via OpenRouter** (`deepseek/deepseek-v4-pro`), secret `OPENROUTER_API_KEY`, config in [_shared/llm.ts](supabase/functions/_shared/llm.ts). Moved off Gemini in June 2026 because of frequent 503 "overloaded" errors; no automatic fallback, `recover-pending-reports` re-drives anything left unfinished.
+  - **Short paths** call Gemini directly (`generativelanguage.googleapis.com/v1beta/openai/...`, secret `GEMINI_API_KEY`): teasers `process-session-insights` / `process-synastry-insights` on `gemini-3.5-flash-lite`; astrology Q&A, `support-draft` and `admin-translate` on `gemini-3.1-flash-lite`.
+  - Every call is logged to `ai_generation_metrics` (model, tokens, duration, success): query it before reasoning about LLM cost. Prompts stay in English and only the output language changes, via `outputLanguageDirective` in `_shared/prompts/lang.ts`.
 - **Markets / languages**: multi-market app — markets `it` (default), `es`, `us`, `nl`, `fi`; languages `it`, `es`, `en`, `nl`, `fi`. Designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
 
 ## Multi-market architecture (read this first)
@@ -64,6 +67,10 @@ Claude operates directly on the infra via the **Supabase MCP** (`deploy_edge_fun
 - **`npx` / the npm registry fail on this machine** (TLS interception → `UNABLE_TO_VERIFY_LEAF_SIGNATURE`); `curl.exe` fails too (exit 35). Use the **standalone `supabase` CLI** (installed, v2.x — it bundles function deps and reads `config.toml`) or the MCP. For HTTP APIs use PowerShell `Invoke-RestMethod` (UTF-8 body bytes for non-ASCII).
 - **Edge functions deploy independently** from the frontend. After changing one, deploy it (`supabase functions deploy <name>` or MCP). Changing a `_shared/*` file means **every function importing it (transitively)** must be redeployed.
 - **`verify_jwt` ↔ `config.toml` trap**: a function **absent** from [supabase/config.toml](supabase/config.toml) is reset to `verify_jwt = true` on every CLI deploy. Webhooks (`stripe-webhook`, `paypal-webhook`, …), admin endpoints (`x-admin-secret`), and public GET endpoints need `verify_jwt = false` — keep them listed in `config.toml`. Before a broad deploy, check the real per-function `verify_jwt` via the Management API and confirm `config.toml` matches.
+- **Production deploys come from the owner's Windows PC** (CRLF line endings): when comparing deployed source with git, normalize line endings first.
+- **Never deploy code that isn't committed.** In Sept 2026 a fix to `process-transit-cycle` went to production from a local edit and was never pushed; a later deploy from `main` would have silently removed it (caught and synced back in Oct 2026). Before a broad deploy, compare production source with git (`get_edge_function`) for every function you're about to replace.
+- **Deploying through the Supabase MCP sends every file inline.** Functions that bundle `_shared/logo.ts` + `fonts.ts` (the PDF builders, `admin-download-*`, `synastry-chart`, ~430 KB) are too large for it: deploy those with the CLI from the owner's PC.
+- **Migrations applied through the MCP** (`apply_migration`) are recorded with the timestamp of the apply, not the file name: rename the file to that version so a later `db push` doesn't run it twice. Several older repo migrations were applied by hand and are absent from production's migration history, so `db push` is not the deploy path here.
 - **Deploy does NOT type-check.** `ReferenceError`/type bugs surface only at runtime — after deploying, verify with a real call (e.g. hit the function, check logs/DB).
 - **Frontend (Vercel) builds from GitHub** — a `src/` change only goes live after commit + push. Each market is a separate Vercel project (its own `VITE_MARKET` + domain).
 - **Credentials/tokens are managed outside the repo** (never in this file, never committed).
@@ -103,7 +110,8 @@ Functions in [supabase/functions/](supabase/functions/) group by purpose:
 - **Transit subscription add-on**: `create-transit-checkout`, `create-transit-portal-session`, `process-transit-cycle`, `generate-transit-pdf`
 - **Synastry / coppia** (parallel to the report pipeline): `generate-synastry-report`, `generate-synastry-report-pdf`, `synastry-chart`, `process-synastry-insights`, `admin-create-synastry-session`, `admin-regenerate-synastry-report`, `admin-download-synastry-report`, `admin-delete-synastry-report`; shared PDF builder `_shared/synastry-pdf.ts`.
 - **Astrology guide (Q&A pack)**: `submit-astrology-question`, `process-astrology-questions`, `create-astrology-pack-checkout`, `astrology-guide-feedback`
-- **Other**: `meta-conversions`, `get-checkout-email`
+- **Support inbox** (Zoho; es/us/nl/fi share the ES mailbox): `support-poll` (cron), `support-draft` (Gemini draft, human-reviewed), `support-send`, `admin-support-list`, `admin-support-action`
+- **Other**: `meta-conversions`, `get-checkout-email`, `watchdog`
 
 Many of these are market-aware: they read `market` from the session/checkout row and resolve creds/prompt/brand via `markets.ts`. The webhooks pick their signing secret from `?market=` on the URL.
 
@@ -117,7 +125,8 @@ Many of these are market-aware: they read `market` from the session/checkout row
 
 **Edge function secrets (Supabase Function secrets — never commit, never put in `.env`)**:
 - `SUPABASE_SERVICE_ROLE_KEY` — full DB admin
-- `GEMINI_API_KEY` — Google AI
+- `OPENROUTER_API_KEY` — long reports (DeepSeek V4 Pro)
+- `GEMINI_API_KEY` — Google AI (teasers, Q&A, support drafts)
 - `BREVO_API_KEY` — transactional email
 - `STRIPE_SECRET_KEY`(+`_TEST`), `STRIPE_WEBHOOK_SECRET`(+`_TEST`), `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET`, `STRIPE_PRICE_*`
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENV`
@@ -136,26 +145,32 @@ These are the pieces where a small mistake is expensive (lost payments, leaked P
 3. **`supabase/functions/admin-regenerate-report/index.ts`** — bypasses payment check; protected by `ADMIN_SECRET` only.
 4. **RLS on `quiz_sessions` and `synastry_sessions`** — **locked down** in [supabase/migrations/20260610120100_lockdown_session_rls.sql](supabase/migrations/20260610120100_lockdown_session_rls.sql): the old broad `USING (true)` SELECT/UPDATE policies were dropped. Sessions are now created via the SECURITY DEFINER RPCs `create_quiz_session` / `create_synastry_session` (explicit column whitelist; `language`/`market` validated against an allowlist inside the function). Don't loosen this; changing these RPCs is auth-adjacent.
 5. **Stripe API version** is pinned to `2025-08-27.basil` in the edge functions. Bumping the SDK without updating this string (or vice versa) silently breaks payment verification.
-6. **System prompts inside `generate-report` / `_shared/prompts/`** — per-language (it/es); they concatenate user fields (`userName`, `focusArea`, `attachmentResponse`) without sanitization. Be aware when editing.
+6. **System prompts inside `generate-report` / `_shared/prompts/`** — one prompt for every language, output language set by `outputLanguageDirective`; they concatenate user fields (`userName`, `focusArea`, `attachmentResponse`) without sanitization. Be aware when editing.
 7. **Race conditions in report generation** — webhook + `/report-processing` polling can both trigger Gemini. The `.is("full_report", null)` guard helps but isn't a true lock.
 8. **Funnel idempotency (`/processing`)** — `Processing.tsx` skips creating a new `quiz_sessions` row when `getFunnelStage()` is `'teaser' | 'offer'`, to avoid burning another freeastroapi + Gemini cycle when the user navigates back from `/teaser`. Any flow that legitimately needs a fresh session (e.g. the "I dati non sono giusti?" edit button on the teaser) must call `clearFunnelStorage()` before navigating to `/quiz`. Invariant lives across `Processing.tsx`, `TeaserResult.tsx`, and `QuizContext.tsx`. The "is this reading still good?" check is a single predicate, `hasFreshFunnelSession()` (7-day window from generation, cleared on expiry; covered by `src/test/funnel-ttl.test.ts`), used by `Index`, `Header`, `Processing` and `Quiz` — don't re-inline `getFunnelStage()` checks. `Quiz` uses it only on a history POP (browser Back from `/teaser`, typed URL, refresh) to send the user back to the teaser; a landing CTA is a PUSH and still opens the quiz, and the gift route is excluded. The purchase marker `ci_purchase_session_id` (anonymous buyers only, written by `/success`) is exempt from expiry and from `clearFunnelStorage()` on purpose, and is cleared on activation and on logout.
 
 ### Adding a market — the guard rails
 
-Two test files make the "silent fallback to Italian" class of bug impossible to ship:
+These tests make the "silent fallback to Italian" class of bug impossible to ship:
 
 - **[src/test/backend-bridge.test.ts](src/test/backend-bridge.test.ts)** imports the *pure* backend modules (`_shared/prompts/lang.ts`, `pdf-i18n.ts`, `prompts/support.ts`, `synastry-archetypes.ts`, `markets.ts`, …) so `tsc` pulls them into the program. Widening `PromptLang`/`Language` then produces hard errors listing every unfilled `Record<PromptLang, …>` slot. This is the ONLY compile-time check the Deno code gets — `supabase functions deploy` does not type-check.
-- **[src/test/market-parity.test.ts](src/test/market-parity.test.ts)** scans the sources for what the compiler can't reach: every object literal with ≥2 language/market keys must carry the new one; `isMarketId` must cover the union in *both* codebases; the new market's `*Env` names must all carry its own suffix (a copy-pasted block would bill the wrong Stripe account); `support-poll`'s hand-maintained `MARKETS` array; slug parity between `src/lib/routes.ts` and `scripts/generate-seo-files.mjs`.
+- **[src/test/market-parity.test.ts](src/test/market-parity.test.ts)** scans the sources for what the compiler can't reach: every object literal with ≥2 language/market keys must carry the new one; `isMarketId` must cover the union in *both* codebases; the new market's `*Env` names must all carry its own suffix (a copy-pasted block would bill the wrong Stripe account); `support-poll`'s hand-maintained `MARKETS` array; slug parity between `src/lib/routes.ts` and `scripts/generate-seo-files.mjs`; and that the per-build catalog switch in `src/i18n/index.ts` maps every market to its own language.
+- **`src/test/<lang>-copy.test.ts`** (`nl`, `fi`): leftover words from other languages in the catalog, the brand's register, banned vocabulary, lost `${...}` placeholders. Add one for a new language. **`<lang>-render.smoke.test.tsx`** mounts real pages with `VITE_MARKET=<id>` and skips itself otherwise.
 
-Start a new market by widening `MARKETS`/`LANGUAGES` in `market-parity.test.ts` and the two unions: the failing output is the worklist.
+Start a new market by widening `MARKETS`/`LANGUAGES` in `market-parity.test.ts` and the two unions: the failing output is the worklist. Things the tests can't see, from the fi launch (Oct 2026):
+- `resolvePromptLang` in `_shared/prompts/lang.ts` is an if-chain: add the new language or every report silently comes out in Italian.
+- `src/i18n/index.ts` ships only the build's own catalog in production (each Vercel project = one market): add the market there, else its build falls back to bundling every catalog.
+- The DB allowlist in `create_quiz_session` / `create_synastry_session` needs a migration (model: `20261019120000_add_fi_market_allowlist.sql`).
+- Anything that sends email must pass `lang` and `market` in `templateData` (see pitfalls).
 
 Syntax-check edited edge functions before deploying (there is no other gate):
 `./node_modules/.bin/esbuild --outfile=/dev/null supabase/functions/<path>`.
 
 ### Recurring pitfalls (from past fixes)
 
-- **A report renders in three aligned surfaces.** The on-screen page (`src/pages/Report.tsx`), the shared PDF builder (`_shared/report-pdf.ts`), and the admin download — the builder feeds both `generate-report-pdf` (user) and `admin-download-report` (admin). So: (a) section content/keys are hand-duplicated between the page and the builder (Deno can't import the frontend — `SECTIONS` + `SECTION_FALLBACKS` live in both, now **×2 languages**, edit together); (b) the PDF is cached in the `report-pdfs` bucket keyed by `PDF_VERSION` **and language in the storage path**, so any layout/font/chart/section change must bump `PDF_VERSION` or downloads serve a stale file (admin `?force=1` bypasses). PDF gen is CPU-bound (Edge limit) — hence the cache and CDN-loaded fonts; don't add heavy synchronous work. Coppia/transit mirror this (`synastry-pdf.ts`/`SYNASTRY_PDF_VERSION`, `transit-pdf.ts`/`TRANSIT_PDF_VERSION`).
+- **A report renders in three aligned surfaces.** The on-screen page (`src/pages/Report.tsx`), the shared PDF builder (`_shared/report-pdf.ts`), and the admin download — the builder feeds both `generate-report-pdf` (user) and `admin-download-report` (admin). So: (a) section content/keys are hand-duplicated between the page and the builder (Deno can't import the frontend — `SECTIONS` + `SECTION_FALLBACKS` live in both, for **every language**, edit together); (b) the PDF is cached in the `report-pdfs` bucket keyed by `PDF_VERSION` **and language in the storage path**, so any layout/font/chart/section change must bump `PDF_VERSION` or downloads serve a stale file (admin `?force=1` bypasses). PDF gen is CPU-bound (Edge limit) — hence the cache and CDN-loaded fonts; don't add heavy synchronous work. Coppia/transit mirror this (`synastry-pdf.ts`/`SYNASTRY_PDF_VERSION`, `transit-pdf.ts`/`TRANSIT_PDF_VERSION`).
 - **PDF/email brand is per-market.** Download filenames use `brandSlug(getMarket(row.market))` (+ `docNoun(lang,…)` for coppia/transiti); PDF/email logos and links come from the market (`market.siteUrl`, `getEmailTheme(market)`, `decodeLogoPng(market.id)`). Don't hard-code `codiceinteriore.it` or `codice-interiore`.
+- **Every transactional email needs `lang` and `market` in `templateData`.** Without them `send-transactional-email` falls back to `it`: Italian copy, Codice Interiore brand, sender `info@codiceinteriore.it`. This includes senders outside edge functions: the pg_cron `transit-renewal-reminder` job (fixed in `20261019095902`) and the browser-side `report-ready` in `ReportProcessing.tsx` (fixed Oct 2026) both sent Italian mail to es/nl customers for months.
 - **Admin (re)generation must pass `skipEmail: true`** to `generate-report` / `generate-synastry-report`, or the customer gets a spurious report-ready/claim email.
 - **Admin email lookups must resolve cross-email** via `_shared/resolve-profile.ts` (`resolveProfileByEmail`) or the `resolve_email_key` RPC — a customer can register with email A and pay with email B (PayPal); never match raw `profiles.email`.
 
