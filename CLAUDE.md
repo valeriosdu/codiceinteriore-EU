@@ -160,7 +160,7 @@ These tests make the "silent fallback to Italian" class of bug impossible to shi
 Start a new market by widening `MARKETS`/`LANGUAGES` in `market-parity.test.ts` and the two unions: the failing output is the worklist. Things the tests can't see, from the fi launch (Oct 2026):
 - `resolvePromptLang` in `_shared/prompts/lang.ts` is an if-chain: add the new language or every report silently comes out in Italian.
 - `src/i18n/index.ts` ships only the build's own catalog in production (each Vercel project = one market): add the market there, else its build falls back to bundling every catalog.
-- The DB allowlist in `create_quiz_session` / `create_synastry_session` needs a migration (model: `20261019120000_add_fi_market_allowlist.sql`).
+- The DB allowlist in `create_quiz_session` / `create_synastry_session` needs a migration (model: `20261019132356_add_fi_market_allowlist.sql`).
 - Anything that sends email must pass `lang` and `market` in `templateData` (see pitfalls).
 
 Syntax-check edited edge functions before deploying (there is no other gate):
