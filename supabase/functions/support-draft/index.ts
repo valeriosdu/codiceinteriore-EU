@@ -525,7 +525,14 @@ serve(async (req) => {
     }
 
     const customerMarket = resolvedProfileId ? await resolveCustomerMarket(admin, resolvedProfileId) : null;
-    const market = getMarket(customerMarket ?? ticket.market);
+    // Solo fra mercati dello stesso brand: un cliente es che scrive alla casella
+    // italiana avrebbe una bozza Carta Interior spedita da Codice Interiore.
+    const inboxMarket = getMarket(ticket.market);
+    const customerMarketConfig = customerMarket ? getMarket(customerMarket) : null;
+    const market =
+      customerMarketConfig && customerMarketConfig.siteName === inboxMarket.siteName
+        ? customerMarketConfig
+        : inboxMarket;
     const lang = resolvePromptLang(market.language);
 
     // ── Customer data (only when matched) ───────────────────────────────────
