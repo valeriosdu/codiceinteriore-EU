@@ -29,6 +29,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "19.00",
       en: "29.00",
       nl: "19.00",
+      fi: "19.00",
     },
     amountCents: 1900,
     description: {
@@ -36,6 +37,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "Lectura Completa de la Carta Natal",
       en: "Complete Natal Chart Reading",
       nl: "Volledige Duiding van je Geboortehoroscoop",
+      fi: "Koko syntymäkartan tulkinta",
     },
     productCode: "natal_report_base",
     includesTransits: false,
@@ -48,6 +50,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "29.00",
       en: "39.00",
       nl: "29.00",
+      fi: "29.00",
     },
     amountCents: 2900,
     description: {
@@ -55,6 +58,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "Lectura Completa + 1 Mes de Tránsitos",
       en: "Complete Reading + 1 Month of Transits",
       nl: "Volledige Duiding + 1 Maand Transits",
+      fi: "Koko tulkinta + 1 kuukausi transiitteja",
     },
     productCode: "natal_report_plus_transits",
     includesTransits: true,
@@ -67,6 +71,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "19.00",
       en: "19.00",
       nl: "19.00",
+      fi: "19.00",
     },
     amountCents: 1900,
     description: {
@@ -74,6 +79,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "Sinastría de Pareja",
       en: "Couple Synastry Reading",
       nl: "Synastrie voor Koppels",
+      fi: "Parin synastria",
     },
     productCode: "synastry_couple_report",
     includesTransits: false,
@@ -88,6 +94,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "14.90",
       en: "14.90",
       nl: "14.90",
+      fi: "14.90",
     },
     amountCents: 1490,
     description: {
@@ -95,6 +102,7 @@ const PRODUCTS: Record<string, ProductDef> = {
       es: "Sinastría de Pareja (Lanzamiento)",
       en: "Couple Synastry Reading (Launch)",
       nl: "Synastrie voor Koppels (Lancering)",
+      fi: "Parin synastria (lanseeraus)",
     },
     productCode: "synastry_couple_report_launch",
     includesTransits: false,

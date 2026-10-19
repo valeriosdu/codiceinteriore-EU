@@ -14,7 +14,7 @@ The owner has a Python/R/data-science background, not a frontend specialist — 
 - **Auth**: Supabase Auth, Google OAuth only; transactional/auth email via Brevo (`auth-email-hook` is the optional per-user localized path)
 - **Payments**: Stripe (primary), PayPal (secondary)
 - **AI**: Google Gemini (`gemini-3.1-pro-preview`) called directly at `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` (OpenAI-compat endpoint), secret `GEMINI_API_KEY`. Prompts are per-language in `supabase/functions/_shared/prompts/`.
-- **Markets / languages**: multi-market app — markets `it` (default), `es`, `us`, `nl`; languages `it`, `es`, `en`, `nl`. Designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
+- **Markets / languages**: multi-market app — markets `it` (default), `es`, `us`, `nl`, `fi`; languages `it`, `es`, `en`, `nl`, `fi`. Designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
 
 ## Multi-market architecture (read this first)
 
@@ -35,7 +35,7 @@ VITE_MARKET=es (Vercel env, build-time)
 - **Column default is `'it'`** so any un-migrated path produces Italian; the `es` frontend passes `'es'` explicitly.
 - **Per-market secret convention `<NAME>__<MARKET>`** (e.g. `STRIPE_SECRET_KEY__ES`, `STRIPE_PRICE_BASE__NL`). Market `it` uses the unsuffixed names. For a new market, a **missing payment secret is an explicit error — never a silent fallback** to another market's account.
 - **Expandable by design**: adding a market = a new entry in `supabase/functions/_shared/markets.ts` (backend) + `src/markets/` (frontend) + catalogs in `src/i18n/`. Helpers `getMarket / getStripeKey / getStripePrice / getPayPalCreds / brandSlug / docNoun` (in `markets.ts`) avoid hard-coded `es ? … : it` branches — `brandSlug` derives from `siteName`, `docNoun` is keyed by `Language`. Don't add binary market branches; route through these helpers.
-- Backend config: [supabase/functions/_shared/markets.ts](supabase/functions/_shared/markets.ts). Frontend: [src/markets/index.ts](src/markets/index.ts). Language catalogs: `src/i18n/{it,es,en,nl}/` (it is the source of the `Messages` type — a missing key in another language is a compile error), provider [src/i18n/I18nProvider.tsx](src/i18n/I18nProvider.tsx).
+- Backend config: [supabase/functions/_shared/markets.ts](supabase/functions/_shared/markets.ts). Frontend: [src/markets/index.ts](src/markets/index.ts). Language catalogs: `src/i18n/{it,es,en,nl,fi}/` (it is the source of the `Messages` type — a missing key in another language is a compile error), provider [src/i18n/I18nProvider.tsx](src/i18n/I18nProvider.tsx).
 
 ## Commands
 
@@ -77,7 +77,7 @@ src/
   context/QuizContext.tsx # quiz state across pages
   context/SynastryContext.tsx # coppia/sinastria state
   markets/                # per-market frontend config; export MARKET, resolveMarket()
-  i18n/                   # typed message catalogs {it,es,en,nl}/ + I18nProvider (it = source of type)
+  i18n/                   # typed message catalogs {it,es,en,nl,fi}/ + I18nProvider (it = source of type)
   funnels/registry.ts     # funnel structure (section ids/type/order — the backend contract; ids NOT translated)
   hooks/                  # custom React hooks
   integrations/supabase/  # client + auto-generated DB types (don't hand-edit types.ts)
@@ -111,7 +111,7 @@ Many of these are market-aware: they read `market` from the session/checkout row
 
 **Browser (`.env`, `VITE_`-prefixed, public — overridden per project in Vercel)**:
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (anon key), `VITE_SUPABASE_PROJECT_ID`
-- `VITE_MARKET` (`it`|`es`) — selects market at build time
+- `VITE_MARKET` (`it`|`es`|`us`|`nl`|`fi`) — selects market at build time
 - `VITE_LANG`, `VITE_LOCALE`, `VITE_SITE_NAME`, `VITE_SITE_URL`, `VITE_DEFAULT_TITLE`, `VITE_SITE_DESCRIPTION`, `VITE_CONTACT_EMAIL`, `VITE_ORG_LANGUAGE` — injected into `index.html` (`%VITE_*%`) at build; must match the chosen market
 - Analytics (empty disables the tag): `VITE_GA4_ID`, `VITE_META_PIXEL_ID`, `VITE_CLARITY_ID` — **per-market**; note the committed `.env` holds the IT values, so a non-IT Vercel project must override them (else it fires into IT properties)
 
@@ -123,7 +123,7 @@ Many of these are market-aware: they read `market` from the session/checkout row
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENV`
 - `META_PIXEL_ID`, `META_CONVERSIONS_API_TOKEN`
 - `ADMIN_SECRET` — gates admin bypass endpoints
-- **Per-market variants** with a `__<MARKET>` suffix (`__ES`, `__US`, `__NL`) exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`.
+- **Per-market variants** with a `__<MARKET>` suffix (`__ES`, `__US`, `__NL`, `__FI`) exist for everything market-specific: `STRIPE_SECRET_KEY__ES`, `STRIPE_WEBHOOK_SECRET__ES`, `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET__ES`, `STRIPE_PRICE_{BASE,PREMIUM,SYNASTRY,SYNASTRY_LAUNCH,TRANSIT_ONE_TIME,TRANSIT_SUBSCRIPTION,ASTRO_PACK}__ES`, `PAYPAL_*__ES`, `BREVO_API_KEY__ES`, `META_PIXEL_ID__ES`, `META_CONVERSIONS_API_TOKEN__ES`.
 
 If a secret is missing, edge functions tend to fail silently — check function logs (MCP `get_logs` or the dashboard) before assuming the code is broken.
 
@@ -168,7 +168,7 @@ Syntax-check edited edge functions before deploying (there is no other gate):
 ## Workflow rules
 
 - **Default to small, scoped changes.** Don't bundle refactors with feature work or vice versa.
-- **Edit existing files in preference to creating new ones.** Localized copy lives in `src/i18n/{it,es,en,nl}/` (it = source of the type); add new strings there, never inline a hard-coded string in a component.
+- **Edit existing files in preference to creating new ones.** Localized copy lives in `src/i18n/{it,es,en,nl,fi}/` (it = source of the type); add new strings there, never inline a hard-coded string in a component.
 - **No new dependencies without approval** — the stack is already chosen; reach for what's installed first.
 - **No comments unless the *why* is non-obvious.** Identifiers should explain *what*.
 - **Never commit unless the user asks.** When asked, write a real commit message (not "Changes" — recent history has too many of those already). End commit messages with the Co-Authored-By trailer.

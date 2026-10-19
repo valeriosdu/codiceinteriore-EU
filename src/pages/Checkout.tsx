@@ -264,8 +264,7 @@ const Checkout = () => {
   const birthSummary = (() => {
     const parts: string[] = [];
     if (data.birthDate) {
-      const monthLabel = (m.quiz.months[(data.birthDate.month || 1) - 1] || "").toLowerCase();
-      parts.push(`${data.birthDate.day} ${monthLabel} ${data.birthDate.year}`);
+      parts.push(m.quiz.birthDateLabel(data.birthDate.day, data.birthDate.month || 1, data.birthDate.year));
     }
     if (data.birthTime) {
       parts.push(`${String(data.birthTime.hour).padStart(2, "0")}:${String(data.birthTime.minute).padStart(2, "0")}`);

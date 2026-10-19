@@ -73,6 +73,18 @@ const COPY = {
     closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
     subject: (q: string) => (q ? `Over je vraag: ${truncate(q, 60)}` : 'Je antwoord staat klaar'),
   },
+  fi: {
+    h1: 'Vastaus kysymykseesi',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    intro: 'Tässä on syventävä vastaus, jota pyysit. Se perustuu syntymäkarttaasi ja raporttiisi.',
+    yourQuestion: 'Kysymyksesi',
+    usefulQuestion: 'Oliko tästä vastauksesta apua?',
+    creditsLeft: (n: number) => `Sinulla on vielä ${n} ${n === 1 ? 'kysymys' : 'kysymystä'} käytettävissä.`,
+    noCredits: 'Olet käyttänyt kaikki kysymyksesi.',
+    cta: 'Avaa astrologiopas',
+    closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
+    subject: (q: string) => (q ? `Kysymyksestäsi: ${truncate(q, 60)}` : 'Vastauksesi on valmis'),
+  },
 } as const
 
 type Lang = keyof typeof COPY

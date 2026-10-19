@@ -3,6 +3,9 @@ const report = {
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ],
+  dayMonthLabel(day: number, month: number, year?: number) {
+    return `${day} ${this.monthShort[month - 1] || ''}${year ? ' ' + year : ''}`;
+  },
   access: {
     title: 'Open your space',
     body: 'To open your reading, sign in with the same email you used at checkout.',

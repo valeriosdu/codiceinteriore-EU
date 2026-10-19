@@ -24,7 +24,7 @@ export interface EmailTheme {
   logoUrl: string
 }
 
-// File del logo nel bucket email-assets, per mercato. es, us e nl condividono
+// File del logo nel bucket email-assets, per mercato. es, us, nl e fi condividono
 // il brand Carta Interior. Non derivare il nome da brandSlug: rinominerebbe
 // asset gia' caricati e in uso.
 const LOGO_FILE_BY_MARKET: Record<MarketId, string> = {
@@ -32,6 +32,7 @@ const LOGO_FILE_BY_MARKET: Record<MarketId, string> = {
   es: 'logo-es.png',
   us: 'logo-es.png',
   nl: 'logo-es.png',
+  fi: 'logo-es.png',
 }
 
 export function getEmailTheme(marketId?: string | null): EmailTheme {

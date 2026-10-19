@@ -1,47 +1,49 @@
-const checkoutReview = {
+import type { Messages } from '@/i18n';
+
+const checkoutReview: Messages['checkoutReview'] = {
   products: {
     base: {
-      name: 'Full Birth Chart Reading',
-      bullets: ['Full 10-page reading', 'Instant access online and by email'],
+      name: 'Syntymäkartan koko tulkinta',
+      bullets: ['10 sivun koko tulkinta', 'Pääsy heti verkossa ja sähköpostitse'],
     },
     premium: {
-      name: 'Full Reading + 1 Month of Transits',
+      name: 'Koko tulkinta + 1 kuukausi transiitteja',
       bullets: [
-        'Full 10-page reading',
-        '1 month of weekly transit readings',
-        'Free gift: a personal transformative poem',
+        '10 sivun koko tulkinta',
+        '1 kuukausi viikoittaisia transiittitulkintoja',
+        'Lahjana: henkilökohtainen runo muutoksen tueksi',
       ],
     },
     synastry: {
-      name: 'Couple Synastry',
+      name: 'Parin synastria',
       bullets: [
-        'Eight sections on your relationship',
-        'Downloadable PDF, permanent access',
-        'About 10 pages in plain English',
+        'Kahdeksan osiota parisuhteestanne',
+        'Ladattava PDF, pysyvä pääsy',
+        'Noin 10 sivua selkeällä suomella',
       ],
     },
     synastry_launch: {
-      name: 'Couple Synastry',
+      name: 'Parin synastria',
       bullets: [
-        'Eight sections on your relationship',
-        'Downloadable PDF, permanent access',
-        'About 10 pages in plain English',
+        'Kahdeksan osiota parisuhteestanne',
+        'Ladattava PDF, pysyvä pääsy',
+        'Noin 10 sivua selkeällä suomella',
       ],
     },
   },
-  title: 'Order summary',
-  subtitle: 'Review the details of your order.',
-  instantAccess: 'Instant access',
-  total: 'Total',
-  howToPay: 'How would you like to pay?',
-  cardLabel: 'Credit or debit card',
-  paypalNote: 'Fast and secure with your account',
-  securePayment: 'Secure payment',
-  moneyBack: 'Money-back guarantee',
-  noSubscription: 'No subscription',
+  title: 'Tilauksen yhteenveto',
+  subtitle: 'Tarkista tilauksesi tiedot.',
+  instantAccess: 'Pääsy heti',
+  total: 'Yhteensä',
+  howToPay: 'Miten haluat maksaa?',
+  cardLabel: 'Luotto- tai pankkikortti',
+  paypalNote: 'Nopea ja turvallinen oman tilisi kautta',
+  securePayment: 'Turvallinen maksu',
+  moneyBack: 'Tyytyväisyystakuu',
+  noSubscription: 'Ei jatkuvaa tilausta',
   errors: {
-    noSession: 'Session unavailable. Reload the page and try again.',
-    payment: 'Something went wrong with the payment. Try again.',
+    noSession: 'Istuntoa ei löydy. Päivitä sivu ja yritä uudelleen.',
+    payment: 'Maksussa tapahtui virhe. Yritä uudelleen.',
   },
 };
 

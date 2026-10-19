@@ -1,33 +1,35 @@
-const reportProcessing = {
+import type { Messages } from '@/i18n';
+
+const reportProcessing: Messages['reportProcessing'] = {
   messages: [
-    'We are retrieving your reading',
-    'We are organizing the main areas',
-    "We are preparing the parts you haven't seen yet",
-    'We are completing your personal map',
-    'In a moment you will enter the full version',
-    'We are refining the most delicate details',
-    'Almost ready — just a little longer',
+    'Haemme tulkintaasi',
+    'Järjestämme tärkeimmät osa-alueet',
+    'Valmistelemme osia, joita et ole vielä nähnyt',
+    'Viimeistelemme henkilökohtaista karttaasi',
+    'Hetken kuluttua pääset koko versioon',
+    'Hiomme hienovaraisimpia yksityiskohtia',
+    'Melkein valmista — enää hetki',
   ],
   errors: {
-    signIn: 'Sign in to your account to complete the reading you purchased.',
-    profileNotFound: "We can't find your profile. Sign in again or contact us.",
-    paymentMismatch: 'The payment does not match the quiz session to be completed.',
-    noSession: "We can't find a quiz session linked to the payment.",
+    signIn: 'Kirjaudu tilillesi viimeistelläksesi ostamasi tulkinnan.',
+    profileNotFound: 'Emme löydä profiiliasi. Kirjaudu uudelleen tai ota meihin yhteyttä.',
+    paymentMismatch: 'Maksu ei vastaa kyselyn istuntoa, joka pitäisi viimeistellä.',
+    noSession: 'Emme löydä maksuun liitettyä kyselyn istuntoa.',
     paymentRequired:
-      'Generating a new reading requires a completed payment. If you already have a reading, open it from your personal area.',
+      'Uuden tulkinnan luomiseen tarvitaan hyväksytty maksu. Jos sinulla on jo tulkinta, avaa se omalta sivultasi.',
     generic:
-      'Your reading is being prepared. The payment is recorded correctly, and you will receive everything by email within a few minutes. If nothing arrives after 10 minutes, contact us and we’ll be glad to help.',
+      'Tulkintaasi valmistellaan. Maksusi on kirjattu oikein, ja saat kaiken sähköpostitse muutaman minuutin kuluessa. Jos 10 minuutin jälkeen ei kuulu mitään, ota meihin yhteyttä, autamme mielellämme.',
   },
   errorScreen: {
-    title: 'Reading under review',
-    cta: 'Contact us',
+    title: 'Tulkinta tarkistettavana',
+    cta: 'Ota yhteyttä',
   },
-  verifying: 'We are verifying your access to the reading…',
+  verifying: 'Tarkistamme pääsysi tulkintaan…',
   processing: {
-    title: 'We are completing your reading',
-    body: "You've already seen the opening. Now we are preparing your full reading, with many new elements and a complete view of your Inner Code. Don't close or refresh the page.",
+    title: 'Viimeistelemme tulkintaasi',
+    body: 'Olet jo nähnyt alun. Nyt valmistelemme koko Carta Interior -tulkintasi, jossa on paljon uutta ja kokonaiskuva sisäisestä rakenteestasi. Älä sulje tai päivitä sivua.',
     slowHint:
-      "For more complex charts, preparation can take up to 10 minutes. You can stay on this page or close it: you'll receive everything by email as soon as it's ready.",
+      'Monimutkaisemmilla kartoilla valmistelu voi kestää jopa 10 minuuttia. Voit jäädä tälle sivulle tai sulkea sen: saat kaiken sähköpostitse heti, kun tulkinta on valmis.',
   },
 };
 

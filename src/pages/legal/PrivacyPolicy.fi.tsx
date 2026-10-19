@@ -1,372 +1,376 @@
-// ⚠️ Vertaalde concepttekst, juridisch na te kijken vóór de lancering.
+// ⚠️ Käännetty luonnosteksti, juristin tarkistettava ennen julkaisua.
 import { MARKET } from "@/markets";
 import { LegalPage, LegalEntityBox, Section, SubSection, MailLink, SiteLink, privacyEmail } from "./LegalLayout";
 
 const PrivacyPolicyFi = () => (
   <LegalPage
-    seoTitle={`Privacy- en Cookieverklaring — ${MARKET.siteName}`}
-    seoDescription={`Informatie over de verwerking van persoonsgegevens van gebruikers van de site ${MARKET.siteName}.`}
+    seoTitle={`Tietosuojaseloste ja evästekäytäntö — ${MARKET.siteName}`}
+    seoDescription={`Tietoa sivuston ${MARKET.siteName} käyttäjien henkilötietojen käsittelystä.`}
     path="/privacy"
-    backAria="Terug"
-    heading="Privacy- en Cookieverklaring"
-    lastUpdated="Laatst bijgewerkt: 20 augustus 2026"
+    backAria="Takaisin"
+    heading="Tietosuojaseloste ja evästekäytäntö"
+    lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-10">
-      Deze verklaring beschrijft hoe de persoonsgegevens worden verwerkt van gebruikers die de site <SiteLink /> bezoeken
-      en de diensten onder het merk {MARKET.siteName} gebruiken.
+      Tässä selosteessa kerrotaan, miten käsitellään niiden käyttäjien henkilötietoja, jotka vierailevat sivustolla{" "}
+      <SiteLink /> ja käyttävät tuotemerkin {MARKET.siteName} alla tarjottavia palveluja.
     </p>
 
-    <Section title="1. Verwerkingsverantwoordelijke">
-      <p>De verwerkingsverantwoordelijke is:</p>
+    <Section title="1. Rekisterinpitäjä">
+      <p>Rekisterinpitäjä on:</p>
       <LegalEntityBox />
       <p>
-        Voor elk verzoek over de verwerking van persoonsgegevens kun je schrijven naar:{" "}
+        Kaikissa henkilötietojen käsittelyä koskevissa pyynnöissä voit kirjoittaa osoitteeseen:{" "}
         <MailLink email={privacyEmail} />
       </p>
     </Section>
 
-    <Section title="2. Toepassingsgebied">
-      <p>Deze verklaring geldt voor de verwerking van persoonsgegevens via:</p>
+    <Section title="2. Soveltamisala">
+      <p>Tätä selostetta sovelletaan henkilötietojen käsittelyyn seuraavissa yhteyksissä:</p>
       <ul>
-        <li>de site {MARKET.siteName}</li>
-        <li>de vragenlijst en de pagina's waar gegevens worden verzameld</li>
-        <li>het afrekenen en de aankooppagina's</li>
-        <li>eventuele contactformulieren</li>
-        <li>het versturen van operationele mails, wekelijkse inhoud en marketingberichten</li>
-        <li>de persoonlijke omgeving die eventueel aan de dienst is gekoppeld</li>
+        <li>sivusto {MARKET.siteName}</li>
+        <li>kysely ja sivut, joilla tietoja kerätään</li>
+        <li>kassa ja ostosivut</li>
+        <li>mahdolliset yhteydenottolomakkeet</li>
+        <li>toiminnallisten sähköpostien, viikoittaisen sisällön ja markkinointiviestien lähettäminen</li>
+        <li>palveluun mahdollisesti liitetty käyttäjäalue</li>
       </ul>
     </Section>
 
-    <Section title="3. Soorten gegevens die worden verwerkt">
-      <p>We kunnen de volgende categorieën persoonsgegevens verwerken:</p>
-      <SubSection title="a) Identificatie- en contactgegevens">
+    <Section title="3. Käsiteltävät tietoryhmät">
+      <p>Voimme käsitellä seuraavia henkilötietoryhmiä:</p>
+      <SubSection title="a) Tunnistamis- ja yhteystiedot">
         <ul>
-          <li>naam</li>
-          <li>e-mailadres</li>
+          <li>nimi</li>
+          <li>sähköpostiosoite</li>
         </ul>
       </SubSection>
-      <SubSection title="b) Gegevens die je verstrekt voor de levering van de dienst">
+      <SubSection title="b) Palvelun toimittamista varten antamasi tiedot">
         <ul>
-          <li>geboortedatum</li>
-          <li>geboortetijd</li>
-          <li>geboorteplaats</li>
-          <li>antwoorden die je in de vragenlijst geeft</li>
-          <li>inhoud die je doorgeeft via hulpverzoeken of contactformulieren</li>
+          <li>syntymäpäivä</li>
+          <li>syntymäaika</li>
+          <li>syntymäpaikka</li>
+          <li>kyselyssä antamasi vastaukset</li>
+          <li>tukipyyntöjen tai yhteydenottolomakkeiden kautta lähettämäsi sisältö</li>
         </ul>
       </SubSection>
-      <SubSection title="c) Gegevens over aankopen">
+      <SubSection title="c) Ostotiedot">
         <ul>
-          <li>aankoopgeschiedenis</li>
-          <li>informatie over de betaalstatus</li>
-          <li>transactiekenmerken die de betaalaanbieders doorgeven</li>
+          <li>ostohistoria</li>
+          <li>maksun tilaa koskevat tiedot</li>
+          <li>maksupalveluntarjoajien välittämät tapahtumatunnisteet</li>
         </ul>
         <p className="text-sm text-muted-foreground italic mt-2">
-          Let op: de volledige kaartgegevens worden niet door de verwerkingsverantwoordelijke verwerkt, maar door de
-          gebruikte betaalaanbieders.
+          Huomaa: rekisterinpitäjä ei käsittele maksukortin täydellisiä tietoja itse, vaan ne käsittelevät käytetyt
+          maksupalveluntarjoajat.
         </p>
       </SubSection>
-      <SubSection title="d) Technische en navigatiegegevens">
+      <SubSection title="d) Tekniset ja selaustiedot">
         <ul>
-          <li>IP-adres</li>
-          <li>technische logbestanden</li>
-          <li>informatie over browser, apparaat en besturingssysteem</li>
-          <li>gegevens verzameld via cookies of vergelijkbare technieken</li>
+          <li>IP-osoite</li>
+          <li>tekniset lokitiedot</li>
+          <li>selaimen, laitteen ja käyttöjärjestelmän tiedot</li>
+          <li>evästeiden tai vastaavien tekniikoiden avulla kerätyt tiedot</li>
         </ul>
       </SubSection>
-      <SubSection title="e) Gegevens over marketing en tracking">
+      <SubSection title="e) Markkinointi- ja seurantatiedot">
         <ul>
-          <li>gegevens verzameld met analysetools</li>
-          <li>gegevens verzameld met marketingcookies en -pixels, waaronder remarketingtools</li>
+          <li>analytiikkatyökaluilla kerätyt tiedot</li>
+          <li>markkinointievästeiden ja -pikselien, myös uudelleenmarkkinointityökalujen, avulla kerätyt tiedot</li>
         </ul>
       </SubSection>
     </Section>
 
-    <Section title="4. Doeleinden van de verwerking">
-      <p>Persoonsgegevens kunnen worden verwerkt voor de volgende doeleinden:</p>
+    <Section title="4. Käsittelyn tarkoitukset">
+      <p>Henkilötietoja voidaan käsitellä seuraaviin tarkoituksiin:</p>
       <ul>
-        <li>het leveren van het persoonlijke astrologische rapport</li>
-        <li>het leveren van wekelijkse inhoud, terugkerende diensten of abonnementen</li>
-        <li>het beheer van het gebruikersaccount, waar beschikbaar</li>
-        <li>het beheer van het afrekenen, de betalingen en de bestelgeschiedenis</li>
+        <li>henkilökohtaisen astrologisen raportin toimittaminen</li>
+        <li>viikoittaisen sisällön, toistuvien palvelujen tai tilausten toimittaminen</li>
+        <li>käyttäjätilin hallinta, jos tili on käytettävissä</li>
+        <li>kassan, maksujen ja tilaushistorian hallinta</li>
         <li>
-          het versturen van operationele berichten, zoals bestelbevestigingen, toegang tot de inhoud, hulp en
-          servicemeldingen
+          toiminnallisten viestien, kuten tilausvahvistusten, sisältöön pääsyn, tuen ja palveluilmoitusten,
+          lähettäminen
         </li>
-        <li>het afhandelen van verzoeken die je per mail of via het contactformulier stuurt</li>
-        <li>het versturen van de nieuwsbrief en promotionele berichten</li>
-        <li>statistische analyses over het gebruik van de site</li>
-        <li>remarketing, retargeting en het meten van advertentiecampagnes</li>
-        <li>het beveiligen van de site, het voorkomen van misbruik en het technische beheer van de systemen</li>
+        <li>sähköpostitse tai yhteydenottolomakkeella lähettämiesi pyyntöjen käsittely</li>
+        <li>uutiskirjeen ja mainosviestien lähettäminen</li>
+        <li>sivuston käyttöä koskevat tilastolliset analyysit</li>
+        <li>uudelleenmarkkinointi, uudelleenkohdentaminen ja mainoskampanjoiden mittaaminen</li>
+        <li>sivuston turvaaminen, väärinkäytösten estäminen ja järjestelmien tekninen hallinta</li>
       </ul>
     </Section>
 
-    <Section title="5. Rechtsgrond van de verwerking">
-      <p>De verwerking van persoonsgegevens berust, afhankelijk van het geval, op de volgende rechtsgronden:</p>
+    <Section title="5. Käsittelyn oikeusperuste">
+      <p>Henkilötietojen käsittely perustuu tapauksesta riippuen seuraaviin oikeusperusteisiin:</p>
       <ul>
         <li>
-          <strong>uitvoering van een overeenkomst</strong> of van precontractuele maatregelen: voor het leveren van het
-          rapport, het verwerken van de vragenlijst voor zover die de gevraagde dienst dient, het accountbeheer, de
-          aankopen, de betalingen, het versturen van operationele mails en de klantenhulp
+          <strong>sopimuksen täyttäminen</strong> tai sopimusta edeltävät toimet: raportin toimittamiseen, kyselyn
+          käsittelyyn siltä osin kuin se palvelee pyydettyä palvelua, tilin hallintaan, ostoihin, maksuihin,
+          toiminnallisten sähköpostien lähettämiseen ja asiakastukeen
         </li>
         <li>
-          <strong>toestemming van de betrokkene</strong>: voor het versturen van de nieuwsbrief en marketingberichten,
-          en voor het gebruik van niet-technische cookies en trackingtools waar de toepasselijke regelgeving dat vereist
+          <strong>rekisteröidyn suostumus</strong>: uutiskirjeen ja markkinointiviestien lähettämiseen sekä muiden
+          kuin teknisten evästeiden ja seurantatyökalujen käyttöön, silloin kun sovellettava sääntely sitä edellyttää
         </li>
         <li>
-          <strong>gerechtvaardigd belang van de verwerkingsverantwoordelijke</strong>: voor informatiebeveiliging, het
-          verdedigen van zijn rechten, fraudepreventie, technisch beheer van de site en geaggregeerde analyses van de
-          werking van de diensten, binnen de grenzen die de wet toestaat
+          <strong>rekisterinpitäjän oikeutettu etu</strong>: tietoturvaan, oikeuksien puolustamiseen, petosten
+          ehkäisyyn, sivuston tekniseen hallintaan ja palvelujen toimintaa koskeviin koosteisiin analyyseihin lain
+          sallimissa rajoissa
         </li>
       </ul>
     </Section>
 
-    <Section title="6. Verplicht of vrijwillig verstrekken van gegevens">
-      <p>Het verstrekken van de als noodzakelijk gemarkeerde gegevens is verplicht wanneer die gegevens dienen om:</p>
+    <Section title="6. Tietojen antaminen: pakollista vai vapaaehtoista">
+      <p>Pakollisiksi merkittyjen tietojen antaminen on pakollista, kun tietoja tarvitaan:</p>
       <ul>
-        <li>het gevraagde rapport te maken</li>
-        <li>een aankoop af te handelen</li>
-        <li>het account aan te maken of te beheren</li>
-        <li>hulp te bieden</li>
-        <li>operationele berichten te versturen</li>
+        <li>pyydetyn raportin laatimiseen</li>
+        <li>oston käsittelyyn</li>
+        <li>tilin luomiseen tai hallintaan</li>
+        <li>tuen antamiseen</li>
+        <li>toiminnallisten viestien lähettämiseen</li>
       </ul>
-      <p>Worden die gegevens niet verstrekt, dan kan de dienst mogelijk niet worden geleverd.</p>
+      <p>Jos näitä tietoja ei anneta, palvelua ei ehkä voida toimittaa.</p>
       <p>
-        Gegevens voor marketingdoeleinden of voor niet-noodzakelijke cookies verstrek je daarentegen vrijwillig. Een
-        weigering belemmert het bezoeken van de site of het kopen van de basisdienst niet, behoudens de strikt
-        noodzakelijke technische grenzen.
+        Markkinointitarkoituksiin tai muita kuin välttämättömiä evästeitä varten annettavat tiedot ovat sen sijaan
+        vapaaehtoisia. Kieltäytyminen ei estä sivuston selaamista eikä peruspalvelun ostamista, lukuun ottamatta
+        ehdottoman välttämättömiä teknisiä rajoituksia.
       </p>
     </Section>
 
-    <Section title="7. Wijze van verwerking">
+    <Section title="7. Käsittelytavat">
       <p>
-        De verwerking gebeurt met digitale en organisatorische middelen die passen bij de aard van de gegevens, volgens
-        de beginselen van rechtmatigheid, behoorlijkheid, transparantie, minimalisering en opslagbeperking.
+        Käsittely tehdään tietojen luonteeseen sopivilla digitaalisilla ja organisatorisilla keinoilla
+        lainmukaisuuden, kohtuullisuuden, läpinäkyvyyden, tietojen minimoinnin ja säilytyksen rajoittamisen
+        periaatteiden mukaisesti.
       </p>
     </Section>
 
-    <Section title="8. Ontvangers van de gegevens">
+    <Section title="8. Tietojen vastaanottajat">
       <p>
-        De gegevens kunnen worden gedeeld met of toegankelijk gemaakt voor partijen die, afhankelijk van het geval,
-        optreden als verwerker, als zelfstandige verwerkingsverantwoordelijke of als gemachtigde persoon.
+        Tietoja voidaan luovuttaa tai tehdä käytettäviksi tahoille, jotka toimivat tapauksesta riippuen henkilötietojen
+        käsittelijöinä, itsenäisinä rekisterinpitäjinä tai valtuutettuina henkilöinä.
       </p>
-      <p>In het bijzonder kunnen de gegevens worden verwerkt via de volgende leveranciers of categorieën leveranciers:</p>
+      <p>Tietoja voidaan käsitellä erityisesti seuraavien toimittajien tai toimittajaryhmien kautta:</p>
       <ul>
-        <li>leveranciers van hosting en infrastructuur/frontend</li>
-        <li>Supabase voor de database en de applicatie-infrastructuur</li>
-        <li>Stripe en PayPal voor de afhandeling van betalingen</li>
-        <li>Google voor technologische diensten en, waar van toepassing, verwerking via externe AI-modellen</li>
-        <li>FreeAstroAPI voor de verwerking van de astrologische gegevens die de dienst nodig heeft</li>
-        <li>Meta voor advertentietools, pixels en remarketing</li>
-        <li>Google Analytics voor de statistische analyse van het siteverkeer</li>
-        <li>leveranciers van e-mailverzending, technische ondersteuning en operationeel beheer rond de diensten</li>
+        <li>palvelinpalvelujen ja infrastruktuurin sekä käyttöliittymän toimittajat</li>
+        <li>Supabase tietokantaa ja sovellusinfrastruktuuria varten</li>
+        <li>Stripe ja PayPal maksujen käsittelyyn</li>
+        <li>
+          Google teknologiapalveluihin ja tarvittaessa ulkoisilla tekoälymalleilla tapahtuvaan käsittelyyn
+        </li>
+        <li>FreeAstroAPI palvelun tarvitsemien astrologisten tietojen käsittelyyn</li>
+        <li>Meta mainostyökaluihin, pikseleihin ja uudelleenmarkkinointiin</li>
+        <li>Google Analytics sivuston liikenteen tilastolliseen analyysiin</li>
+        <li>
+          mahdolliset sähköpostin toimituksen, teknisen tuen ja palveluihin liittyvän operatiivisen hallinnan
+          toimittajat
+        </li>
       </ul>
-      <p>Die partijen verwerken de gegevens alleen voor zover dat nodig is om hun diensten te leveren.</p>
+      <p>Nämä tahot käsittelevät tietoja vain siinä määrin kuin niiden palvelujen tuottaminen edellyttää.</p>
     </Section>
 
-    <Section title="9. Verwerking via AI-leveranciers en externe diensten">
+    <Section title="9. Käsittely tekoälytoimittajien ja ulkoisten palvelujen kautta">
       <p>
-        Om sommige functies van de dienst te leveren, kunnen de gegevens die je in de vragenlijst invult en de
-        informatie die nodig is om de inhoud te maken worden doorgestuurd naar externe technologieleveranciers, waaronder
-        AI-diensten van Google en externe astrologische diensten.
+        Joidenkin palvelun toimintojen toteuttamiseksi kyselyssä antamasi tiedot ja sisällön laatimiseen tarvittavat
+        tiedot voidaan lähettää ulkoisille teknologiatoimittajille, mukaan lukien Googlen tekoälypalvelut ja ulkoiset
+        astrologiset palvelut.
       </p>
       <p>
-        De verwerkingsverantwoordelijke hanteert het beginsel van minimalisering: naar externe leveranciers gaan alleen
-        de gegevens die nodig zijn om de gevraagde inhoud te maken of de voorziene technische functie uit te voeren.
+        Rekisterinpitäjä noudattaa minimoinnin periaatetta: ulkoisille toimittajille välitetään vain ne tiedot, jotka
+        tarvitaan pyydetyn sisällön luomiseen tai tarkoitetun teknisen toiminnon suorittamiseen.
       </p>
     </Section>
 
-    <Section title="10. Doorgifte van gegevens naar landen buiten de EER">
+    <Section title="10. Tietojen siirto Euroopan talousalueen ulkopuolelle">
       <p>
-        Sommige gebruikte technologieleveranciers kunnen zich buiten de Europese Economische Ruimte bevinden of daar
-        gegevens verwerken, waaronder in de Verenigde Staten of andere derde landen.
+        Jotkin käytetyistä teknologiatoimittajista voivat sijaita Euroopan talousalueen ulkopuolella tai käsitellä
+        tietoja sen ulkopuolella, myös Yhdysvalloissa tai muissa kolmansissa maissa.
       </p>
       <p>
-        Waar van toepassing gebeuren die doorgiftes met inachtneming van de instrumenten die de geldende regelgeving
-        voorschrijft, waaronder eventuele contractuele mechanismen of andere wettelijk vereiste waarborgen.
+        Tarvittaessa siirrot tehdään voimassa olevassa sääntelyssä edellytettyjä välineitä noudattaen, mukaan lukien
+        mahdolliset sopimusmekanismit tai muut lain edellyttämät suojatoimet.
       </p>
       <p>
-        Voor meer informatie over eventuele doorgiftes en de bijbehorende waarborgen kun je schrijven naar{" "}
+        Lisätietoja mahdollisista siirroista ja niihin liittyvistä suojatoimista saat kirjoittamalla osoitteeseen{" "}
         <MailLink email={privacyEmail} />.
       </p>
     </Section>
 
-    <Section title="11. Bewaartermijn van de gegevens">
+    <Section title="11. Tietojen säilytysaika">
       <p>
-        Behoudens andersluidende wettelijke verplichtingen worden persoonsgegevens niet langer bewaard dan nodig is voor
-        de doeleinden waarvoor ze zijn verzameld.
+        Jollei laissa toisin vaadita, henkilötietoja ei säilytetä pidempään kuin on tarpeen niiden tarkoitusten
+        toteuttamiseksi, joita varten ne on kerätty.
       </p>
-      <p>In het algemeen geldt:</p>
+      <p>Yleisesti:</p>
       <ul>
         <li>
-          gegevens over contactverzoeken kunnen worden bewaard zolang dat nodig is om het verzoek af te handelen en
-          gedurende een redelijke administratieve periode daarna
+          yhteydenottopyyntöjä koskevia tietoja voidaan säilyttää niin kauan kuin pyynnön käsittely vaatii ja sen
+          jälkeen kohtuullisen hallinnollisen ajan
         </li>
         <li>
-          gegevens over aankopen en over de contractuele relatie kunnen worden bewaard voor de duur van die relatie en
-          daarna zolang dat nodig is om te voldoen aan fiscale, administratieve of verdedigingsverplichtingen
+          ostoja ja sopimussuhdetta koskevia tietoja voidaan säilyttää sopimussuhteen ajan ja sen jälkeen niin kauan
+          kuin verotuksellisten ja hallinnollisten velvoitteiden täyttäminen tai oikeuksien puolustaminen edellyttää
         </li>
         <li>
-          gegevens die worden gebruikt voor marketingberichten worden bewaard tot je je toestemming intrekt of bezwaar
-          maakt
+          markkinointiviestinnässä käytettäviä tietoja säilytetään, kunnes peruutat suostumuksesi tai vastustat
+          käsittelyä
         </li>
         <li>
-          technische en loggegevens worden bewaard gedurende de periode die strikt nodig is voor de werking, de
-          beveiliging en de analyse van de systemen
+          tekniset ja lokitiedot säilytetään vain sen ajan, joka on ehdottoman välttämätön järjestelmien toiminnan,
+          turvallisuuden ja analysoinnin kannalta
         </li>
         <li>
-          gegevens die aan analyse en cookies zijn gekoppeld hangen af van de instellingen van de betreffende tool en van
-          de voorkeuren die je hebt aangegeven
+          analytiikkaan ja evästeisiin liittyvät tiedot riippuvat kyseisen työkalun asetuksista ja ilmoittamistasi
+          valinnoista
         </li>
       </ul>
     </Section>
 
-    <Section title="12. Cookieverklaring">
+    <Section title="12. Evästekäytäntö">
       <p>
-        Deze site gebruikt cookies en vergelijkbare technieken om de pagina's goed te laten werken, het verkeer te
-        analyseren, de gebruikerservaring te verbeteren en, met voorafgaande toestemming waar dat nodig is,
-        advertentiecampagnes te meten en remarketing uit te voeren.
+        Tämä sivusto käyttää evästeitä ja vastaavia tekniikoita, jotta sivut toimivat oikein, liikennettä voidaan
+        analysoida, käyttökokemusta voidaan parantaa ja – tarvittaessa ennalta annetulla suostumuksella – mainoskampanjoita
+        voidaan mitata ja uudelleenmarkkinointia toteuttaa.
       </p>
-      <SubSection title="12.1 Wat cookies zijn">
+      <SubSection title="12.1 Mitä evästeet ovat">
         <p>
-          Cookies zijn kleine tekstbestanden die websites tijdens het bezoek naar je apparaat sturen. Ze kunnen worden
-          opgeslagen en bij een volgend bezoek weer naar diezelfde sites worden teruggestuurd.
+          Evästeet ovat pieniä tekstitiedostoja, joita verkkosivustot lähettävät laitteellesi vierailun aikana. Ne
+          voidaan tallentaa ja lähettää takaisin samoille sivustoille seuraavalla vierailulla.
         </p>
         <p>
-          Vergelijkbare technieken, zoals pixels, tags, scripts of identificatiemiddelen, kunnen dezelfde functies
-          vervullen bij het verzamelen of doorgeven van informatie.
-        </p>
-      </SubSection>
-      <SubSection title="12.2 Soorten cookies die worden gebruikt">
-        <p>De site kan de volgende categorieën cookies gebruiken:</p>
-        <h4 className="font-serif text-lg font-medium mt-5 mb-2">a) Technische of strikt noodzakelijke cookies</h4>
-        <p>Die zorgen ervoor dat de site werkt en de essentiële functies geleverd worden, bijvoorbeeld:</p>
-        <ul>
-          <li>navigeren tussen pagina's</li>
-          <li>sessiebeheer</li>
-          <li>beveiliging van de site</li>
-          <li>het onthouden van technische voorkeuren</li>
-          <li>de goede werking van het afrekenen of van essentiële onderdelen</li>
-        </ul>
-        <p>Voor deze cookies is normaal gesproken geen toestemming nodig.</p>
-        <h4 className="font-serif text-lg font-medium mt-5 mb-2">b) Analytische cookies</h4>
-        <p>Die verzamelen statistische informatie over het gebruik van de site, bijvoorbeeld:</p>
-        <ul>
-          <li>aantal bezoekers</li>
-          <li>bezochte pagina's</li>
-          <li>herkomst van het verkeer</li>
-          <li>navigatiegedrag</li>
-          <li>prestaties van de pagina's</li>
-        </ul>
-        <p>
-          De site kan analysetools gebruiken zoals Google Analytics. Zijn die tools niet strikt geaggregeerd of
-          geanonimiseerd ingesteld volgens de standaarden die de toepasselijke regelgeving vraagt, dan kan het gebruik
-          ervan je toestemming vereisen.
-        </p>
-        <h4 className="font-serif text-lg font-medium mt-5 mb-2">c) Marketing-, profilerings- en remarketingcookies</h4>
-        <p>Die dienen om:</p>
-        <ul>
-          <li>de effectiviteit van advertentiecampagnes te meten</li>
-          <li>aangepaste doelgroepen samen te stellen</li>
-          <li>advertenties te tonen die aansluiten bij je surfgedrag</li>
-          <li>remarketing en retargeting uit te voeren</li>
-        </ul>
-        <p>
-          Deze categorie kan tools omvatten zoals de Meta Pixel en andere advertentiescripts of -tags. Zulke cookies zijn
-          niet nodig voor de werking van de site en worden alleen op basis van toestemming gebruikt, waar de
-          toepasselijke regelgeving dat vereist.
+          Vastaavat tekniikat, kuten pikselit, tunnisteet, skriptit tai tunnistimet, voivat hoitaa samoja tehtäviä
+          tietojen keräämisessä tai välittämisessä.
         </p>
       </SubSection>
-      <SubSection title="12.3 Eigen cookies en cookies van derden">
-        <p>De site kan gebruiken:</p>
+      <SubSection title="12.2 Käytettävät evästetyypit">
+        <p>Sivusto voi käyttää seuraavia evästeluokkia:</p>
+        <h4 className="font-serif text-lg font-medium mt-5 mb-2">a) Tekniset tai ehdottoman välttämättömät evästeet</h4>
+        <p>Niiden avulla sivusto toimii ja keskeiset toiminnot ovat käytettävissä, esimerkiksi:</p>
         <ul>
-          <li>eigen cookies, die de site zelf plaatst</li>
+          <li>navigointi sivujen välillä</li>
+          <li>istunnonhallinta</li>
+          <li>sivuston tietoturva</li>
+          <li>teknisten asetusten muistaminen</li>
+          <li>kassan tai keskeisten osien moitteeton toiminta</li>
+        </ul>
+        <p>Näihin evästeisiin ei yleensä tarvita suostumusta.</p>
+        <h4 className="font-serif text-lg font-medium mt-5 mb-2">b) Analytiikkaevästeet</h4>
+        <p>Niillä kerätään tilastotietoa sivuston käytöstä, esimerkiksi:</p>
+        <ul>
+          <li>kävijämäärä</li>
+          <li>katsotut sivut</li>
+          <li>liikenteen lähde</li>
+          <li>selauskäyttäytyminen</li>
+          <li>sivujen suorituskyky</li>
+        </ul>
+        <p>
+          Sivusto voi käyttää analytiikkatyökaluja, kuten Google Analyticsia. Jos näitä työkaluja ei ole määritetty
+          ehdottoman koosteisiksi tai anonymisoiduiksi sovellettavan sääntelyn vaatimien standardien mukaisesti, niiden
+          käyttö voi edellyttää suostumustasi.
+        </p>
+        <h4 className="font-serif text-lg font-medium mt-5 mb-2">c) Markkinointi-, profilointi- ja uudelleenmarkkinointievästeet</h4>
+        <p>Niiden tarkoituksena on:</p>
+        <ul>
+          <li>mitata mainoskampanjoiden tehokkuutta</li>
+          <li>luoda mukautettuja kohderyhmiä</li>
+          <li>näyttää selauskäyttäytymiseesi sopivia mainoksia</li>
+          <li>toteuttaa uudelleenmarkkinointia ja uudelleenkohdentamista</li>
+        </ul>
+        <p>
+          Tähän ryhmään voi kuulua työkaluja, kuten Meta Pixel, sekä muita mainontaan liittyviä skriptejä tai
+          tunnisteita. Tällaiset evästeet eivät ole tarpeen sivuston toiminnalle, ja niitä käytetään vain suostumuksen
+          perusteella silloin, kun sovellettava sääntely sitä edellyttää.
+        </p>
+      </SubSection>
+      <SubSection title="12.3 Ensimmäisen ja kolmannen osapuolen evästeet">
+        <p>Sivusto voi käyttää:</p>
+        <ul>
+          <li>ensimmäisen osapuolen evästeitä, jotka sivusto itse asettaa</li>
           <li>
-            cookies van derden, geplaatst via diensten van externe partijen zoals Google, Meta, Stripe, PayPal of andere
-            technische leveranciers
+            kolmannen osapuolen evästeitä, jotka asetetaan ulkopuolisten tahojen, kuten Googlen, Metan, Stripen,
+            PayPalin tai muiden teknisten toimittajien, palvelujen kautta
           </li>
         </ul>
         <p>
-          Op de informatie die cookies van derden verzamelen zijn ook de verklaringen van die leveranciers zelf van
-          toepassing.
+          Kolmannen osapuolen evästeiden keräämiin tietoihin sovelletaan myös kyseisten toimittajien omia selosteita.
         </p>
       </SubSection>
-      <SubSection title="12.4 Rechtsgrond voor het gebruik van cookies">
-        <p>Het gebruik van technische cookies berust op de noodzaak de site en de gevraagde diensten te leveren.</p>
+      <SubSection title="12.4 Evästeiden käytön oikeusperuste">
+        <p>Teknisten evästeiden käyttö perustuu tarpeeseen tarjota sivusto ja pyydetyt palvelut.</p>
         <p>
-          Het gebruik van niet strikt technische analytische cookies, marketingcookies, pixels, tags of andere
-          trackingtools berust op jouw toestemming, waar de toepasselijke regelgeving dat vereist.
+          Sellaisten analytiikkaevästeiden, jotka eivät ole ehdottoman teknisiä, sekä markkinointievästeiden,
+          pikselien, tunnisteiden ja muiden seurantatyökalujen käyttö perustuu suostumukseesi silloin, kun sovellettava
+          sääntely sitä edellyttää.
         </p>
       </SubSection>
-      <SubSection title="12.5 Beheer van je toestemming">
-        <p>Waar dat vereist is, kun je bij je eerste bezoek aan de site:</p>
+      <SubSection title="12.5 Suostumuksen hallinta">
+        <p>Jos suostumus vaaditaan, voit ensimmäisellä vierailullasi sivustolla:</p>
         <ul>
-          <li>alle niet-noodzakelijke cookies accepteren</li>
-          <li>niet-noodzakelijke cookies weigeren</li>
-          <li>je voorkeuren zelf kiezen</li>
+          <li>hyväksyä kaikki muut kuin välttämättömät evästeet</li>
+          <li>hylätä muut kuin välttämättömät evästeet</li>
+          <li>valita omat asetuksesi</li>
         </ul>
         <p>
-          Je kunt je voorkeuren op elk moment wijzigen of intrekken via de middelen die de site daarvoor biedt, als die
-          er zijn, of via de instellingen van je browser. Houd er rekening mee dat het blokkeren van sommige cookies de
-          werking van een aantal niet-essentiële functies kan beïnvloeden.
+          Voit milloin tahansa muuttaa tai peruuttaa valintasi sivuston tarjoamilla keinoilla, jos sellaisia on, tai
+          selaimen asetuksista. Huomaa, että joidenkin evästeiden estäminen voi vaikuttaa joidenkin ei-välttämättömien
+          toimintojen toimintaan.
         </p>
       </SubSection>
-      <SubSection title="12.6 Uitschakelen via de browser">
+      <SubSection title="12.6 Käytöstä poistaminen selaimessa">
         <p>
-          Je kunt cookies ook beheren of uitschakelen via de instellingen van je browser. Het uitschakelen van technische
-          cookies kan de goede werking van de site of van delen daarvan echter in gevaar brengen.
+          Voit hallita evästeitä tai poistaa ne käytöstä myös selaimesi asetuksista. Teknisten evästeiden poistaminen
+          käytöstä voi kuitenkin haitata sivuston tai sen osien moitteetonta toimintaa.
         </p>
       </SubSection>
-      <SubSection title="12.7 Bewaartermijn van cookies">
-        <p>De levensduur van cookies kan verschillen:</p>
+      <SubSection title="12.7 Evästeiden säilytysaika">
+        <p>Evästeiden elinikä vaihtelee:</p>
         <ul>
-          <li>sommige worden automatisch verwijderd zodra je de browser sluit</li>
+          <li>jotkin poistetaan automaattisesti, kun suljet selaimen</li>
           <li>
-            andere blijven langer opgeslagen, voor een periode die per leverancier of door de technische instelling van
-            de site wordt bepaald
+            toiset säilyvät pidempään, ja ajan määrää kukin toimittaja tai sivuston tekninen määritys
           </li>
         </ul>
         <p>
-          De feitelijke duur kan ook afhangen van het beleid van de browser, van jouw voorkeuren en van de gebruikte
-          externe leveranciers.
+          Todelliseen kestoon voivat vaikuttaa myös selaimen käytännöt, valintasi ja käytetyt ulkopuoliset toimittajat.
         </p>
       </SubSection>
     </Section>
 
-    <Section title="13. Je rechten als betrokkene">
-      <p>In de gevallen die de toepasselijke regelgeving voorziet, kun je de volgende rechten uitoefenen:</p>
+    <Section title="13. Rekisteröidyn oikeudet">
+      <p>Sovellettavan sääntelyn tarkoittamissa tapauksissa voit käyttää seuraavia oikeuksia:</p>
       <ul>
-        <li>inzage in je persoonsgegevens</li>
-        <li>rectificatie van onjuiste gegevens</li>
-        <li>verwijdering van je gegevens</li>
-        <li>beperking van de verwerking</li>
-        <li>bezwaar tegen de verwerking, in de voorziene gevallen</li>
-        <li>overdraagbaarheid van je gegevens, waar van toepassing</li>
+        <li>pääsy henkilötietoihisi</li>
+        <li>virheellisten tietojen oikaiseminen</li>
+        <li>tietojesi poistaminen</li>
+        <li>käsittelyn rajoittaminen</li>
+        <li>käsittelyn vastustaminen säädetyissä tapauksissa</li>
+        <li>tietojesi siirtäminen toiseen järjestelmään, soveltuvin osin</li>
         <li>
-          intrekking van je toestemming op elk moment, zonder dat dit afdoet aan de rechtmatigheid van de verwerking op
-          basis van de toestemming die je vóór de intrekking had gegeven
+          suostumuksesi peruuttaminen milloin tahansa niin, että se ei vaikuta ennen peruuttamista annetun
+          suostumuksen perusteella tehdyn käsittelyn lainmukaisuuteen
         </li>
         <li>
-          het indienen van een klacht bij de bevoegde toezichthouder, in Nederland de Autoriteit Persoonsgegevens
+          valituksen tekeminen toimivaltaiselle valvontaviranomaiselle, Suomessa tietosuojavaltuutetun toimistolle
+          (tietosuoja.fi)
         </li>
       </ul>
       <p>
-        Om je rechten uit te oefenen kun je schrijven naar: <MailLink email={privacyEmail} />
+        Oikeuksiesi käyttämiseksi voit kirjoittaa osoitteeseen: <MailLink email={privacyEmail} />
       </p>
     </Section>
 
-    <Section title="14. Minderjarigen">
+    <Section title="14. Alaikäiset">
       <p>
-        De dienst is niet bestemd voor minderjarigen. De verwerkingsverantwoordelijke vraagt je de site niet te gebruiken
-        en geen persoonsgegevens door te geven als je niet meerderjarig bent of, in elk geval, als je niet bevoegd bent
-        om volgens de toepasselijke regelgeving geldig toestemming te geven.
+        Palvelua ei ole tarkoitettu alaikäisille. Rekisterinpitäjä pyytää, ettet käytä sivustoa äläkä anna
+        henkilötietoja, jos et ole täysi-ikäinen tai jos sinulla ei muutoin ole sovellettavan sääntelyn mukaan
+        kelpoisuutta antaa pätevää suostumusta.
       </p>
     </Section>
 
-    <Section title="15. Wijzigingen van deze verklaring">
+    <Section title="15. Tämän selosteen muutokset">
       <p>
-        De verwerkingsverantwoordelijke behoudt zich het recht voor deze verklaring op elk moment bij te werken of te
-        wijzigen. De bijgewerkte versie wordt op deze pagina gepubliceerd, met vermelding van de datum van de laatste
-        wijziging.
+        Rekisterinpitäjä pidättää oikeuden päivittää tai muuttaa tätä selostetta milloin tahansa. Päivitetty versio
+        julkaistaan tällä sivulla, ja siinä mainitaan viimeisimmän muutoksen päivämäärä.
       </p>
     </Section>
   </LegalPage>

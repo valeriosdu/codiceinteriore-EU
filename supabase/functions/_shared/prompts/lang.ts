@@ -20,6 +20,7 @@ export const OUTPUT_LANGUAGE_NAME: Record<PromptLang, string> = {
   es: "Spanish",
   en: "English",
   nl: "Dutch",
+  fi: "Finnish",
 };
 
 // Tag locale mostrato al modello fra parentesi. Era un ternario inline: la
@@ -30,6 +31,7 @@ const OUTPUT_LOCALE_TAG: Record<PromptLang, string> = {
   es: "es-ES, Spanish from Spain",
   en: "en-US, English (United States)",
   nl: "nl-NL, Dutch from the Netherlands",
+  fi: "fi-FI, Finnish from Finland",
 };
 
 // Nota di registro, vuota per i mercati esistenti — cosi la direttiva resta
@@ -41,6 +43,7 @@ const REGISTER_NOTE: Record<PromptLang, string> = {
   es: "",
   en: "",
   nl: "\nAddress the reader informally as je/jij/jouw/jou — never the formal u/uw.",
+  fi: "\nAddress a single reader informally in the singular as sinä/sinun/sinua (with -si endings) — never the formal Te/Teidän; the plural te is correct only when a text speaks to both partners of a couple together. Never use the words sielu, kohtalo, taivas, pyhä, henkinen (or any compound or inflected form of them).",
 };
 
 // Direttiva da anteporre a un system prompt per blindare la lingua di output.
@@ -74,6 +77,11 @@ const PLANET_NAMES: Record<PromptLang, Record<string, string>> = {
     mars: "Mars", jupiter: "Jupiter", saturn: "Saturnus", uranus: "Uranus",
     neptune: "Neptunus", pluto: "Pluto", chiron: "Chiron", lilith: "Lilith",
   },
+  fi: {
+    sun: "Aurinko", moon: "Kuu", mercury: "Merkurius", venus: "Venus",
+    mars: "Mars", jupiter: "Jupiter", saturn: "Saturnus", uranus: "Uranus",
+    neptune: "Neptunus", pluto: "Pluto", chiron: "Kiron", lilith: "Lilith",
+  },
 };
 
 const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
@@ -92,6 +100,10 @@ const ASPECT_NAMES: Record<PromptLang, Record<string, string>> = {
   nl: {
     conjunction: "conjunct", opposition: "oppositie", square: "vierkant",
     trine: "driehoek", sextile: "sextiel",
+  },
+  fi: {
+    conjunction: "konjunktio", opposition: "oppositio", square: "neliö",
+    trine: "trigoni", sextile: "sekstiili",
   },
 };
 
@@ -130,6 +142,13 @@ const SALIENCE_LABELS: Record<PromptLang, {
     keyAspects: "Kernaspecten",
     retrogradePersonal: "Persoonlijke retrogradaties",
   },
+  fi: {
+    header: "PRIORITY MARKERS (laskettu syntymäkartasta — käytä AINA tulkinnassa):",
+    angularPlanets: "Kulmaplaneetat",
+    planetsOnAxes: "Planeetat akseleilla (orbi<=8°)",
+    keyAspects: "Keskeiset aspektit",
+    retrogradePersonal: "Henkilökohtaisten planeettojen retrogradiliikkeet",
+  },
 };
 
 export function salienceLabels(lang: PromptLang) {
@@ -148,6 +167,7 @@ export function orderDateParts(
   month: string,
   year: string,
 ): string {
+  if (lang === "fi") return `${Number(day) || day}.${Number(month) || month}.${year}`;
   return lang === "en" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
 }
 

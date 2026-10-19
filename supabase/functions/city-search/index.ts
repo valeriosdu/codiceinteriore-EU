@@ -106,7 +106,7 @@ const localizeIt = (val: string | null | undefined, map: Record<string, string>)
 
 // Quando il client non passa un country esplicito, scegliamo il paese da
 // privilegiare nel sort in base alla lingua: it -> IT (default storico),
-// es -> ES, en -> US. Cosi' una ricerca inglese fa salire le citta' US in cima.
+// es -> ES, en -> US, nl -> NL, fi -> FI. Cosi' una ricerca inglese fa salire le citta' US in cima.
 // Le citta' US hanno gia' i nomi in inglese (New York, Los Angeles), quindi
 // non serve alcuna mappa endonimo/esonimo come per l'italiano.
 const LANG_DEFAULT_COUNTRY: Record<string, string> = {
@@ -114,6 +114,7 @@ const LANG_DEFAULT_COUNTRY: Record<string, string> = {
   es: 'ES',
   en: 'US',
   nl: 'NL',
+  fi: 'FI',
 }
 
 const fetchUpstream = async (q: string, limit: number, country: string, lang: string) => {
@@ -253,6 +254,9 @@ Deno.serve(async (req) => {
       }
       if (r?.country === 'NL') {
         return { ...r, name: localizeIt(r.name, NL_CITY_NL), country: 'Nederland' }
+      }
+      if (r?.country === 'FI') {
+        return { ...r, country: 'Suomi' }
       }
       return r
     })

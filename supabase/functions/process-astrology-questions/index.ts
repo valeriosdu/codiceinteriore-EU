@@ -324,6 +324,7 @@ const QA_DATE_LOCALE: Record<PromptLang, string> = {
   es: "es-ES",
   en: "en-US",
   nl: "nl-NL",
+  fi: "fi-FI",
 };
 
 const QA_EXAMPLES_NL = `Voorbeeld 0 — eenvoudige/algemene vraag, KORTE band, 1-2 verwijzingen, volledige afsluiting.
@@ -360,7 +361,41 @@ Wat er nu speelt voegt daar iets aan toe: Saturnus raakt je natale Mars, en dat 
 
 De onrust heeft in deze periode minder te maken met de hoeveelheid werk dan met een stille toets op betekenis die eronder loopt. Een deel van jou ziet in dat de manier waarop je nu werkt niet houdbaar is voor de jaren die komen, en Mars onder Saturnus laat je dat niet negeren.»`;
 
-const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES, en: QA_EXAMPLES_EN, nl: QA_EXAMPLES_NL };
+const QA_EXAMPLES_FI = `Esimerkki 0 — yksinkertainen/yleinen kysymys, LYHYT kaista, 1-2 viittausta, täysi päätös.
+Q: «Olenko yhteensopiva Kalojen kanssa?»
+A: «Yhteensopivuus aurinkomerkin mukaan on astrologian pinnallisin taso ja yleensä se, joka kertoo vähiten. Neitsyessä olevan Aurinkosi ja Kaloissa olevan Auringon välillä on klassinen oppositio: toinen uneksii, kun sinä järjestät, toinen tuntee, kun sinä analysoit. Se on napaisuus, joka voi toimia upeasti tai kulua loppuun nopeasti, sen mukaan mitä kummankin Kuu ja Venus tekevät. Sinulla Kuu on Kaurissa, ja se hakee tunnepohjaista vakautta, eikä sen löytyminen Kalojen Auringon rinnalta ole itsestään selvää. Ratkaisevaa ei ole merkin nimi vaan se, mitä sinä etsit parisuhteelta. Karttasi kertoo jo jotain tarkkaa siitä, miten rakastat: ehkä sieltä kannattaa aloittaa.»
+
+Esimerkki 1 — rakenteellinen kysymys, päätös implisiittiseen kysymykseen.
+Q: «Miksi tunnen itseni usein yksinäiseksi, vaikka olen parisuhteessa?»
+A: «Sinulla Kuu on Skorpionissa 8. huoneessa, ja se kertoo tunnetarpeesta, joka toimii eri kynnyksellä kuin lähelläsi olevilla ihmisillä. Olet viritetty läheisyyden tasolle, jonka olet aina tuntenut: se koostuu tiheistä tunteista, sanomattomista mutta aistituista, ja läsnäolosta, joka vaatii toisen kokonaan eikä vain hänen saatavillaoloaan.
+
+Parisuhteessa ei riitä, että tiedät toisen olevan paikalla. Sinun täytyy tuntea, että hän on todella läsnä eikä vetäydy hankalimmissa kohdissa. Juuri siinä herää yksinäisyys, joka ei ole objektiivinen: toinen ehkä on paikalla, mutta tasolla, joka jää sinulle pinnalliseksi. Ulkopuolelta se näyttää pyynnöltä saada ”lisää rakkautta”, mutta se ei ole sitä. Se on pyyntö syvyydestä.
+
+Tuntemasi yksinäisyys ei ole vika, joka pitäisi korjata. Se on tarkka lämpömittari. Se kertoo, milloin suhde toimii sillä syvyydellä, jota todella tarvitset, ja milloin ei. Ongelma ei ole se, että tunnet liikaa. Ongelma alkaa silloin, kun sekoitat toisen fyysisen läsnäolon siihen, mitä oikeasti etsit.
+
+Pinnan alle jää kysymys siitä, kuinka valmis todella olet pyytämään tuota syvyyttä ääneen sen sijaan, että odottaisit toisen arvaavan sen.»
+
+Esimerkki 2 — ajankohtainen kysymys, hasTransits=false, päätös kevyellä lisämyynnillä.
+Q: «Tuntuu, että käyn läpi sekavaa vaihetta. Mitä tapahtuu?»
+A: «Syntymäkartta ei kerro sinulle, mitä juuri nyt tapahtuu, mutta se kertoo, miten olet rakentunut kulkemaan sekavuuden hetkien läpi. Ja se on usein hyödyllisempää tietoa.
+
+Sekavuudellasi on tunnistettava laatu. Merkurius Kaloissa pitää auki liian monta vaihtoehtoa yhtä aikaa, ja niin kauan kuin pidät viittä elossa, et näe yhtäkään selvästi. Se ei ole vika. Se on ajattelutapa, joka tarvitsee aikaa ennen kuin kaventaa kenttää. Ongelma syntyy yleensä silloin, kun vaadit selkeyttä ennen kuin prosessi on ehtinyt kulkea loppuun: tuntuu, että olet jumissa, mutta odotat vain merkkiä, jota ei ole vielä tullut.
+
+Tämä vaihe pyytää sinulta todennäköisesti sitä, että lakkaat pakottamasta selkeyttä ja huomaat, mikä vaihtoehdoista palaa mieleen useimmin, vaikka vain hiljaa. Ei se, jonka luulet pitäväsi valita, vaan se, joka jatkaa itsepintaisesti läsnäoloaan.
+
+Nykyhetken lukemiseen tarvittaisiin syntymäkartan ja ajankohtaisten transiittien yhdistäminen, ja ilman niitä tietoja en voi antaa sinulle aikaulottuvuutta. Omassa tilissäsi löydät Kuukauden transiitit -paketin, joka aktivoituu kuukausi kerrallaan: kun se on käytössä, voin vastata sinulle myös siihen, ”milloin”.»
+
+Esimerkki 3 — ajankohtainen kysymys, hasTransits=true, hillitty päätös.
+Q: «Miksi olen viime aikoina ollut niin levoton töissä?»
+A: «Päällekkäin on kaksi osaa, rakenteellinen ja tilanteeseen liittyvä.
+
+Rakenteellinen osa: sinulla Mars on Neitsyessä, ja se suhtautuu työhön hyvin tarkasti. Sitä kiinnostaa suorituksen laatu, ei tehtyjen asioiden määrä. Kun olet levoton, syynä ei yleensä ole liian suuri työmäärä. Syy on se, että teet asioita, jotka tuntuvat huonosti hoidetuilta, kiireessä tehdyiltä tai jollekin toiselle tehdyiltä. Mars Neitsyessä elää tarkkuudesta, ja kun sen pitää toimia ”heitä vain nopeasti sisään” -tilassa, siihen kertyy jännitettä, jolle se ei tiedä purkautumistietä.
+
+Se, mitä nyt tapahtuu, lisää siihen yhden tekijän: Saturnus koskettaa syntymäkartassasi olevaa Marsia, ja juuri tämä on ammatillista painetta. Saturnus asettaa työtapasi tarkasteluun ja kysyy: onko tämä rakentamasi tahti todella sinun vai pidätkö sitä yllä, koska ”näinhän se menee”?
+
+Levottomuus liittyy tässä jaksossa vähemmän työn määrään kuin pinnan alla kulkevaan merkityksen tarkistamiseen. Osa sinusta ymmärtää, ettei nykyinen tapasi tehdä työtä ole kestävä tulevina vuosina, eikä Mars Saturnuksen alla anna sinun sivuuttaa sitä.»`;
+
+const QA_EXAMPLES: Record<PromptLang, string> = { it: QA_EXAMPLES_IT, es: QA_EXAMPLES_ES, en: QA_EXAMPLES_EN, nl: QA_EXAMPLES_NL, fi: QA_EXAMPLES_FI };
 
 const QA_FINAL_EN = `Always respond by invoking the "return_answer" tool with the "answer" field containing your final answer (in the output language set above, length calibrated to the SHORT/MEDIUM/ARTICULATED/EXTENDED band defined above, never under 110 words). Do not add any text outside the tool.`;
 

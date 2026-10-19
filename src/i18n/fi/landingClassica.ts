@@ -1,46 +1,48 @@
-const landingClassica = {
+import type { Messages } from '@/i18n';
+
+const landingClassica: Messages['landingClassica'] = {
   seo: {
-    title: 'Birth Chart & Relationships — Understand how you love | Carta Interior',
+    title: 'Syntymäkartta ja rakkaus: miten rakastat | Carta Interior',
     description:
-      'Understand how you bond, choose, and protect yourself in relationships. A birth chart reading that is descriptive and psychologically precise. Start free.',
-    productName: 'Birth Chart Reading — Relationships',
+      'Ymmärrä, miten kiinnityt, valitset ja suojaudut ihmissuhteissa. Syntymäkartan tulkinta suomeksi, kuvaileva ja psykologisesti tarkka. Aloita ilmaiseksi.',
+    productName: 'Syntymäkartan tulkinta — ihmissuhteet',
     productDescription:
-      'A birth chart reading focused on relationship patterns: how you bond, what you look for, what gets triggered when you feel distance or ambiguity.',
+      'Ihmissuhdekaavoihin keskittyvä syntymäkartan tulkinta: miten kiinnityt, mitä etsit ja mitä sinussa herää, kun tunnet etäisyyttä tai epäselvyyttä. Kirjoitettu suomeksi.',
   },
   hero: {
-    titlePre: 'Your',
-    titleEm: 'Birth Chart',
-    titlePost: ' and the way you love',
+    titlePre: 'Oma',
+    titleEm: 'syntymäkarttasi',
+    titlePost: ' joka kertoo, miten rakastat',
     subtitle:
-      'See what emerges from your emotional and relational makeup, based on your birth data. Free, no sign-up required.',
-    cta: 'Start the quiz',
-    microcopy: '2-minute quiz · No prior knowledge needed',
-    socialProof: 'Over 10,000 people have already discovered their birth chart',
+      'Näe, mitä tunne-elämäsi ja ihmissuhteidesi rakenteesta nousee esiin syntymätietojesi perusteella. Ilmaiseksi ja ilman rekisteröitymistä.',
+    cta: 'Aloita kysely',
+    microcopy: '2 minuutin kysely · Esitietoja ei tarvita',
+    socialProof: 'Yli 10 000 ihmistä on jo löytänyt syntymäkarttansa',
   },
   discover: {
-    heading: 'What you can find out',
+    heading: 'Mitä voit saada selville',
     items: [
-      'Why you tend to bond with people who are only half-available',
-      'Why you sometimes mistake intensity for connection',
-      'Which patterns keep repeating in your relationships',
-      'What gets triggered in you between pursuit and distance',
+      'Miksi kiinnyt usein ihmisiin, jotka ovat vain vähän tavoitettavissa',
+      'Miksi sekoitat joskus voimakkuuden ja yhteyden',
+      'Mitkä mallit toistuvat suhteissasi',
+      'Mitä sinussa herää takaa-ajon ja etäisyyden välillä',
     ],
   },
   quote: {
-    plate: 'Plate II',
-    text: 'The way you love was already written in the sky on the day you were born',
+    plate: 'Taulu II',
+    text: 'Tapasi rakastaa näkyi jo planeettojen asennossa syntymäpäivänäsi',
   },
   howItWorks: {
-    heading: 'How it works',
+    heading: 'Näin se toimii',
     steps: [
-      'Enter your birth data',
-      'Answer a few short questions',
-      'Get your opening reading for free',
+      'Kirjoita syntymätietosi',
+      'Vastaa muutamaan lyhyeen kysymykseen',
+      'Saat ensimmäisen tulkintasi ilmaiseksi',
     ],
   },
   finalCta: {
-    body: 'Start with your opening reading. The rest will come into clearer focus.',
-    cta: 'Start the quiz',
+    body: 'Aloita ensimmäisestä tulkinnastasi. Loppu selkenee sen jälkeen.',
+    cta: 'Aloita kysely',
   },
 };
 

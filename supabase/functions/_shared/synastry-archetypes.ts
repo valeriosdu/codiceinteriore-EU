@@ -154,6 +154,22 @@ const ARCHETYPE_LABELS: Record<PromptLang, Record<SynastryArchetypeId, string>> 
     balanced_connection: "Evenwichtige verbinding",
     discordant_layout: "Dissonante configuratie",
   },
+  fi: {
+    soulmates: "Elämänkumppanit",
+    kindred_spirits: "Samalla aaltopituudella",
+    opposites_attract: "Vastakohdat vetävät",
+    karmic_lesson: "Opettava suhde",
+    steady_rock: "Vankka kallio",
+    intellectual_powerhouse: "Vahva ajatusyhteys",
+    magnetic_attraction: "Magneettinen vetovoima",
+    long_term_anchor: "Pitkän linjan ankkuri",
+    mental_synergy: "Ajatusten yhteispeli",
+    volatile_spark: "Leimahtava kipinä",
+    catalyst_for_change: "Muutoksen vauhdittajat",
+    deep_bond: "Syvä side",
+    balanced_connection: "Tasapainoinen yhteys",
+    discordant_layout: "Kitkainen asetelma",
+  },
 };
 
 function resolveArchetypeId(id: string | null | undefined): SynastryArchetypeId {

@@ -1,43 +1,45 @@
-const landing = {
+import type { Messages } from '@/i18n';
+
+const landing: Messages['landing'] = {
   seo: {
-    title: 'Your Birth Chart, explained clearly — free reading online',
+    title: 'Syntymäkartta verkossa, tulkinta suomeksi',
     description:
-      'A birth chart reading personalized to your exact birth data — psychological, not predictive. The first part is free, no sign-up required.',
+      'Syntymäkartan tulkinta suomeksi, laadittu syntymätietojesi pohjalta. Ensimmäinen osa on ilmainen, rekisteröitymistä ei tarvita.',
   },
   hero: {
-    titlePre: 'Your',
-    titleEm: 'Birth Chart',
-    titlePost: ' explained clearly',
+    titlePre: 'Oma',
+    titleEm: 'syntymäkarttasi',
+    titlePost: ' selitettynä selkeästi',
     subtitle:
-      'See what emerges from your inner makeup, based on your birth data. Free, no sign-up required.',
-    cta: 'Start the quiz',
-    microcopy: '2-minute quiz · No prior knowledge needed',
-    socialProof: 'Over 10,000 people have already discovered their birth chart',
+      'Näe, mitä sisäisestä rakenteestasi nousee esiin syntymätietojesi perusteella. Ilmaiseksi ja ilman rekisteröitymistä.',
+    cta: 'Aloita kysely',
+    microcopy: '2 minuutin kysely · Esitietoja ei tarvita',
+    socialProof: 'Yli 10 000 ihmistä on jo löytänyt syntymäkarttansa',
   },
   discover: {
-    heading: 'What you can find out',
+    heading: 'Mitä voit saada selville',
     items: [
-      'How you actually operate, beneath the surface',
-      'Where you are being called to grow in this chapter',
-      'Which dynamics tend to repeat in your life',
-      'What moves you at a deeper level',
+      'Miten toimit oikeasti, pinnan alla',
+      'Missä sinulla on kasvun paikka tässä elämänvaiheessa',
+      'Mitkä mallit toistuvat elämässäsi',
+      'Mikä liikuttaa sinua syvällä',
     ],
   },
   quote: {
-    plate: 'Plate II',
-    text: 'The sky on the day you were born says something about you that you have never stopped carrying',
+    plate: 'Taulu II',
+    text: 'Planeettojen asento syntymäpäivänäsi kertoo jotain, jota olet kantanut mukanasi koko ikäsi',
   },
   howItWorks: {
-    heading: 'How it works',
+    heading: 'Näin se toimii',
     steps: [
-      'Enter your birth data',
-      'Answer a few short questions',
-      'Get your opening reading for free',
+      'Kirjoita syntymätietosi',
+      'Vastaa muutamaan lyhyeen kysymykseen',
+      'Saat ensimmäisen tulkintasi ilmaiseksi',
     ],
   },
   finalCta: {
-    body: 'Start with your opening reading. The rest will come into clearer focus.',
-    cta: 'Start the quiz',
+    body: 'Aloita ensimmäisestä tulkinnastasi. Loppu selkenee sen jälkeen.',
+    cta: 'Aloita kysely',
   },
 };
 

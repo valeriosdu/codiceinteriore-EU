@@ -1,330 +1,331 @@
-// ⚠️ Vertaalde concepttekst, juridisch na te kijken vóór de lancering.
+// ⚠️ Käännetty luonnosteksti, juristin tarkistettava ennen julkaisua.
 import { MARKET } from "@/markets";
 import { LegalPage, LegalEntityBox, Section, MailLink, SiteLink, infoEmail } from "./LegalLayout";
 
 const TermsFi = () => (
   <LegalPage
-    seoTitle={`Algemene Voorwaarden — ${MARKET.siteName}`}
-    seoDescription={`Algemene Voorwaarden voor het gebruik van de site ${MARKET.siteName} en de aangeboden digitale diensten.`}
-    path="/voorwaarden"
-    backAria="Terug"
-    heading="Algemene Voorwaarden"
-    lastUpdated="Laatst bijgewerkt: 20 augustus 2026"
+    seoTitle={`Käyttöehdot — ${MARKET.siteName}`}
+    seoDescription={`Sivuston ${MARKET.siteName} käyttöehdot ja tarjottujen digitaalisten palvelujen ehdot.`}
+    path="/kayttoehdot"
+    backAria="Takaisin"
+    heading="Käyttöehdot"
+    lastUpdated="Päivitetty viimeksi: 20. elokuuta 2026"
   >
     <p className="text-base leading-relaxed text-foreground/90 mb-4">
-      Deze Algemene Voorwaarden regelen de toegang tot en het gebruik van de site <SiteLink /> en de aankoop van de
-      digitale diensten die onder het merk {MARKET.siteName} worden aangeboden.
+      Nämä käyttöehdot koskevat sivuston <SiteLink /> käyttöä sekä tuotemerkin {MARKET.siteName} alla tarjottujen
+      digitaalisten palvelujen ostamista.
     </p>
     <p className="text-base leading-relaxed text-foreground/90 mb-10">
-      Door de site te bezoeken of een of meer diensten te kopen, verklaart de gebruiker deze Algemene Voorwaarden te
-      hebben gelezen, begrepen en aanvaard.
+      Vierailemalla sivustolla tai ostamalla yhden tai useamman palvelun käyttäjä vakuuttaa lukeneensa, ymmärtäneensä
+      ja hyväksyneensä nämä käyttöehdot.
     </p>
 
-    <Section title="1. Aanbieder van de dienst">
-      <p>De dienst wordt aangeboden door:</p>
+    <Section title="1. Palvelun tarjoaja">
+      <p>Palvelua tarjoaa:</p>
       <LegalEntityBox />
       <p>
-        Handelsmerk dat op de site wordt gebruikt: <strong>{MARKET.siteName}</strong>
+        Sivustolla käytettävä kauppanimi: <strong>{MARKET.siteName}</strong>
       </p>
       <p>
-        Contact: <MailLink email={infoEmail} />
+        Yhteystiedot: <MailLink email={infoEmail} />
       </p>
     </Section>
 
-    <Section title="2. Voorwerp van de dienst">
+    <Section title="2. Palvelun kohde">
       <p>
-        {MARKET.siteName} biedt betaalde digitale diensten aan op basis van persoonlijke verwerkingen, interpretatieve
-        astrologische inhoud en daarmee samenhangende aanvullende functies.
+        {MARKET.siteName} tarjoaa maksullisia digitaalisia palveluja, jotka perustuvat henkilökohtaisiin laskelmiin,
+        tulkitsevaan astrologiseen sisältöön ja siihen liittyviin lisätoimintoihin.
       </p>
-      <p>De diensten kunnen, afhankelijk van het gekochte aanbod, het volgende omvatten:</p>
+      <p>Palvelut voivat ostetusta tarjouksesta riippuen sisältää:</p>
       <ul>
-        <li>persoonlijke astrologische rapporten</li>
-        <li>wekelijkse of periodieke inhoud</li>
-        <li>toegang tot een persoonlijke omgeving</li>
-        <li>eventuele extra inhoud</li>
-        <li>eventuele aanvullende digitale functies die aan de gekochte dienst verbonden zijn</li>
+        <li>henkilökohtaiset astrologiset raportit</li>
+        <li>viikoittaista tai jaksoittaista sisältöä</li>
+        <li>pääsyn henkilökohtaiselle käyttäjäalueelle</li>
+        <li>mahdollista lisäsisältöä</li>
+        <li>mahdollisia muita digitaalisia lisätoimintoja, jotka liittyvät ostettuun palveluun</li>
       </ul>
       <p>
-        Tenzij anders vermeld worden de diensten uitsluitend in digitale vorm geleverd en is er geen levering van
-        materiële goederen.
+        Jollei toisin mainita, palvelut toimitetaan yksinomaan digitaalisessa muodossa, eikä niihin kuulu fyysisten
+        tuotteiden toimitusta.
       </p>
     </Section>
 
-    <Section title="3. Aard van de dienst">
+    <Section title="3. Palvelun luonne">
       <p>
-        De dienst van {MARKET.siteName} heeft een informatief, introspectief en ontspannend doel in verdiepte vorm.
+        Palvelun, jota {MARKET.siteName} tarjoaa, tarkoitus on tiedottaa, tukea itsetutkiskelua ja viihdyttää
+        syvällisemmällä tavalla.
       </p>
-      <p>De geleverde inhoud:</p>
+      <p>Palvelun sisältö:</p>
       <ul>
-        <li>vormt geen psychologisch, psychiatrisch of medisch advies</li>
-        <li>vormt geen juridisch, fiscaal of financieel advies</li>
-        <li>garandeert geen persoonlijke, relationele, professionele of financiële resultaten</li>
-        <li>vervangt niet het eigen oordeel van de gebruiker of de begeleiding van gekwalificeerde professionals</li>
+        <li>ei ole psykologista, psykiatrista tai lääketieteellistä neuvontaa</li>
+        <li>ei ole oikeudellista, verotuksellista tai taloudellista neuvontaa</li>
+        <li>ei takaa henkilökohtaisia, ihmissuhteisiin, ammatilliseen elämään tai talouteen liittyviä tuloksia</li>
+        <li>ei korvaa käyttäjän omaa harkintaa eikä pätevien ammattilaisten tukea</li>
       </ul>
-      <p>De gebruiker is als enige verantwoordelijk voor het gebruik dat hij van de ontvangen inhoud maakt.</p>
+      <p>Käyttäjä vastaa yksin siitä, miten hän käyttää saamaansa sisältöä.</p>
     </Section>
 
-    <Section title="4. Vereisten voor de gebruiker">
-      <p>Om de site te gebruiken of de diensten te kopen, verklaart de gebruiker:</p>
+    <Section title="4. Käyttäjää koskevat vaatimukset">
+      <p>Käyttääkseen sivustoa tai ostaakseen palveluja käyttäjä vakuuttaa:</p>
       <ul>
-        <li>meerderjarig te zijn of in elk geval wettelijk bevoegd om een bindende overeenkomst te sluiten</li>
-        <li>waarheidsgetrouwe, juiste en volledige gegevens te verstrekken</li>
-        <li>de site rechtmatig te gebruiken en in overeenstemming met deze Voorwaarden</li>
+        <li>olevansa täysi-ikäinen tai muutoin oikeudellisesti kelpoinen tekemään sitovan sopimuksen</li>
+        <li>antavansa totuudenmukaisia, oikeita ja täydellisiä tietoja</li>
+        <li>käyttävänsä sivustoa lainmukaisesti ja näiden ehtojen mukaisesti</li>
       </ul>
-      <p>De dienst is niet bestemd voor minderjarigen.</p>
+      <p>Palvelua ei ole tarkoitettu alaikäisille.</p>
     </Section>
 
-    <Section title="5. Door de gebruiker verstrekte gegevens">
+    <Section title="5. Käyttäjän antamat tiedot">
       <p>
-        Voor de levering van de dienst kan de gebruiker persoonsgegevens en informatie moeten verstrekken die nodig zijn
-        om de inhoud persoonlijk te maken, bij wijze van voorbeeld:
+        Palvelun toimittamiseksi käyttäjän on ehkä annettava henkilötietoja ja tietoja, joita tarvitaan sisällön
+        henkilökohtaistamiseen, esimerkiksi:
       </p>
       <ul>
-        <li>naam</li>
-        <li>e-mailadres</li>
-        <li>geboortedatum</li>
-        <li>geboortetijd</li>
-        <li>geboorteplaats</li>
-        <li>antwoorden op de vragenlijst of op andere formulieren</li>
+        <li>nimi</li>
+        <li>sähköpostiosoite</li>
+        <li>syntymäpäivä</li>
+        <li>syntymäaika</li>
+        <li>syntymäpaikka</li>
+        <li>vastaukset kyselyyn tai muihin lomakkeisiin</li>
       </ul>
-      <p>De gebruiker is verantwoordelijk voor de juistheid van de ingevoerde gegevens.</p>
+      <p>Käyttäjä vastaa syöttämiensä tietojen oikeellisuudesta.</p>
       <p>
-        {MARKET.siteName} is niet aansprakelijk voor fouten, vertragingen, onjuiste inhoud of niet-passende resultaten
-        die voortkomen uit onvolledige, onjuiste of niet-bijgewerkte gegevens die de gebruiker heeft verstrekt.
+        {MARKET.siteName} ei vastaa virheistä, viivästyksistä, virheellisestä sisällöstä tai epäjohdonmukaisista
+        tuloksista, jotka johtuvat käyttäjän antamista puutteellisista, virheellisistä tai vanhentuneista tiedoista.
       </p>
     </Section>
 
-    <Section title="6. Wijze van aankoop">
-      <p>De aankoop verloopt via de site, volgens het afrekenproces dat op het moment van bestellen beschikbaar is.</p>
-      <p>Voordat de aankoop wordt afgerond, kan de gebruiker ten minste het volgende zien:</p>
+    <Section title="6. Ostaminen">
+      <p>Osto tehdään sivuston kautta tilaushetkellä käytettävissä olevan kassaprosessin mukaisesti.</p>
+      <p>Ennen oston viimeistelyä käyttäjä voi nähdä vähintään seuraavat tiedot:</p>
       <ul>
-        <li>de belangrijkste kenmerken van de gekochte dienst</li>
-        <li>de totaalprijs</li>
-        <li>wat er in het aanbod is inbegrepen</li>
-        <li>de betaalmogelijkheden</li>
-        <li>de essentiële informatie over herroeping en digitale levering, voor zover van toepassing</li>
+        <li>ostetun palvelun pääominaisuudet</li>
+        <li>kokonaishinta</li>
+        <li>mitä tarjoukseen kuuluu</li>
+        <li>maksutavat</li>
+        <li>olennaiset tiedot peruuttamisesta ja digitaalisesta toimituksesta, soveltuvin osin</li>
       </ul>
       <p>
-        De overeenkomst komt tot stand zodra de betaling correct is geautoriseerd en de bestelling door het systeem of
-        door de aanbieder is bevestigd.
+        Sopimus katsotaan tehdyksi, kun maksu on asianmukaisesti valtuutettu ja järjestelmä tai palveluntarjoaja on
+        vahvistanut tilauksen.
       </p>
     </Section>
 
-    <Section title="7. Prijzen en betalingen">
-      <p>Alle op de site vermelde prijzen zijn uitgedrukt in de valuta die op de aankooppagina wordt aangegeven.</p>
-      <p>Betalingen kunnen worden afgehandeld door derde aanbieders, waaronder:</p>
+    <Section title="7. Hinnat ja maksut">
+      <p>Kaikki sivustolla ilmoitetut hinnat on ilmoitettu ostosivulla mainitussa valuutassa.</p>
+      <p>Maksuja voivat käsitellä kolmannet osapuolet, muun muassa:</p>
       <ul>
         <li>Stripe</li>
         <li>PayPal</li>
       </ul>
       <p>
-        {MARKET.siteName} verwerkt de volledige kaartgegevens niet zelf. Die gegevens worden verwerkt door de
-        betaalaanbieders volgens hun eigen voorwaarden en privacyverklaringen.
+        {MARKET.siteName} ei käsittele maksukortin täydellisiä tietoja itse. Maksupalveluntarjoajat käsittelevät ne
+        omien ehtojensa ja tietosuojaselosteidensa mukaisesti.
       </p>
       <p>
-        De aanbieder behoudt zich het recht voor prijzen, aanbiedingen, pakketten of commerciële voorwaarden op elk
-        moment te wijzigen. Wijzigingen gelden niet voor reeds afgeronde bestellingen.
+        Palveluntarjoaja pidättää oikeuden muuttaa hintoja, tarjouksia, pakettituotteita tai kaupallisia ehtoja
+        milloin tahansa. Muutokset eivät koske jo tehtyjä tilauksia.
       </p>
     </Section>
 
-    <Section title="8. Levering van de digitale inhoud">
-      <p>De gekochte diensten worden digitaal geleverd, via een of meer van de volgende wegen:</p>
+    <Section title="8. Digitaalisen sisällön toimitus">
+      <p>Ostetut palvelut toimitetaan digitaalisesti yhdellä tai useammalla seuraavista tavoista:</p>
       <ul>
-        <li>weergave op de pagina</li>
-        <li>verzending per e-mail</li>
-        <li>toegang via de persoonlijke omgeving</li>
-        <li>activering van periodieke inhoud die aan het profiel van de gebruiker is gekoppeld</li>
+        <li>näyttäminen sivulla</li>
+        <li>lähettäminen sähköpostitse</li>
+        <li>pääsy käyttäjäalueen kautta</li>
+        <li>käyttäjän profiiliin liitetyn jaksoittaisen sisällön aktivointi</li>
       </ul>
       <p>
-        De levertijden kunnen variëren afhankelijk van de aard van de dienst, de technische belasting, de juistheid van
-        de verstrekte gegevens en de eventuele noodzaak van geautomatiseerde verwerkingen of koppelingen met diensten van
-        derden.
+        Toimitusajat voivat vaihdella palvelun luonteen, teknisen kuormituksen, annettujen tietojen oikeellisuuden
+        sekä mahdollisen automatisoidun käsittelyn tai kolmansien osapuolten palvelujen kanssa tehtävien
+        integraatioiden tarpeen mukaan.
       </p>
       <p>
-        Tenzij anders vermeld garandeert de aanbieder geen onmiddellijke levering in realtime, maar verbindt hij zich
-        ertoe de dienst te leveren binnen een redelijke termijn die past bij de technische opzet van het product.
+        Jollei toisin mainita, palveluntarjoaja ei takaa välitöntä reaaliaikaista toimitusta, mutta sitoutuu
+        toimittamaan palvelun kohtuullisessa ajassa, joka vastaa tuotteen teknistä rakennetta.
       </p>
     </Section>
 
-    <Section title="9. Gebruikersaccount">
+    <Section title="9. Käyttäjätili">
       <p>
-        Voorziet de dienst in het aanmaken van een account, dan is de gebruiker verantwoordelijk voor de
-        vertrouwelijkheid van zijn inloggegevens en voor alle activiteit die via zijn account plaatsvindt.
+        Jos palveluun kuuluu tilin luominen, käyttäjä vastaa kirjautumistietojensa luottamuksellisuudesta ja kaikesta
+        tilinsä kautta tapahtuvasta toiminnasta.
       </p>
-      <p>De gebruiker verbindt zich ertoe:</p>
+      <p>Käyttäjä sitoutuu:</p>
       <ul>
-        <li>zijn inloggegevens niet met derden te delen</li>
-        <li>geen accounts van anderen te gebruiken</li>
-        <li>elke ongeautoriseerde toegang of beveiligingsinbreuk onmiddellijk te melden</li>
+        <li>olemaan jakamatta kirjautumistietojaan kolmansille</li>
+        <li>olemaan käyttämättä muiden tilejä</li>
+        <li>ilmoittamaan viipymättä luvattomasta pääsystä tai tietoturvaloukkauksesta</li>
       </ul>
       <p>
-        De aanbieder behoudt zich het recht voor de toegang op te schorten of te beperken bij oneigenlijk gebruik,
-        vermoeden van fraude, schending van deze Voorwaarden of gedrag dat de goede werking van de dienst in gevaar kan
-        brengen.
+        Palveluntarjoaja pidättää oikeuden keskeyttää tai rajoittaa pääsyä väärinkäytön, petosepäilyn, näiden ehtojen
+        rikkomisen tai palvelun moitteetonta toimintaa vaarantavan toiminnan yhteydessä.
       </p>
     </Section>
 
-    <Section title="10. Herroepingsrecht">
+    <Section title="10. Peruuttamisoikeus">
       <p>
-        Koopt de gebruiker als consument, dan kan hij zich beroepen op het herroepingsrecht in de gevallen die de wet
-        voorziet.
+        Jos käyttäjä ostaa kuluttajana, hän voi vedota peruuttamisoikeuteen laissa säädetyissä tapauksissa.
       </p>
       <p>
-        In het algemeen geldt bij overeenkomsten op afstand een herroepingsrecht van 14 dagen. Voor digitale inhoud die
-        niet op een materiële drager wordt geleverd, kan het herroepingsrecht echter vervallen wanneer:
+        Etäsopimuksissa peruuttamisoikeus on yleensä 14 päivää. Digitaalisen sisällön osalta, jota ei toimiteta
+        aineellisella välineellä, peruuttamisoikeus voi kuitenkin raueta, kun:
       </p>
       <ul>
-        <li>de uitvoering tijdens de herroepingstermijn is begonnen</li>
-        <li>de gebruiker daarvoor uitdrukkelijk voorafgaande toestemming heeft gegeven</li>
-        <li>de gebruiker heeft erkend zijn herroepingsrecht daarmee te verliezen</li>
-        <li>de handelaar de bevestiging van de overeenkomst heeft verstrekt op de door de wet vereiste wijze</li>
+        <li>palvelun suorittaminen on aloitettu peruuttamisajan kuluessa</li>
+        <li>käyttäjä on antanut siihen nimenomaisen ennakkosuostumuksensa</li>
+        <li>käyttäjä on vahvistanut menettävänsä peruuttamisoikeutensa</li>
+        <li>elinkeinonharjoittaja on antanut sopimuksen vahvistuksen laissa vaaditulla tavalla</li>
       </ul>
       <p>
-        Vraagt of aanvaardt de gebruiker dus de onmiddellijke activering van de persoonlijke digitale dienst, van het
-        maken van het rapport of van de onmiddellijke terbeschikkingstelling van de digitale inhoud, dan stemt de
-        gebruiker ermee in dat de uitvoering begint vóór het verstrijken van de herroepingstermijn en erkent hij, binnen
-        de wettelijke grenzen, dat hij dat recht kan verliezen zodra de uitvoering van de dienst is begonnen. Dit stemt
-        overeen met artikel 6:230p van het Burgerlijk Wetboek.
+        Jos käyttäjä siis pyytää tai hyväksyy henkilökohtaisen digitaalisen palvelun välittömän aktivoinnin, raportin
+        laatimisen tai digitaalisen sisällön välittömän saataville asettamisen, hän hyväksyy, että suorittaminen alkaa
+        ennen peruuttamisajan päättymistä, ja tunnustaa laissa säädetyissä rajoissa voivansa menettää
+        peruuttamisoikeutensa heti, kun palvelun suorittaminen on aloitettu. Tämä vastaa kuluttajansuojalain 6 luvun
+        säännöksiä.
       </p>
     </Section>
 
-    <Section title="11. Terugbetaling">
+    <Section title="11. Hyvitys">
       <p>
-        Voor de gevallen van wettelijke herroeping verwijzen we naar Deel 10 hierboven. Buiten die gevallen en behoudens
-        wat de wet bepaalt, zijn digitale diensten die al zijn geleverd, geactiveerd, gepersonaliseerd of ter beschikking
-        gesteld in de regel niet terugbetaalbaar.
+        Lakisääteisen peruuttamisen osalta viitataan edellä olevaan kohtaan 10. Näiden tapausten ulkopuolella ja lain
+        säännökset huomioiden jo toimitettuja, aktivoituja, henkilökohtaistettuja tai käyttäjän saataville asetettuja
+        digitaalisia palveluja ei pääsääntöisesti hyvitetä.
       </p>
       <p>
-        <strong>Commerciële garantie "niet tevreden, geld terug" (14 dagen).</strong> Naast de rechten die de wet
-        toekent, biedt de aanbieder een vrijwillige commerciële garantie: vindt de gebruiker binnen 14 dagen na levering
-        van het rapport dat de duiding algemeen is of niet overeenkomt met de opgegeven geboortegegevens, dan kan hij het
-        volledige betaalde bedrag terugvragen door te mailen naar <MailLink email={infoEmail} /> vanaf het e-mailadres
-        dat bij de aankoop is gebruikt.
+        <strong>Kaupallinen tyytyväisyystakuu ”rahat takaisin” (14 päivää).</strong> Laissa säädettyjen oikeuksien
+        lisäksi palveluntarjoaja antaa vapaaehtoisen kaupallisen takuun: jos käyttäjä katsoo 14 päivän kuluessa
+        raportin toimituksesta, että tulkinta on yleispätevä tai ei vastaa annettuja syntymätietoja, hän voi pyytää
+        koko maksetun summan takaisin kirjoittamalla osoitteeseen <MailLink email={infoEmail} /> ostoksessa
+        käyttämästään sähköpostiosoitteesta.
       </p>
       <p>
-        De terugbetaling wordt, zodra ze is toegekend, gedaan via dezelfde betaalmethode als bij de aankoop, zonder
-        kosten voor de gebruiker. De garantie geldt één keer per klant en uitsluitend voor de eerste aankoop van de
-        Duiding van de Geboortehoroscoop (ook in de variant met de eerste maand Transits). Latere verlengingen van het
-        Transits-abonnement vallen niet onder de garantie en worden geregeld in Deel 12 hierna.
+        Hyvitys maksetaan sen jälkeen, kun se on myönnetty, samalle maksutavalle, jota ostossa käytettiin, ilman
+        kustannuksia käyttäjälle. Takuu on voimassa kerran asiakasta kohden ja koskee yksinomaan syntymäkartan
+        tulkinnan ensimmäistä ostoa (myös versiota, johon sisältyy ensimmäinen kuukausi transiitteja). Transiittitilauksen
+        myöhemmät uusiutumiset eivät kuulu takuun piiriin, ja niitä koskee jäljempänä oleva kohta 12.
       </p>
       <p>
-        Elk ander verzoek om hulp of elke klacht kan naar hetzelfde adres worden gestuurd of naar de contactgegevens die
-        op de site staan. De aanbieder beoordeelt technische storingen, dubbele betalingen of het uitblijven van de
-        feitelijke levering van de dienst te goeder trouw.
+        Muut tukipyynnöt tai valitukset voi lähettää samaan osoitteeseen tai sivustolla ilmoitettuihin yhteystietoihin.
+        Palveluntarjoaja arvioi vilpittömässä mielessä tekniset häiriöt, kaksoismaksut tai sen, ettei palvelua ole
+        todellisuudessa toimitettu.
       </p>
     </Section>
 
-    <Section title="12. Abonnementen en terugkerende inhoud">
-      <p>Bevat de gekochte dienst periodieke inhoud, terugkerende toegang of een abonnementsvorm, dan geldt:</p>
+    <Section title="12. Tilaukset ja toistuva sisältö">
+      <p>Jos ostettuun palveluun sisältyy jaksoittaista sisältöä, toistuva pääsy tai tilausmuoto, sovelletaan seuraavaa:</p>
       <ul>
-        <li>de frequentie, de prijs en de belangrijkste kenmerken worden op de betreffende aanbodpagina vermeld</li>
-        <li>de gebruiker is verantwoordelijk om vóór het bevestigen van de bestelling na te gaan of de aankoop terugkerend is</li>
+        <li>toimitusväli, hinta ja olennaiset ominaisuudet ilmoitetaan kyseisellä tarjoussivulla</li>
+        <li>käyttäjä vastaa siitä, että tarkistaa ennen tilauksen vahvistamista, onko osto toistuva</li>
         <li>
-          de aanbieder kan de dienst opschorten of stopzetten bij uitblijvende betaling of bij een technische
-          onmogelijkheid die later ontstaat
+          palveluntarjoaja voi keskeyttää tai lopettaa palvelun maksun laiminlyönnin tai myöhemmin ilmenevän teknisen
+          mahdottomuuden vuoksi
         </li>
       </ul>
       <p>
-        Wordt een terugkerend plan automatisch verlengd, dan moet dat duidelijk worden vermeld bij het afrekenen of op de
-        aanbodpagina, vóór de aankoop.
+        Jos toistuva paketti uusiutuu automaattisesti, tästä on ilmoitettava selkeästi kassalla tai tarjoussivulla
+        ennen ostoa.
       </p>
     </Section>
 
-    <Section title="13. Toegestaan gebruik van de dienst">
+    <Section title="13. Palvelun sallittu käyttö">
       <p>
-        De gebruiker mag de gekochte inhoud alleen voor persoonlijke, niet-commerciële doeleinden gebruiken, tenzij
-        schriftelijk anders is afgesproken.
+        Käyttäjä saa käyttää ostettua sisältöä vain henkilökohtaisiin, ei-kaupallisiin tarkoituksiin, ellei kirjallisesti
+        toisin sovita.
       </p>
-      <p>Het is verboden om:</p>
+      <p>Kiellettyä on:</p>
       <ul>
-        <li>de inhoud te kopiëren, te verveelvoudigen, te verspreiden of door te verkopen</li>
-        <li>rapporten, materialen, resultaten, flows of afgeschermde omgevingen stelselmatig openbaar te delen</li>
-        <li>de dienst te gebruiken voor onrechtmatige of frauduleuze doeleinden of om rechten van derden te schenden</li>
-        <li>te proberen technische, beveiligings- of toegangsbeperkingen te omzeilen</li>
+        <li>sisällön kopioiminen, jäljentäminen, levittäminen tai edelleen myyminen</li>
+        <li>raporttien, aineistojen, tulosten, käyttöpolkujen tai suojattujen alueiden järjestelmällinen julkinen jakaminen</li>
+        <li>palvelun käyttäminen laittomiin tai vilpillisiin tarkoituksiin tai kolmansien oikeuksia loukkaaviin tarkoituksiin</li>
+        <li>teknisten, tietoturvaan liittyvien tai pääsyä rajoittavien suojausten kiertämisyritykset</li>
       </ul>
     </Section>
 
-    <Section title="14. Intellectuele eigendom">
+    <Section title="14. Immateriaalioikeudet">
       <p>
-        Alle inhoud op de site en alle inhoud die via de dienst wordt geleverd, waaronder teksten, de opzet van het
-        product, materialen, interfaces, grafische elementen, logo's, handelsnamen, geordende resultaten, vormgeving en
-        redactionele inhoud, is voorbehouden aan de aanbieder of aan de respectieve rechthebbenden.
+        Kaikki sivuston sisältö ja palvelun kautta toimitettu sisältö, mukaan lukien tekstit, tuotteen rakenne,
+        aineistot, käyttöliittymät, graafiset elementit, logot, kauppanimet, jäsennellyt tulokset, ulkoasu ja
+        toimituksellinen sisältö, on varattu palveluntarjoajalle tai kullekin oikeudenhaltijalle.
       </p>
       <p>
-        Met de aankoop van de dienst gaan er geen intellectuele-eigendomsrechten op de site of op de inhoud over op de
-        gebruiker, behalve het persoonlijke en beperkte recht om de gekochte dienst te gebruiken.
+        Palvelun ostaminen ei siirrä käyttäjälle mitään immateriaalioikeuksia sivustoon tai sisältöön, lukuun ottamatta
+        henkilökohtaista ja rajattua oikeutta käyttää ostettua palvelua.
       </p>
     </Section>
 
-    <Section title="15. Beschikbaarheid van de dienst">
+    <Section title="15. Palvelun saatavuus">
       <p>
-        De aanbieder spant zich in om de site en de diensten redelijkerwijs beschikbaar te houden, maar garandeert niet
-        dat ze altijd zonder onderbreking, fouten, vertraging of storing bereikbaar zijn.
+        Palveluntarjoaja pyrkii pitämään sivuston ja palvelut kohtuullisesti saatavilla, mutta ei takaa, että ne ovat
+        aina käytettävissä keskeytyksettä, virheittä, viiveittä tai häiriöittä.
       </p>
-      <p>De dienst kan worden opgeschort, beperkt of onderbroken door:</p>
+      <p>Palvelu voidaan keskeyttää, sitä voidaan rajoittaa tai se voi katketa seuraavista syistä:</p>
       <ul>
-        <li>onderhoud</li>
-        <li>technische updates</li>
-        <li>netwerk- of infrastructuurproblemen</li>
-        <li>gebeurtenissen buiten de redelijke controle van de aanbieder</li>
-        <li>onbeschikbaarheid van essentiële externe leveranciers</li>
+        <li>huolto</li>
+        <li>tekniset päivitykset</li>
+        <li>verkko- tai infrastruktuuriongelmat</li>
+        <li>tapahtumat, joihin palveluntarjoaja ei kohtuudella voi vaikuttaa</li>
+        <li>keskeisten ulkopuolisten toimittajien palvelujen poissaolo</li>
       </ul>
     </Section>
 
-    <Section title="16. Beperking van aansprakelijkheid">
-      <p>Voor zover de wet dat toestaat, is de aanbieder niet aansprakelijk voor:</p>
+    <Section title="16. Vastuunrajoitus">
+      <p>Lain sallimissa rajoissa palveluntarjoaja ei vastaa:</p>
       <ul>
-        <li>persoonlijke, relationele of professionele beslissingen die de gebruiker neemt op basis van de ontvangen inhoud</li>
-        <li>indirecte schade, gemiste kansen of onvoorzienbare schade</li>
-        <li>fouten die voortkomen uit onjuiste gegevens die de gebruiker heeft verstrekt</li>
         <li>
-          onderbrekingen of storingen die te wijten zijn aan externe leveranciers, externe tools, AI-diensten,
-          betaaldiensten of telecommunicatienetwerken
+          henkilökohtaisista, ihmissuhteisiin liittyvistä tai ammatillisista päätöksistä, jotka käyttäjä tekee saamansa
+          sisällön perusteella
         </li>
-        <li>tijdelijke incompatibiliteit met apparaten, browsers of technische instellingen van de gebruiker</li>
+        <li>välillisistä vahingoista, menetetyistä mahdollisuuksista tai ennakoimattomista vahingoista</li>
+        <li>virheistä, jotka johtuvat käyttäjän antamista virheellisistä tiedoista</li>
+        <li>
+          keskeytyksistä tai häiriöistä, jotka johtuvat ulkopuolisista toimittajista, ulkopuolisista työkaluista,
+          tekoälypalveluista, maksupalveluista tai tietoliikenneverkoista
+        </li>
+        <li>tilapäisestä yhteensopimattomuudesta käyttäjän laitteiden, selainten tai teknisten asetusten kanssa</li>
       </ul>
       <p>
-        Eventuele dwingende aansprakelijkheid op grond van het toepasselijke consumentenrecht blijft onverlet.
+        Sovellettavan kuluttajansuojasääntelyn mukainen pakottava vastuu säilyy ennallaan.
       </p>
     </Section>
 
-    <Section title="17. Privacy en persoonsgegevens">
+    <Section title="17. Tietosuoja ja henkilötiedot">
       <p>
-        De verwerking van de persoonsgegevens van de gebruiker wordt geregeld door de{" "}
+        Käyttäjän henkilötietojen käsittelyä koskee sivustolla julkaistu{" "}
         <a href="/privacy" className="text-primary underline-offset-4 hover:underline">
-          Privacy- en Cookieverklaring
-        </a>{" "}
-        die op de site is gepubliceerd en die, voor zover verenigbaar, integraal deel uitmaakt van de contractuele
-        relatie.
+          Tietosuojaseloste ja evästekäytäntö
+        </a>
+        , joka on soveltuvin osin olennainen osa sopimussuhdetta.
       </p>
     </Section>
 
-    <Section title="18. Wijzigingen van de Voorwaarden">
-      <p>De aanbieder kan deze Algemene Voorwaarden op elk moment bijwerken of wijzigen.</p>
+    <Section title="18. Ehtojen muutokset">
+      <p>Palveluntarjoaja voi päivittää tai muuttaa näitä käyttöehtoja milloin tahansa.</p>
       <p>
-        Wijzigingen gaan in vanaf de datum van publicatie op de site, tenzij anders vermeld. Voor reeds afgeronde
-        bestellingen blijven in de regel de voorwaarden gelden die op het moment van aankoop van kracht waren.
+        Muutokset tulevat voimaan sivustolla julkaisun päivämäärästä, jollei toisin mainita. Jo tehtyihin tilauksiin
+        sovelletaan pääsääntöisesti ostohetkellä voimassa olleita ehtoja.
       </p>
     </Section>
 
-    <Section title="19. Toepasselijk recht en bevoegde rechter">
+    <Section title="19. Sovellettava laki ja toimivaltainen tuomioistuin">
       <p>
-        Op deze Algemene Voorwaarden is het recht van toepassing dat volgt uit de regels van internationaal privaatrecht
-        en, waar van toepassing, uit de dwingende regels van consumentenbescherming.
+        Näihin käyttöehtoihin sovelletaan lakia, joka määräytyy kansainvälisen yksityisoikeuden sääntöjen mukaan, sekä
+        soveltuvin osin kuluttajansuojan pakottavia säännöksiä.
       </p>
       <p>
-        Handelt de gebruiker als consument, dan blijven de rechten onverlet die de dwingende regels van het land van zijn
-        gewone verblijfplaats hem eventueel toekennen.
+        Jos käyttäjä toimii kuluttajana, ne oikeudet säilyvät ennallaan, jotka hänen vakinaisen asuinmaansa pakottavat
+        säännökset mahdollisesti hänelle myöntävät.
       </p>
       <p>
-        Voor elk geschil over de uitleg, de geldigheid of de uitvoering van deze Voorwaarden is, als de gebruiker
-        consument is, de rechter bevoegd die het toepasselijke recht dwingend aanwijst.
+        Kaikissa näiden ehtojen tulkintaa, pätevyyttä tai täytäntöönpanoa koskevissa riidoissa toimivaltainen on, jos
+        käyttäjä on kuluttaja, tuomioistuin, jonka sovellettava laki pakottavasti määrää.
       </p>
     </Section>
 
-    <Section title="20. Contact">
+    <Section title="20. Yhteystiedot">
       <p>
-        Voor informatie, hulp of berichten over deze Voorwaarden: <MailLink email={infoEmail} />
+        Näitä ehtoja koskevat tiedustelut, tuki ja viestit: <MailLink email={infoEmail} />
       </p>
     </Section>
   </LegalPage>

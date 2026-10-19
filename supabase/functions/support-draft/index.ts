@@ -52,6 +52,7 @@ function normalizeLang(v: string | null | undefined): string {
     spanish: "es", "español": "es", espanol: "es", castellano: "es",
     italian: "it", italiano: "it", english: "en", inglese: "en", "inglés": "en",
     dutch: "nl", nederlands: "nl", olandese: "nl", "neerlandés": "nl", neerlandes: "nl",
+    finnish: "fi", suomi: "fi", finlandese: "fi", "finés": "fi", fines: "fi", fins: "fi",
   };
   return map[s] || s.slice(0, 2);
 }
@@ -207,14 +208,14 @@ function sanitizeAccessLinks(text: string, recoveryUrl: string): string {
 function sanitizeSignaturePlaceholder(text: string, signer: string): string {
   if (!text || !signer) return text;
   let out = text.replace(
-    /\[[^\]\n]*(nombre|name|naam|equipo|team|firma|signature|handtekening)[^\]\n]*\]/gi,
+    /\[[^\]\n]*(nombre|name|naam|equipo|team|firma|signature|handtekening|nimi|nimesi|tiimi|allekirjoitus)[^\]\n]*\]/gi,
     signer,
   );
   out = out.replace(
     new RegExp(
       "((?:^|\\n)[ \\t]*(?:" + FAREWELL_WORDS + ")[,.!]?[ \\t]*\\n+[ \\t]*)" +
-        "(?:el |El |het |Het |the |The |il |Il )?(?:equipo|Equipo|team|Team|squadra|Squadra)" +
-        "(?: (?:de|van|of|di) Carta Interior)?\\.?",
+        "(?:(?:el |El |het |Het |the |The |il |Il )?(?:equipo|Equipo|team|Team|squadra|Squadra)" +
+        "(?: (?:de|van|of|di) Carta Interior)?|(?:Carta Interiorin )?[Tt]iimi)\\.?",
       "g",
     ),
     (_m: string, lead: string) => lead + signer,
@@ -237,6 +238,7 @@ const SIGNER_BY_LANG: Record<PromptLang, string> = {
   es: "María",
   en: "Emma",
   nl: "Sanne",
+  fi: "Aino",
 };
 
 const FAREWELL_BY_LANG: Record<PromptLang, string> = {
@@ -244,12 +246,14 @@ const FAREWELL_BY_LANG: Record<PromptLang, string> = {
   es: "Un saludo,",
   en: "Best,",
   nl: "Hartelijke groet,",
+  fi: "Ystävällisin terveisin,",
 };
 
 const FAREWELL_WORDS =
   "Un cordial saludo|Un saludo|Saludos cordiales|Saludos|Atentamente|Cordialmente|Un abrazo|" +
   "Best regards|Kind regards|Warm regards|All the best|Warmly|Best|" +
   "Met vriendelijke groet|Met hartelijke groet|Hartelijke groet|Vriendelijke groet|Groetjes|" +
+  "Ystävällisin terveisin|Terveisin|Parhain terveisin|" +
   "Un caro saluto|Cordiali saluti|A presto";
 
 const FAREWELL_END = new RegExp("(" + FAREWELL_WORDS + ")[,.!]?" + "$", "i");

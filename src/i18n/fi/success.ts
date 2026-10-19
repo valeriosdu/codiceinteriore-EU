@@ -1,14 +1,16 @@
-const success = {
+import type { Messages } from '@/i18n';
+
+const success: Messages['success'] = {
   paypalError:
-    "We couldn't confirm the PayPal payment. Contact us if the amount was charged.",
-  titleProblem: 'There was a problem',
-  titleOk: 'Payment complete',
-  bodyPaypalCapturing: 'We are confirming the PayPal payment…',
-  bodyVerifying: 'We are verifying the payment and linking your reading.',
-  bodyDefault: 'Before you sign in, create your account to save the reading and find it again whenever you like.',
-  ctaCapturing: 'Confirming…',
-  ctaVerifying: 'Verifying…',
-  ctaContinue: 'Create account and continue',
+    'PayPal-maksun vahvistaminen ei onnistunut. Ota meihin yhteyttä, jos summa veloitettiin tililtäsi.',
+  titleProblem: 'Jokin meni pieleen',
+  titleOk: 'Maksu onnistui',
+  bodyPaypalCapturing: 'Vahvistamme PayPal-maksua…',
+  bodyVerifying: 'Tarkistamme maksun ja liitämme tulkintasi tiliisi.',
+  bodyDefault: 'Luo ensin tili, jotta tulkintasi tallentuu ja löydät sen aina uudelleen.',
+  ctaCapturing: 'Vahvistetaan…',
+  ctaVerifying: 'Tarkistetaan…',
+  ctaContinue: 'Luo tili ja jatka',
 };
 
 export default success;

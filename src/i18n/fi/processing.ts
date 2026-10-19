@@ -2,12 +2,12 @@ import type { Messages } from '@/i18n';
 
 const processing: Messages['processing'] = {
   messages: [
-    'Reading your birth details',
-    'Mapping your relationship patterns',
-    'Translating your chart into clear insights',
-    'Preparing your first reading',
+    'Luemme syntymätietojasi',
+    'Kartoitamme ihmissuhdekaavojasi',
+    'Muutamme syntymäkarttasi selkeiksi oivalluksiksi',
+    'Valmistelemme ensimmäistä tulkintaasi',
   ],
-  waiting: 'This is taking a moment longer, we’re almost there…',
+  waiting: 'Tämä kestää hetken pidempään, olemme melkein valmiita…',
 };
 
 export default processing;

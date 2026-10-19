@@ -1,36 +1,38 @@
-const checkout = {
+import type { Messages } from '@/i18n';
+
+const checkout: Messages['checkout'] = {
   failed: {
-    title: "We couldn't prepare the reading",
-    body: 'Something is not working as it should. Try again in a few moments.',
-    retry: 'Try again',
+    title: 'Tulkinnan valmistelu ei onnistunut',
+    body: 'Jokin ei toimi niin kuin pitäisi. Yritä hetken kuluttua uudelleen.',
+    retry: 'Yritä uudelleen',
   },
   loading: {
-    title: 'We are preparing the reading',
-    slow: "This is taking longer than expected. Stay on this page: we'll try again automatically in a moment.",
-    normal: 'We are calculating the birth chart before showing you the offer.',
+    title: 'Valmistelemme tulkintaa',
+    slow: 'Tämä vie odotettua pidempään. Pysy tällä sivulla: yritämme automaattisesti uudelleen hetken kuluttua.',
+    normal: 'Laskemme syntymäkartan, ennen kuin näytämme tarjouksen.',
   },
   toasts: {
-    stillPreparingShort: 'We are still preparing the reading. Try again shortly.',
-    stillPreparingRetry: 'We are still preparing the reading. Try again in a few seconds.',
+    stillPreparingShort: 'Valmistelemme vielä tulkintaa. Yritä hetken kuluttua uudelleen.',
+    stillPreparingRetry: 'Valmistelemme vielä tulkintaa. Yritä muutaman sekunnin kuluttua uudelleen.',
   },
   hero: {
-    title: (name: string) => `The reading for ${name} is ready`,
-    fallbackRecipient: 'them',
-    subtitle: 'We have calculated the birth chart. Choose the format to generate the full reading.',
-    wrongData: 'Details not quite right?',
+    title: (name) => `Tulkinta on valmis: ${name}`,
+    fallbackRecipient: 'hän',
+    subtitle: 'Olemme laskeneet syntymäkartan. Valitse muoto, jossa koko tulkinta tehdään.',
+    wrongData: 'Eivätkö tiedot ole oikein?',
   },
   offers: {
-    baseName: 'Full Birth Chart Reading',
-    basePromise: (name: string) =>
-      `To understand the emotional, relational, and personal makeup of ${name} more clearly, and see what tends to repeat in their life.`,
+    baseName: 'Syntymäkartan koko tulkinta',
+    basePromise: (name) =>
+      `Jotta ymmärrät selkeämmin, millainen ihminen ${name} on tunteiltaan, ihmissuhteissaan ja luonteeltaan, ja mikä hänen elämässään toistuu.`,
     baseFeatures: [
-      'Understand emotional blocks, defenses, and recurring patterns in plain, human language, not technical jargon',
-      'See how these patterns shape relationships, work, personal direction, and life choices',
-      'Get practical pointers on what to watch for, encourage, or adjust',
-      'Instant access to the reading online and by email',
+      'Ymmärrä tunnelukkoja, puolustuskeinoja ja toistuvia kaavoja ihmisen kielellä, ei ammattitermein',
+      'Näe, miten nämä mallit vaikuttavat ihmissuhteisiin, työhön, omaan suuntaan ja elämänvalintoihin',
+      'Saat käytännön vinkkejä siitä, mitä kannattaa tarkkailla, vahvistaa tai muuttaa',
+      'Pääsy heti tulkintaan verkossa ja sähköpostitse',
     ],
-    premiumPromise: (name: string) =>
-      `Understand what drives ${name} at a deep level, and read the moment they are living through right now with clarity.`,
+    premiumPromise: (name) =>
+      `Ymmärrä, mikä ohjaa ihmistä syvällä, ja lue selkeästi myös hetki, jota ${name} elää juuri nyt.`,
   },
 };
 

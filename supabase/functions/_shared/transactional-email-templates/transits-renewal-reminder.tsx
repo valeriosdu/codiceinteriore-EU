@@ -54,6 +54,16 @@ const COPY = {
     nextCharge: (date: string) => `De volgende afschrijving (€ 9,90) staat gepland voor ${date}. Je hoeft niets te doen; wil je toch iets wijzigen, dan kun je je abonnement op elk moment beheren.`,
     closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
   },
+  fi: {
+    locale: 'fi-FI',
+    preview: 'Uudet kuukauden transiittisi ovat tulossa',
+    h1: 'Pian uusi transiittitulkintasi',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    body: 'Uusi transiittikuukautesi alkaa pian: tuore tulkinta siitä, miten planeettojen liikkeet osuvat syntymäkarttasi keskeisiin kohtiin. Mukana on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan.',
+    cta: 'Hallitse tilausta',
+    nextCharge: (date: string) => `Seuraava veloitus (9,90 €) tehdään ${date}. Sinun ei tarvitse tehdä mitään; jos haluat muuttaa jotain, voit hallita tilaustasi milloin tahansa.`,
+    closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
+  },
 } as const
 
 type Lang = keyof typeof COPY

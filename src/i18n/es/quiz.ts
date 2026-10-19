@@ -5,6 +5,9 @@ const quiz: Messages['quiz'] = {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
   ],
+  birthDateLabel(day: number, month: number, year: number) {
+    return `${day} ${(this.months[month - 1] || '').toLowerCase()} ${year}`;
+  },
   stepOf: (current: number, total: number) => `${current} de ${total}`,
   steps: {
     intent: {

@@ -58,6 +58,17 @@ const COPY = {
     closing: 'Vanaf nu vinden jullie hem terug in jullie persoonlijke ruimte, wanneer jullie er maar op terug willen komen.',
     subject: 'Jullie synastrie is klaar — log in op jullie ruimte',
   },
+  fi: {
+    preview: (siteName: string) => `Parin synastrianne on valmis — ${siteName}`,
+    h1: 'Synastrianne on valmis',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    p1: 'Parisuhteen tulkintanne on valmis. Sisältä löydätte suhteenne arkkityypin, yhteensopivuuspisteet kuudella osa-alueella ja kahdeksan analyysiosiota: parin kuvasta siihen suuntaan, johon suhteenne on kulkemassa.',
+    p2: 'Tämä ei ole yleinen horoskooppi vaan tulkinta, joka perustuu teidän omiin planeettoihinne. Se on kirjoitettu selkeällä suomella, ja siihen voi palata aina uudelleen.',
+    cta: 'Avaa parin synastria',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    closing: 'Jatkossa löydätte sen omalta tililtänne, aina kun haluatte palata siihen.',
+    subject: 'Synastrianne on valmis — kirjautukaa tilillenne',
+  },
 } as const
 
 const SynastryReadyEmail = ({ name, sessionId, lang, market }: SynastryReadyProps) => {

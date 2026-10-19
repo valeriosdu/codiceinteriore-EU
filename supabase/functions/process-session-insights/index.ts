@@ -294,6 +294,10 @@ Words like "unblock", "get unstuck", "potential", "you don't get going", "get mo
 manifesteren, overvloed, trilling, universele energie, vrouwelijke energie, mannelijke energie, zielsverwant, hoger zelf, frequenties, afstemmen, meestromen, lotsbestemming, jouw pad, de echte jij, luister naar je hart, je bent er klaar voor, innerlijke wond, innerlijk kind, innerlijke transformatie, vind je waarom, zet de eerste stap, ieder heeft zijn eigen tempo.
 
 Words like "deblokkeren", "vastzitten", "potentieel", "je komt niet op gang", "in beweging komen", "bewustzijn" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
+  fi: `STYLE GUARD — never use any of these (or close paraphrases):
+manifestoida, yltäkylläisyys, värähtely, universaali energia, naisellinen energia, miehinen energia, sielunkumppani, korkeampi minä, taajuudet, virittäytyä, mennä virran mukana, kohtalo, sinun polkusi, todellinen sinä, kuuntele sydäntäsi, olet valmis, sisäinen haava, sisäinen lapsi, sisäinen muutos, löydä oma miksisi, ota ensimmäinen askel, jokaisella on oma aikansa.
+
+Words like "purkaa jumi", "jumittua", "potentiaali", "et pääse liikkeelle", "lähteä liikkeelle", "tietoisuus" are allowed when used in a grounded, descriptive way (not as motivational claims). The reader recognizes them as their own language.`,
 };
 
 const buildAttivazionePrompt = (lang: PromptLang): string => {

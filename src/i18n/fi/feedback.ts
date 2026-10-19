@@ -1,29 +1,29 @@
 import type { Messages } from '@/i18n';
 
 const feedback: Messages['feedback'] = {
-  title: 'Tell us what you think',
-  subtitle: 'Your feedback helps us make every reading sharper. It only takes a few seconds.',
+  title: 'Kerro meille, mitä mieltä olet',
+  subtitle: 'Palautteesi auttaa meitä tekemään jokaisesta tulkinnasta tarkemman. Se vie vain muutaman sekunnin.',
   ratings: {
-    positive: 'This is me',
-    mixed: 'Partly',
-    negative: 'Not really me',
+    positive: 'Tunnistan itseni',
+    mixed: 'Osittain',
+    negative: 'En tunnista itseäni',
   },
   reasons: {
-    positive: ['Accurate', 'Useful', 'Well written', 'It surprised me'],
-    mixed: ['Some of it, not all', 'Too generic', 'The wording', 'I wanted more depth'],
-    negative: ["I don't recognize myself", 'Too generic', 'Factual errors', 'The wording'],
+    positive: ['Tarkka', 'Hyödyllinen', 'Hyvin kirjoitettu', 'Yllätti minut'],
+    mixed: ['Osa kyllä, osa ei', 'Liian yleinen', 'Kieli', 'Kaipaan lisää syvyyttä'],
+    negative: ['En tunnista itseäni', 'Liian yleinen', 'Asiavirheitä', 'Kieli'],
   },
   errors: {
-    signInRequired: 'You need to be signed in to leave feedback.',
-    saveRating: (detail: string) => `We couldn't save your feedback (${detail}).`,
-    saveDetails: (detail: string) => `We couldn't save that (${detail}).`,
-    unknown: 'unknown error',
+    signInRequired: 'Sinun täytyy olla kirjautuneena, jotta voit lähettää palautetta.',
+    saveRating: (detail) => `Palautteen tallennus ei onnistunut (${detail}).`,
+    saveDetails: (detail) => `Tallennus ei onnistunut (${detail}).`,
+    unknown: 'tuntematon virhe',
   },
-  thanksMore: 'Thank you. Want to tell us more?',
-  commentPlaceholder: 'Is there a feature you wish we had, or anything else to add? (optional)',
-  skip: 'Skip',
-  send: 'Send',
-  done: 'Thank you, this helps us improve.',
+  thanksMore: 'Kiitos. Haluatko kertoa lisää?',
+  commentPlaceholder: 'Kaipaatko jotain toimintoa tai haluatko lisätä jotain? (valinnainen)',
+  skip: 'Ohita',
+  send: 'Lähetä',
+  done: 'Kiitos, tämä auttaa meitä kehittymään.',
 };
 
 export default feedback;

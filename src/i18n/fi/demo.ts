@@ -4,38 +4,38 @@
 import type { Messages } from '@/i18n';
 
 const demo: Messages['demo'] = {
-  userName: 'Anna',
+  userName: 'Elina',
   teaserInsights: [
     {
-      title: 'How you enter relationships',
-      body: 'You tend to enter relationships with an intensity that comes from needing to feel seen and understood at a deep level. This makes you capable of genuine bonds, but also vulnerable to disappointment when the other person can\'t keep up with your emotional pace.',
+      title: 'Tapasi astua suhteisiin',
+      body: 'Astut suhteisiin intensiteetillä, joka kumpuaa tarpeesta tulla nähdyksi ja ymmärretyksi syvällä tasolla. Se tekee sinusta kykenevän aitoihin siteisiin, mutta myös alttiin pettymyksille, kun toinen ei pysy sinun tunnetahdissasi.',
     },
     {
-      title: 'Your tender spot',
-      body: "There's an area where the fear of being abandoned overlaps with the wish for independence. When someone gets too close, something in you pulls back, even though a deeper part of you wants exactly that closeness.",
+      title: 'Herkkä kohtasi',
+      body: 'On alue, jossa hylätyksi tulemisen pelko limittyy itsenäisyyden kaipuuseen. Kun joku tulee liian lähelle, jokin sinussa vetäytyy, vaikka syvempi osa sinusta kaipaa juuri sitä läheisyyttä.',
     },
     {
-      title: 'Your recurring pattern',
-      body: 'The pattern that repeats is tied to confusing emotional intensity with real connection. You often mistake inner turbulence for love, and calm for an absence of feeling.',
+      title: 'Toistuva kaavasi',
+      body: 'Toistuva kaava liittyy tunneintensiteetin ja todellisen yhteyden sekoittamiseen. Sekoitat usein sisäisen myrskyn rakkauteen ja rauhan tunteiden puutteeseen.',
     },
   ],
   fullReport: {
     identity:
-      'Your deeper identity moves between needing to feel free and wanting to build something stable. You perceive the world with great sensitivity, yet at the same time look for clear structures so you don\'t get lost in your own emotions.\n\nThis report is a demo version, generated for the preview. The real report is personalized to your birth data.',
+      'Syvempi identiteettisi liikkuu vapauden tarpeen ja halun välillä rakentaa jotain vakaata. Aistit maailman suurella herkkyydellä, mutta etsit samalla selkeitä rakenteita, ettet eksyisi omiin tunteisiisi.\n\nTämä raportti on esimerkkiversio, joka on luotu esikatselua varten. Oikea raportti perustuu omiin syntymätietoihisi.',
     emotions:
-      'Your emotions move in deep waves. You learned early to hold in what you feel so as not to bother others, and that sometimes leaves you feeling distant even from yourself.\n\nThe first move is to recognize that your emotions are not a nuisance, but a compass.',
+      'Tunteesi liikkuvat syvinä aaltoina. Opit varhain pidättelemään sitä, mitä tunnet, ettet vaivaisi muita, ja siksi tunnet välillä olevasi etäällä jopa itsestäsi.\n\nEnsimmäinen askel on tunnistaa, että tunteesi eivät ole häiriö vaan kompassi.',
     relationships:
-      'In love you look for a connection that goes beyond the surface. You want to be seen for who you really are, not just for what you show.\n\nThis sometimes leads you to invest heavily in a few people, and to ache when you don\'t get the same intensity back.',
+      'Rakkaudessa etsit yhteyttä, joka menee pintaa syvemmälle. Haluat tulla nähdyksi sellaisena kuin todella olet, et vain sen perusteella, mitä näytät.\n\nSiksi panostat joskus paljon muutamaan ihmiseen ja kärsit, kun et saa takaisin samaa intensiteettiä.',
     work:
-      'At work you need to feel a sense of meaning. Doing the job well isn\'t enough: you want what you do to matter.\n\nWhen you find a setting that fits your values, your productivity and creativity open up in surprising ways.',
+      'Työssä tarvitset merkityksellisyyden tunnetta. Ei riitä, että teet hyvin: haluat, että sillä, mitä teet, on merkitystä.\n\nKun löydät ympäristön, joka vastaa arvojasi, tuottavuutesi ja luovuutesi vapautuvat yllättävän vahvasti.',
     patterns:
-      "You tend to repeat a pattern in which you first open up a lot, then withdraw. It's a protective move with old roots.\n\nNoticing it is already half the work: the next time you feel the urge to close off, pause and ask yourself what you're really protecting.",
+      'Toistat kaavaa, jossa avaudut ensin paljon ja vetäydyt sitten. Se on suojautumisliike, jolla on vanhat juuret.\n\nSen tunnistaminen on jo puoli työtä: kun seuraavan kerran tunnet halua sulkeutua, pysähdy ja kysy itseltäsi, mitä oikeastaan suojelet.',
     blocks:
-      'Your main block is the often-unconscious belief that you have to earn love through performance. This leads you to give a great deal and ask for little.\n\nWorking on this means learning to receive without feeling indebted.',
+      'Suurin lukkosi on usein tiedostamaton uskomus, että rakkaus pitää ansaita suorittamalla. Siksi annat paljon ja pyydät vähän.\n\nTämän työstäminen tarkoittaa sen oppimista, että voit ottaa vastaan tuntematta olevasi velkaa.',
     advice:
-      "1. Give yourself moments of quiet every day, even brief ones.\n2. When you feel tension, ask yourself: 'What do I need to say that I'm not saying?'.\n3. Keep up a creative practice with no goals attached.\n4. Remember that resting is productive.",
+      '1. Anna itsellesi joka päivä hiljaisia hetkiä, vaikka lyhyitä.\n2. Kun tunnet jännitystä, kysy itseltäsi: ”Mitä minun pitäisi sanoa, mitä en sano?”.\n3. Harrasta jotain luovaa ilman tavoitteita.\n4. Muista, että lepääminenkin on tuottavaa.',
     poem:
-      "There's a room inside you\nthat no one has ever seen.\nNot because it's locked,\nbut because you yourself\nhave forgotten the door.\n\nToday someone knocks.\nIt's you.",
+      'Sinussa on huone,\njonka kukaan ei ole koskaan nähnyt.\nEi siksi, että se olisi lukossa,\nvaan siksi, että sinä itse\nolet unohtanut oven.\n\nTänään joku koputtaa.\nSe olet sinä.',
   } as Record<string, string>,
 };
 

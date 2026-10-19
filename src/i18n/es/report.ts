@@ -5,6 +5,9 @@ const report: Messages['report'] = {
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
   ],
+  dayMonthLabel(day: number, month: number, year?: number) {
+    return `${day} ${this.monthShort[month - 1] || ''}${year ? ' ' + year : ''}`;
+  },
   access: {
     title: 'Accede a tu espacio',
     body: 'Para abrir tu lectura, entra con el mismo correo que usaste al hacer la compra.',

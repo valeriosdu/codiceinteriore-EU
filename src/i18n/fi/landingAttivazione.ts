@@ -1,48 +1,50 @@
-const landingAttivazione = {
+import type { Messages } from '@/i18n';
+
+const landingAttivazione: Messages['landingAttivazione'] = {
   seo: {
-    title: 'Birth Chart for when you feel stuck — Carta Interior',
+    title: 'Syntymäkartta, kun tunnet jumittavasi | Carta Interior',
     description:
-      "You know what you want but can't get going? A birth chart reading to understand what lights you up and what holds you back — about 10 pages. Start free.",
-    productName: 'Birth Chart Reading — Activation',
+      'Tiedätkö, mitä haluat, mutta et pääse alkuun? Tulkinta näyttää, mikä sinua sytyttää ja mikä pysäyttää. Noin 10 sivua suomeksi. Aloita ilmaiseksi.',
+    productName: 'Syntymäkartan tulkinta — liikkeelle lähtö',
     productDescription:
-      'A birth chart reading focused on being stuck and getting moving: what lights you up, what holds you back, the conditions that get you going.',
+      'Pysähtyneisyyteen ja liikkeelle lähtöön keskittyvä syntymäkartan tulkinta: mikä sinua sytyttää, mikä pysäyttää ja millä edellytyksillä pääset liikkeelle. Kirjoitettu suomeksi.',
   },
-  plateHero: 'Plate I · Sky chart',
+  plateHero: 'Taulu I · Tähtikartta',
   hero: {
-    titlePre: 'Your',
-    titleEm: 'Birth Chart',
-    titlePost: ', explained clearly',
+    titlePre: 'Oma',
+    titleEm: 'syntymäkarttasi',
+    titlePost: ' selitettynä selkeästi',
     subtitle:
-      'See what lights you up, what holds you back, and why certain things never get going even when you know what to do.',
-    cta: 'Start the quiz',
-    microcopy: '2-minute quiz · No prior knowledge needed',
-    socialProofLine1: 'Over 10,000 people',
-    socialProofLine2: 'have received their reading',
+      'Näe, mikä sinua sytyttää, mikä pysäyttää ja miksi jotkin asiat eivät lähde liikkeelle, vaikka tiedät, mitä pitäisi tehdä.',
+    cta: 'Aloita kysely',
+    microcopy: '2 minuutin kysely · Esitietoja ei tarvita',
+    socialProofLine1: 'Yli 10 000 ihmistä',
+    socialProofLine2: 'on saanut tulkintansa',
   },
   discover: {
-    heading: 'What you can find out',
+    heading: 'Mitä voit saada selville',
     items: [
-      'Why certain things never get going, even when you know what to do',
-      'What truly lights you up, beyond what you assume',
-      'The pattern that keeps repeating without you seeing it',
-      'Your underlying rhythm, different from the one demanded of you',
+      'Miksi jotkin asiat eivät käynnisty, vaikka tiedät, mitä pitäisi tehdä',
+      'Mikä sinua todella sytyttää, enemmän kuin luulet',
+      'Kaava, joka toistuu ilman että huomaat sitä',
+      'Oma syvä rytmisi, joka eroaa siitä, mitä sinulta odotetaan',
     ],
   },
   quote: {
-    plate: 'Plate II',
-    text: 'What lights you up and what holds you back was already there the day you were born',
+    plate: 'Taulu II',
+    text: 'Se, mikä sinua sytyttää ja mikä pysäyttää, oli jo olemassa syntymäpäivänäsi',
   },
   howItWorks: {
-    heading: 'How it works',
+    heading: 'Näin se toimii',
     steps: [
-      'Enter your birth data',
-      'Answer a few short questions',
-      'Get your opening reading for free',
+      'Kirjoita syntymätietosi',
+      'Vastaa muutamaan lyhyeen kysymykseen',
+      'Saat ensimmäisen tulkintasi ilmaiseksi',
     ],
   },
   finalCta: {
-    body: "Start with your opening reading. You'll get a clearer sense of what lights you up and what holds you back.",
-    cta: 'Start the quiz',
+    body: 'Aloita ensimmäisestä tulkinnastasi. Ymmärrät paremmin, mikä sinua sytyttää ja mikä pysäyttää.',
+    cta: 'Aloita kysely',
   },
 };
 

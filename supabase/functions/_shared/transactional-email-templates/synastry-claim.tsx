@@ -54,6 +54,16 @@ const COPY = {
     closing: 'Hebben jullie hulp nodig, antwoord dan gewoon op deze mail.',
     subject: 'Jullie betaling is bevestigd — activeer jullie synastrie voor koppels',
   },
+  fi: {
+    preview: 'Maksunne on vahvistettu — aktivoikaa parin synastria',
+    h1: 'Maksunne on vahvistettu',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    body: 'Saimme tilauksenne. Jotta pääsette synastriaanne käsiksi ja löydätte sen aina uudelleen, luokaa oma tilinne tällä sähköpostiosoitteella. Tulkintanne liitetään siihen automaattisesti.',
+    cta: 'Aktivoi ja avaa parin synastria',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    closing: 'Jos tarvitsette apua, vastatkaa tähän viestiin.',
+    subject: 'Maksunne on vahvistettu — aktivoikaa parin synastria',
+  },
 } as const
 
 const SynastryClaimEmail = ({ name, sessionId, lang, market }: SynastryClaimProps) => {

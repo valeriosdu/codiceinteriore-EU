@@ -31,7 +31,7 @@ import { supportSystemPrompt } from "../../supabase/functions/_shared/prompts/su
 import { getArchetypeLabel } from "../../supabase/functions/_shared/synastry-archetypes.ts";
 import { docNoun, getMarket, isMarketId } from "../../supabase/functions/_shared/markets.ts";
 
-const LANGS: PromptLang[] = ["it", "es", "en", "nl"];
+const LANGS: PromptLang[] = ["it", "es", "en", "nl", "fi"];
 
 describe("backend: lingue supportate", () => {
   it("resolvePromptLang riconosce ogni lingua (non degrada su 'it')", () => {
@@ -58,6 +58,18 @@ describe("backend: lingue supportate", () => {
     expect(planetName("nl", "sun")).toBe("Zon");
     expect(planetName("nl", "moon")).toBe("Maan");
     expect(aspectName("nl", "square")).toBe("vierkant");
+    expect(planetName("fi", "sun")).toBe("Aurinko");
+    expect(planetName("fi", "moon")).toBe("Kuu");
+    expect(aspectName("fi", "square")).toBe("neliö");
+  });
+
+  it("la direttiva finlandese impone il sinä e vieta il lessico spirituale", () => {
+    const d = outputLanguageDirective("fi");
+    expect(d).toContain("Finnish");
+    expect(d).toMatch(/sinä/);
+    for (const w of ["sielu", "kohtalo", "taivas", "pyhä", "henkinen"]) expect(d).toContain(w);
+    // Le direttive esistenti non cambiano di un byte.
+    expect(outputLanguageDirective("it")).not.toMatch(/sinä/);
   });
 
   it("le mappe dei PDF coprono ogni lingua", () => {
@@ -79,8 +91,17 @@ describe("backend: lingue supportate", () => {
     expect(docNoun("nl", "transits")).toBe("transits");
   });
 
-  it("i secret del mercato nl non puntano al conto di un altro mercato", () => {
-    const nl = getMarket("nl");
+  it("docNoun e getMarket conoscono il mercato finlandese", () => {
+    expect(isMarketId("fi")).toBe(true);
+    expect(getMarket("fi").id).toBe("fi");
+    expect(getMarket("fi").language).toBe("fi");
+    expect(getMarket("fi").currency).toBe("EUR");
+    expect(getMarket("fi").siteUrl).toBe("https://fi.cartainterior.com");
+    expect(docNoun("fi", "couple")).toBe("pari");
+  });
+
+  it.each([["nl", "__NL"], ["fi", "__FI"]] as const)("i secret del mercato %s non puntano al conto di un altro mercato", (id, suffix) => {
+    const nl = getMarket(id);
     const envNames = [
       nl.stripe.secretKeyEnv,
       nl.stripe.secretKeyTestEnv,
@@ -91,6 +112,6 @@ describe("backend: lingue supportate", () => {
       nl.metaPixelIdEnv,
       nl.metaAccessTokenEnv,
     ];
-    for (const name of envNames) expect(name.endsWith("__NL")).toBe(true);
+    for (const name of envNames) expect(name.endsWith(suffix)).toBe(true);
   });
 });

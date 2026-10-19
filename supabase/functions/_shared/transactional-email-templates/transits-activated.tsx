@@ -54,6 +54,16 @@ const COPY = {
     fallback: 'Werkt de knop niet, kopieer deze link dan naar je browser:',
     closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
   },
+  fi: {
+    headingRenewal: 'Uudet kuukauden transiittisi ovat valmiina',
+    headingNew: 'Transiittitilauksesi on aktivoitu',
+    introRenewal: 'Olemme valmistelleet transiittitulkintasi uudelle kuukaudelle. Se perustuu planeettojen todellisiin liikkeisiin, jotka on laskettu syntymäkarttasi mukaan, ja siinä on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan.',
+    introNew: 'Olet aktivoinut kuukausittaisen transiittitilauksen (9,90 € kuukaudessa). Valmistelemme sinulle joka kuukausi uuden tulkinnan siitä, miten planeettojen liikkeet osuvat syntymäkarttasi keskeisiin kohtiin. Mukana on neljä jaksoa, jotka auttavat sinua suunnistamaan viikko kerrallaan. Voit hallita tilausta tai perua sen milloin tahansa tililtäsi.',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    cta: 'Avaa tulkintasi',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
+  },
 } as const
 
 type Lang = keyof typeof COPY

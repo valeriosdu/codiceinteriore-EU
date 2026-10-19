@@ -1,5 +1,15 @@
-// English catalog. Mirrors the Italian aggregate shape (it = source of the
-// `Messages` type), assembled from the per-section sub-catalogs in this folder.
+// Catalogo finlandese. Ogni modulo è tipizzato come la corrispondente slice di
+// `Messages` (l'italiano è la fonte del tipo), quindi una chiave mancante o in
+// più rispetto all'italiano è un errore di compilazione.
+//
+// Registro: informale sinä/sinun/-si ovunque, mai la forma di cortesia Te/Teidän
+// (le pagine di coppia usano il plurale "te", che non è cortesia).
+// Il marchio "Carta Interior" non si traduce.
+//
+// ⚠️ Copy da rivedere con un madrelingua prima del lancio (tono
+// intimo/psicologico del funnel).
+
+import type { Messages } from '@/i18n';
 
 import common from './common';
 import funnels from './funnels';
@@ -25,7 +35,7 @@ import seo from './seo';
 import demo from './demo';
 import legal from './legal';
 
-const en = {
+const fi: Messages = {
   common,
   funnels,
   quiz,
@@ -51,4 +61,4 @@ const en = {
   legal,
 };
 
-export default en;
+export default fi;

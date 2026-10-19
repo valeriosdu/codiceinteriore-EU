@@ -26,6 +26,7 @@ const FALLBACK_READER_NAME: Record<PromptLang, string> = {
   es: "Lectura personal",
   en: "Personal reading",
   nl: "Persoonlijke duiding",
+  fi: "Henkilökohtainen tulkinta",
 };
 
 export const PDF_VERSION = "v16-i18n";

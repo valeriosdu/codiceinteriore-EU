@@ -60,6 +60,17 @@ const COPY = {
     subject: (siteName: string, name?: string) =>
       `Nieuw bericht van de site ${siteName}${name ? ` — ${name}` : ''}`,
   },
+  fi: {
+    preview: (name: string, siteName: string) => `Uusi viesti: ${name} — ${siteName}`,
+    h1: 'Uusi viesti sivustolta',
+    name: 'Nimi',
+    email: 'Sähköposti',
+    reason: 'Aihe',
+    message: 'Viesti',
+    sentVia: (siteName: string) => `Lähetetty sivuston ${siteName} yhteydenottolomakkeella`,
+    subject: (siteName: string, name?: string) =>
+      `Uusi viesti sivustolta ${siteName}${name ? ` — ${name}` : ''}`,
+  },
 } as const
 
 // La lingua della notifica segue il mercato da cui arriva il messaggio, letto

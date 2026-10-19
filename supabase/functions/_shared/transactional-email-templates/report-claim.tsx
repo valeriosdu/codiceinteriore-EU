@@ -54,6 +54,16 @@ const COPY = {
     closing: 'Heb je hulp nodig, antwoord dan gewoon op deze mail.',
     subject: 'Je betaling is bevestigd — activeer je duiding',
   },
+  fi: {
+    preview: 'Maksusi on vahvistettu — aktivoi tulkintasi',
+    h1: 'Maksusi on vahvistettu',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    body: 'Saimme tilauksesi. Jotta pääset raporttiisi ja löydät sen aina uudelleen, luo oma tilisi tällä sähköpostiosoitteella. Tulkintasi liitetään siihen automaattisesti.',
+    cta: 'Aktivoi ja avaa raporttisi',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    closing: 'Jos tarvitset apua, vastaa tähän viestiin.',
+    subject: 'Maksusi on vahvistettu — aktivoi tulkintasi',
+  },
 } as const
 
 const ReportClaimEmail = ({ name, sessionId, lang, market }: ReportClaimProps) => {

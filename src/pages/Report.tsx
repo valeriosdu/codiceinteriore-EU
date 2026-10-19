@@ -37,6 +37,7 @@ import BuyPackMenuItem from "@/components/astrology-guide/BuyPackMenuItem";
 import { isLovablePreview, DEMO_FULL_REPORT, DEMO_USER_NAME, DEMO_EMAIL } from "@/lib/preview-mode";
 import { getFunnelContent } from "@/funnels/registry";
 import { useI18n } from "@/i18n/I18nProvider";
+import type { Messages } from "@/i18n";
 import { toast } from "sonner";
 import { useSynastryReport } from "@/hooks/useSynastryReport";
 import SynastryReportCard from "@/components/SynastryReportCard";
@@ -92,7 +93,7 @@ type TransitState = {
 };
 
 const formatTransitPeriodWith = (
-  monthShort: string[],
+  r: Pick<Messages["report"], "dayMonthLabel">,
   start: string | null | undefined,
   end: string | null | undefined,
 ) => {
@@ -105,7 +106,7 @@ const formatTransitPeriodWith = (
   const b = parse(end);
   if (!a.y || !b.y) return "";
   const fmt = (p: { y: number; m: number; d: number }, includeYear: boolean) =>
-    `${p.d} ${monthShort[p.m - 1] || ""}${includeYear ? " " + p.y : ""}`;
+    r.dayMonthLabel(p.d, p.m, includeYear ? p.y : undefined);
   return `${fmt(a, a.y !== b.y)} – ${fmt(b, true)}`;
 };
 
@@ -177,7 +178,7 @@ const Report = () => {
   const { m, market } = useI18n();
   const r = m.report;
   const formatTransitPeriod = (start: string | null | undefined, end: string | null | undefined) =>
-    formatTransitPeriodWith(r.monthShort, start, end);
+    formatTransitPeriodWith(r, start, end);
   // Per-angle section list. Drives both the sidebar nav and the body render.
   // Sections whose id is missing from full_report (e.g. legacy classica reports
   // viewed under attivazione registry, or vice versa) silently skip.

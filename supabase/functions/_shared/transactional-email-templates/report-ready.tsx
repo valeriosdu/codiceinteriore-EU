@@ -62,6 +62,18 @@ const COPY = {
     closing: 'Vanaf nu vind je hem ook terug in je persoonlijke ruimte, wanneer je er maar op terug wilt komen.',
     subject: 'Je duiding is klaar — log in op je ruimte',
   },
+  fi: {
+    preview: (siteName: string) => `Tulkintasi on valmis — ${siteName}`,
+    h1: 'Tulkintasi on valmis',
+    greeting: (name?: string) => (name ? `Hei ${name},` : 'Hei,'),
+    p1: 'Sisältä löydät koko tulkinnan syntymäkartastasi: ei vain sitä, mikä toistuu ihmissuhteissasi, vaan myös tunteiden dynamiikan, joka ohjaa sinua, ne esteet, joilla on todella merkitystä, ja suunnan, joka yrittää nousta esiin.',
+    p2: 'Tämä ei ole kokoelma irrallisia oivalluksia vaan yhtenäinen tulkinta siitä, millainen olet. Se on kirjoitettu auttamaan sinua tunnistamaan paremmin, mitä elät, mitä etsit ja mikä vie sinut yhä uudelleen samoihin kohtiin.',
+    p3: 'Se voi olla ensimmäinen askel nähdä itsesi selkeämmin ja ymmärtää tarkemmin, missä olet juuri nyt.',
+    cta: 'Kirjaudu ja avaa raporttisi',
+    fallback: 'Jos painike ei toimi, kopioi tämä linkki selaimeesi:',
+    closing: 'Jatkossa löydät sen myös omalta tililtäsi, aina kun haluat palata siihen.',
+    subject: 'Tulkintasi on valmis — kirjaudu tilillesi',
+  },
 } as const
 
 const ReportReadyEmail = ({ name, sessionId, lang, market }: ReportReadyProps) => {
