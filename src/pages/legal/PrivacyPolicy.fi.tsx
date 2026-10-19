@@ -89,8 +89,8 @@ const PrivacyPolicyFi = () => (
         <li>käyttäjätilin hallinta, jos tili on käytettävissä</li>
         <li>kassan, maksujen ja tilaushistorian hallinta</li>
         <li>
-          palveluviestien lähettäminen, esimerkiksi tilausvahvistukset, sisällön avaamiseen liittyvät viestit,
-          tukiviestit ja palveluilmoitukset
+          palveluviestien lähettäminen, esimerkiksi tilausvahvistusten, sisällön avaamiseen liittyvien viestien,
+          tukiviestien ja palveluilmoitusten
         </li>
         <li>sähköpostitse tai yhteydenottolomakkeella lähettämiesi pyyntöjen käsittely</li>
         <li>uutiskirjeen ja mainosviestien lähettäminen</li>

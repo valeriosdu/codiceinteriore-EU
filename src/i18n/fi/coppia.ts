@@ -3,13 +3,13 @@ import type { Messages } from '@/i18n';
 const coppia: Messages['coppia'] = {
   titles: {
     landing: (siteName) => `Parin synastria | ${siteName}`,
-    quiz: (siteName) => `Parin synastria - kysely | ${siteName}`,
-    processing: (siteName) => `Synastria - käsittelyssä | ${siteName}`,
-    teaser: (siteName) => `Synastria - esikatselu | ${siteName}`,
+    quiz: (siteName) => `Parin synastria – kysely | ${siteName}`,
+    processing: (siteName) => `Synastria – käsittelyssä | ${siteName}`,
+    teaser: (siteName) => `Synastria – esikatselu | ${siteName}`,
     success: (siteName) => `Maksu vastaanotettu | ${siteName}`,
     activate: (siteName) => `Synastria – aktivoi tilisi | ${siteName}`,
-    reportProcessing: (siteName) => `Synastria - luodaan | ${siteName}`,
-    report: (siteName) => `Parin synastria - raportti | ${siteName}`,
+    reportProcessing: (siteName) => `Synastria – luodaan | ${siteName}`,
+    report: (siteName) => `Parin synastria – raportti | ${siteName}`,
   },
   landing: {
     heroLine1: 'Suhteenne',
@@ -28,7 +28,7 @@ const coppia: Messages['coppia'] = {
         body: 'Millainen suhde teillä on? 14 erilaista astrologista asetelmaa, laskettuna planeettojenne todellisista asennoista.',
       },
       {
-        title: 'Kuusi yhteensopivuuspistettä',
+        title: 'Kuusi yhteensopivuuslukua',
         body: 'Tunneyhteys, vetovoima, viestintä, vakaus, kasvu, jännite. Jokainen mitattu, selitetty ja suhteutettu kokonaisuuteen.',
       },
       {
@@ -49,7 +49,7 @@ const coppia: Messages['coppia'] = {
       'Kahta syntymäkarttaa ei lasketa yhteen, vaan ne asetetaan päällekkäin. Suhde näkyy siinä, missä ne kohtaavat.',
     closingLine: 'Aloittakaa kahdesta kartastanne. Loput tarinasta löytyy niistä.',
     seoDescription:
-      'Synastria vertaa kahta syntymäkarttaa ja kertoo, miksi joissakin asioissa ymmärrätte toisianne heti ja toisissa ette. Parin arkkityyppi, kuusi yhteensopivuuspistettä ja kahdeksan tulkinnan osiota suomeksi.',
+      'Synastria vertaa kahta syntymäkarttaa ja kertoo, miksi joissakin asioissa ymmärrätte toisianne heti ja toisissa ette. Parin arkkityyppi, kuusi yhteensopivuuslukua ja kahdeksan tulkinnan osiota suomeksi.',
   },
   quiz: {
     date: {
@@ -208,7 +208,7 @@ const coppia: Messages['coppia'] = {
       },
       stabilita: {
         label: 'Vakaus',
-        high: 'Kestää aikaa',
+        high: 'Kestää ajan hammasta',
         medium: 'Perusta, jonka valitsette itse',
         low: 'Mihin suhde nojaa?',
       },
@@ -343,7 +343,7 @@ const coppia: Messages['coppia'] = {
         'Syvä tunneymmärrys ja vain vähän kitkaa: sopusointu, joka tuntuu luontevalta.',
     },
     opposites_attract: {
-      label: 'Vastakohdat vetävät',
+      label: 'Vastakohdat vetävät toisiaan puoleensa',
       definizione:
         'Voimakas romanttinen veto, jota selvät erot ruokkivat: jännite on osa vetovoimaa.',
     },

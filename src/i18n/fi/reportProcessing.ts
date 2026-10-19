@@ -8,7 +8,7 @@ const reportProcessing: Messages['reportProcessing'] = {
     'Viimeistelemme henkilökohtaista karttaasi',
     'Hetken kuluttua pääset koko versioon',
     'Hiomme hienovaraisimpia yksityiskohtia',
-    'Melkein valmista — enää hetki',
+    'Melkein valmista – enää hetki',
   ],
   errors: {
     signIn: 'Kirjaudu tilillesi viimeistelläksesi ostamasi tulkinnan.',

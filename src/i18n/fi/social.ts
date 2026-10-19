@@ -9,7 +9,7 @@ const social = {
         age: 31,
       },
       {
-        text: 'Eron ilmaisiin tulkintoihin netissä huomaa heti. Täällä ei ole irrallisia lauseita: on punainen lanka ja rakenne. Lopussa sinulla on todella kokonaisvaltaisempi kuva siitä, miten toimit ja mitä kannattaa tehdä.',
+        text: 'Eron ilmaisiin tulkintoihin netissä huomaa heti. Täällä ei ole irrallisia lauseita: on punainen lanka ja rakenne. Lopussa sinulla todella on kokonaisvaltaisempi kuva siitä, miten toimit ja mitä kannattaa tehdä.',
         name: 'Sanna M.',
         age: 39,
       },

@@ -157,7 +157,7 @@ const ARCHETYPE_LABELS: Record<PromptLang, Record<SynastryArchetypeId, string>> 
   fi: {
     soulmates: "Elämänkumppanit",
     kindred_spirits: "Samalla aaltopituudella",
-    opposites_attract: "Vastakohdat vetävät",
+    opposites_attract: "Vastakohdat vetävät toisiaan puoleensa",
     karmic_lesson: "Opettava suhde",
     steady_rock: "Vankka kallio",
     intellectual_powerhouse: "Vahva ajatusyhteys",

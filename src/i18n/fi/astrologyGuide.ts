@@ -38,7 +38,7 @@ const astrologyGuide: Messages['astrologyGuide'] = {
       ],
       emotions: [
         'Miksi jotkin tunteet vyöryvät ylitseni, vaikka toisia tuskin tunnen?',
-        'Mitä piilee taipumukseni takana vetäytyä kuoreeni, kun minulla on oikeasti paha olla?',
+        'Mitä piilee sen takana, että vetäydyn kuoreeni aina, kun minulla on oikeasti paha olla?',
       ],
       emotions_relationships: [
         'Mikä tunnehaava aktivoituu yhä uudelleen läheisissä ihmissuhteissani?',
@@ -53,7 +53,7 @@ const astrologyGuide: Messages['astrologyGuide'] = {
         'Mitä suojelen, kun vetäydyn tai sabotoin itseäni?',
       ],
       blocks: [
-        'Mitä piilee taipumukseni takana pysähtyä juuri kun asiat alkavat sujua?',
+        'Mitä piilee sen takana, että pysähdyn aina, juuri kun asiat alkavat sujua?',
         'Mikä pohjalla piilevä pelko estää minua ottamasta kantaa?',
       ],
       patterns: [

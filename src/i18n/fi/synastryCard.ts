@@ -38,12 +38,12 @@ const synastryCard: Messages['synastryCard'] = {
     includesTitle: 'Tulkinta sisältää:',
     includes: [
       'Parin muotokuva: keitä olette yhdessä ja millainen on suhteenne arkkityyppi',
-      'Vetovoima, viestintä, tunnemaailma: missä toimitte ja missä on vaikeampaa',
+      'Vetovoima, viestintä, tunnemaailma: missä toimitte hyvin ja missä on vaikeampaa',
       'Haasteet kasvuna, karmakuviot ja suhteen suunta',
     ],
     cta: 'Tutustu parin synastriaan',
     note: 'Kertamaksu. Tarvitaan molempien syntymätiedot.',
-    secureNote: 'Turvallinen maksu - Heti käyttöösi',
+    secureNote: 'Turvallinen maksu – heti käyttöösi',
   },
   another: {
     kicker: 'Toinen suhde',

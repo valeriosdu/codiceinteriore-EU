@@ -5,7 +5,7 @@ const classica: FunnelCopy = {
     fallbackInsights: [
       {
         title: 'Et valitse sattumalta',
-        body: 'Sinulla on oma, tarkka tapasi kiintyä: jokin sinussa tunnistaa tietynlaisen voimakkuuden, jo ennen kuin ehdit ajatella. Kuvio ei ole tietty ihmistyyppi vaan tapa, jolla itse syttyt.',
+        body: 'Sinulla on oma, tarkka tapasi kiintyä: jokin sinussa tunnistaa tietynlaisen voimakkuuden, jo ennen kuin ehdit ajatella. Kuvio ei ole tietty ihmistyyppi vaan tapa, jolla itse sytyt.',
       },
       {
         title: 'Et ole sulkeutunut, vaan suojaat itseäsi',
