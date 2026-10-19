@@ -41,7 +41,7 @@ const ReportProcessing = () => {
   const navigate = useNavigate();
   const { data, updateData } = useQuiz();
   const { isReady: authReady, user } = useAuthReady();
-  const { m } = useI18n();
+  const { m, language, market } = useI18n();
   const rp = m.reportProcessing;
   const messages = rp.messages;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -221,6 +221,10 @@ const ReportProcessing = () => {
                 templateData: {
                   name: readySession.user_name || data.userName || "",
                   sessionId: paidSessionId || undefined,
+                  // Senza lang/market il template ricade su it: lingua, brand e
+                  // mittente italiani anche per un cliente es o nl.
+                  lang: language,
+                  market: market.id,
                 },
               },
             });
