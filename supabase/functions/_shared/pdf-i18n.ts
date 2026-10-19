@@ -620,7 +620,7 @@ export const SYNASTRY_PDF_STRINGS: Record<PromptLang, {
       comunicazione: "Viestintä",
       mondo_emotivo: "Tunnemaailma",
       sfide: "Haasteet kasvuna",
-      pattern_karmico: "Karmainen kuvio",
+      pattern_karmico: "Karmakuvio",
       direzione: "Suunta",
       poesia_chiusura: "Runollinen päätös",
     },

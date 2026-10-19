@@ -8,10 +8,10 @@ const activate: Messages['activate'] = {
     reset: 'Aseta uusi salasana',
   },
   subtitles: {
-    signup: 'Luo tunnukset, jotta pääset raporttiisi ja löydät sen aina uudelleen.',
-    signin: 'Kirjoita tunnuksesi päästäksesi raporttiisi.',
+    signup: 'Luo tunnukset, niin pääset raporttiisi ja löydät sen aina uudelleen.',
+    signin: 'Anna tunnuksesi, niin pääset raporttiisi.',
     forgot:
-      'Kirjoita sähköpostiosoitteesi: lähetämme sinulle kirjautumislinkin. Se toimii myös silloin, kun olet maksanut mutta et ole vielä luonut tiliä.',
+      'Kirjoita sähköpostiosoitteesi: lähetämme sinulle kirjautumislinkin. Se toimii myös silloin, kun olet maksanut, mutta et ole vielä luonut tiliä.',
     reset: 'Valitse tilillesi uusi salasana.',
   },
   google: 'Jatka Googlella',
@@ -47,7 +47,7 @@ const activate: Messages['activate'] = {
     authError: 'Kirjautumisessa tapahtui virhe',
     wrongCredentials: 'Sähköposti tai salasana on väärin.',
     alreadyRegistered: 'Tällä sähköpostiosoitteella on jo tili. Kirjaudu sisään.',
-    passwordSameAsOld: 'Uuden salasanan on oltava eri kuin edellisen.',
+    passwordSameAsOld: 'Uusi salasana ei saa olla sama kuin edellinen.',
     tooManyAttempts: 'Liian monta yritystä. Odota muutama minuutti ja yritä uudelleen.',
     welcomeBack: {
       title: 'Tervetuloa takaisin!',
@@ -56,18 +56,18 @@ const activate: Messages['activate'] = {
   },
   cta: {
     loading: {
-      signup: 'Luodaan…',
+      signup: 'Luodaan tiliä…',
       signin: 'Kirjaudutaan…',
       forgot: 'Lähetetään…',
       reset: 'Tallennetaan…',
     },
     signup: 'Siirry raporttiisi',
     signin: 'Kirjaudu',
-    forgot: 'Lähetä palautuslinkki',
+    forgot: 'Lähetä kirjautumislinkki',
     reset: 'Aseta salasana',
   },
   recoveryBox: {
-    question: 'Oletko maksanut, mutta et saa aktivointisähköpostia?',
+    question: 'Oletko jo maksanut, mutta aktivointiviestiä ei kuulu?',
     action: 'Palauta pääsy sähköpostiosoitteellasi',
   },
   toggle: {

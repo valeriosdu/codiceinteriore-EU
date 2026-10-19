@@ -6,7 +6,7 @@ const success: Messages['success'] = {
   titleProblem: 'Jokin meni pieleen',
   titleOk: 'Maksu onnistui',
   bodyPaypalCapturing: 'Vahvistamme PayPal-maksua…',
-  bodyVerifying: 'Tarkistamme maksun ja liitämme tulkintasi tiliisi.',
+  bodyVerifying: 'Tarkistamme maksun ja yhdistämme sen tulkintaasi.',
   bodyDefault: 'Luo ensin tili, jotta tulkintasi tallentuu ja löydät sen aina uudelleen.',
   ctaCapturing: 'Vahvistetaan…',
   ctaVerifying: 'Tarkistetaan…',

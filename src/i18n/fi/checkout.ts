@@ -16,23 +16,23 @@ const checkout: Messages['checkout'] = {
     stillPreparingRetry: 'Valmistelemme vielä tulkintaa. Yritä muutaman sekunnin kuluttua uudelleen.',
   },
   hero: {
-    title: (name) => `Tulkinta on valmis: ${name}`,
+    title: (name) => `Tulkinta on valmis – sen saa ${name}`,
     fallbackRecipient: 'hän',
-    subtitle: 'Olemme laskeneet syntymäkartan. Valitse muoto, jossa koko tulkinta tehdään.',
+    subtitle: 'Syntymäkartta on laskettu. Valitse vielä, kumpi tulkinta laaditaan.',
     wrongData: 'Eivätkö tiedot ole oikein?',
   },
   offers: {
     baseName: 'Syntymäkartan koko tulkinta',
     basePromise: (name) =>
-      `Jotta ymmärrät selkeämmin, millainen ihminen ${name} on tunteiltaan, ihmissuhteissaan ja luonteeltaan, ja mikä hänen elämässään toistuu.`,
+      `Ymmärrät selkeämmin, millainen ${name} on tunteiltaan, ihmissuhteissaan ja luonteeltaan, ja näet, mikä hänen elämässään toistuu.`,
     baseFeatures: [
-      'Ymmärrä tunnelukkoja, puolustuskeinoja ja toistuvia kaavoja ihmisen kielellä, ei ammattitermein',
-      'Näe, miten nämä mallit vaikuttavat ihmissuhteisiin, työhön, omaan suuntaan ja elämänvalintoihin',
+      'Ymmärrät tunnelukot, puolustuskeinot ja toistuvat kuviot arkikielellä, ilman ammattitermejä',
+      'Näet, miten nämä kuviot vaikuttavat ihmissuhteisiin, työhön, omaan suuntaan ja elämänvalintoihin',
       'Saat käytännön vinkkejä siitä, mitä kannattaa tarkkailla, vahvistaa tai muuttaa',
-      'Pääsy heti tulkintaan verkossa ja sähköpostitse',
+      'Tulkinta heti luettavissa verkossa ja sähköpostissa',
     ],
     premiumPromise: (name) =>
-      `Ymmärrä, mikä ohjaa ihmistä syvällä, ja lue selkeästi myös hetki, jota ${name} elää juuri nyt.`,
+      `Ymmärrät, mistä käsin ${name} syvimmiltään toimii, ja näet selkeästi myös hetken, jota hän elää juuri nyt.`,
   },
 };
 

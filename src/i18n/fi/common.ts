@@ -25,7 +25,7 @@ const common: Messages['common'] = {
   cookieBanner: {
     aria: 'Evästeilmoitus',
     close: 'Sulje',
-    text: 'Käytämme teknisiä evästeitä ja mittausevästeitä parantaaksemme käyttökokemustasi.',
+    text: 'Käytämme välttämättömiä evästeitä ja analytiikkaevästeitä parantaaksemme käyttökokemustasi.',
     moreInfo: 'Lisätietoja',
     reject: 'Hylkää',
     accept: 'Hyväksy',

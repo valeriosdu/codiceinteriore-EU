@@ -9,25 +9,25 @@ const landing: Messages['landing'] = {
   hero: {
     titlePre: 'Oma',
     titleEm: 'syntymäkarttasi',
-    titlePost: ' selitettynä selkeästi',
+    titlePost: ' selkeästi selitettynä',
     subtitle:
-      'Näe, mitä sisäisestä rakenteestasi nousee esiin syntymätietojesi perusteella. Ilmaiseksi ja ilman rekisteröitymistä.',
+      'Selvitä, mitä syntymätietosi kertovat sisäisestä rakenteestasi. Ilmaiseksi ja ilman rekisteröitymistä.',
     cta: 'Aloita kysely',
     microcopy: '2 minuutin kysely · Esitietoja ei tarvita',
-    socialProof: 'Yli 10 000 ihmistä on jo löytänyt syntymäkarttansa',
+    socialProof: 'Yli 10 000 ihmistä on jo tutustunut syntymäkarttaansa',
   },
   discover: {
     heading: 'Mitä voit saada selville',
     items: [
       'Miten toimit oikeasti, pinnan alla',
       'Missä sinulla on kasvun paikka tässä elämänvaiheessa',
-      'Mitkä mallit toistuvat elämässäsi',
-      'Mikä liikuttaa sinua syvällä',
+      'Mitkä kuviot toistuvat elämässäsi',
+      'Mikä sinua syvimmiltään liikuttaa',
     ],
   },
   quote: {
     plate: 'Taulu II',
-    text: 'Planeettojen asento syntymäpäivänäsi kertoo jotain, jota olet kantanut mukanasi koko ikäsi',
+    text: 'Planeettojen asento syntymäpäivänäsi kertoo jostakin, mitä olet kantanut mukanasi koko ikäsi',
   },
   howItWorks: {
     heading: 'Näin se toimii',
@@ -38,7 +38,7 @@ const landing: Messages['landing'] = {
     ],
   },
   finalCta: {
-    body: 'Aloita ensimmäisestä tulkinnastasi. Loppu selkenee sen jälkeen.',
+    body: 'Aloita ensimmäisestä tulkinnastasi. Loppu selkenee sen myötä.',
     cta: 'Aloita kysely',
   },
 };

@@ -12,8 +12,8 @@ const coppia: Messages['coppia'] = {
     report: (siteName) => `Parin synastria - raportti | ${siteName}`,
   },
   landing: {
-    heroLine1: 'Suhteenne,',
-    heroLine2: 'tähtien tulkitsemana',
+    heroLine1: 'Suhteenne',
+    heroLine2: 'tähtien valossa',
     heroSubtitle:
       'Oletteko koskaan miettineet, miksi joissakin asioissa ymmärrätte toisianne heti, mutta toisissa otatte aina yhteen? Synastria on astrologian vastaus tähän kysymykseen.',
     cta: 'Aloita kysely',
@@ -29,31 +29,31 @@ const coppia: Messages['coppia'] = {
       },
       {
         title: 'Kuusi yhteensopivuuspistettä',
-        body: 'Tunneyhteys, vetovoima, viestintä, vakaus, kasvu, jännite. Jokainen luku mitattuna, selitettynä ja sijoitettuna asiayhteyteensä.',
+        body: 'Tunneyhteys, vetovoima, viestintä, vakaus, kasvu, jännite. Jokainen mitattu, selitetty ja suhteutettu kokonaisuuteen.',
       },
       {
         title: 'Kahdeksan tulkinnan osiota',
-        body: 'Parin muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmainen kuvio, suunta. Selkeällä suomella.',
+        body: 'Parin muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmakuvio, suunta. Selkeällä suomella.',
       },
     ],
     howKicker: 'Näin se toimii',
     howSteps: [
-      'Kirjoita molempien syntymätiedot: päivämäärä, kellonaika (jos tiedät sen) ja paikka.',
-      'Laskemme kummankin syntymäkartan ja analysoimme, miten ne asettuvat päällekkäin: se on synastria.',
+      'Antakaa molempien syntymätiedot: päivä, kellonaika (jos tiedätte sen) ja paikka.',
+      'Laskemme kummankin syntymäkartan ja katsomme, miten ne asettuvat päällekkäin. Juuri tätä synastria on.',
       'Saatte koko raportin: noin 10 sivua suomeksi.',
     ],
     ctaNote: 'Muutama nopea kysymys · Ilmainen esikatselu, ei rekisteröitymistä',
     plateCaption: 'Taulu I · Synastriakartta',
     quotePlateCaption: 'Taulu II',
     quote:
-      'Kahta syntymäkarttaa ei lasketa yhteen, vaan ne asetetaan päällekkäin. Juuri päällekkäisyydessä suhde alkaa avautua luettavaksi.',
-    closingLine: 'Aloittakaa kahdesta kartastanne. Loppu tarinasta luetaan niistä.',
+      'Kahta syntymäkarttaa ei lasketa yhteen, vaan ne asetetaan päällekkäin. Suhde näkyy siinä, missä ne kohtaavat.',
+    closingLine: 'Aloittakaa kahdesta kartastanne. Loput tarinasta löytyy niistä.',
     seoDescription:
       'Synastria vertaa kahta syntymäkarttaa ja kertoo, miksi joissakin asioissa ymmärrätte toisianne heti ja toisissa ette. Parin arkkityyppi, kuusi yhteensopivuuspistettä ja kahdeksan tulkinnan osiota suomeksi.',
   },
   quiz: {
     date: {
-      confirmHint: 'Vieritä tai napauta pyöriä vahvistaaksesi syntymäpäivän.',
+      confirmHint: 'Selaa tai napauta rullia vahvistaaksesi syntymäpäivän.',
       day: 'Päivä',
       month: 'Kuukausi',
       year: 'Vuosi',
@@ -64,7 +64,7 @@ const coppia: Messages['coppia'] = {
       unknownLabel: 'En tiedä',
       unknownNote:
         'Ilman kellonaikaa synastria jää tämän henkilön osalta osittaiseksi (ei huoneita eikä nousevaa merkkiä). Jatka rauhassa, muu analyysi on silti pätevä.',
-      confirmHint: 'Napauta pyörää vahvistaaksesi ajan tai valitse ”En tiedä”.',
+      confirmHint: 'Napauta rullaa vahvistaaksesi ajan tai valitse ”En tiedä”.',
     },
     place: {
       placeholder: 'esim. Helsinki, Tampere, Turku...',
@@ -91,7 +91,7 @@ const coppia: Messages['coppia'] = {
       options: {
         self: 'Minä',
         partner: 'Kumppanini',
-        neither: 'Kumpikaan: se vain tapahtui',
+        neither: 'Ei kumpikaan – se vain tapahtui',
       },
     },
     focus: {
@@ -114,7 +114,7 @@ const coppia: Messages['coppia'] = {
     },
     times: {
       title: 'Mihin aikaan synnyitte?',
-      hint: 'Kellonajasta saadaan huoneet ja nouseva merkki. Jos ette tiedä sitä, jatketaan silti.',
+      hint: 'Kellonajan avulla lasketaan huoneet ja nouseva merkki. Jos ette tiedä sitä, voitte silti jatkaa.',
       you: 'Sinä',
       partner: 'Kumppanisi',
     },
@@ -132,15 +132,15 @@ const coppia: Messages['coppia'] = {
     finalCta: 'Laske synastria',
   },
   processing: {
-    errorTitle: 'Ilmeni ongelma',
+    errorTitle: 'Jokin meni pieleen',
     errors: {
-      createSession: 'En onnistunut luomaan istuntoa. Yritä muutaman sekunnin kuluttua uudelleen.',
-      timeout: 'Luominen kestää odotettua pidempään. Yritä hetken päästä uudelleen.',
-      failed: 'Luominen epäonnistui. Yritä uudelleen.',
+      createSession: 'Istunnon luominen ei onnistunut. Yritä muutaman sekunnin kuluttua uudelleen.',
+      timeout: 'Tämä kestää odotettua kauemmin. Yritä hetken päästä uudelleen.',
+      failed: 'Synastrian laskeminen epäonnistui. Yritä uudelleen.',
     },
     backToQuiz: 'Takaisin kyselyyn',
-    title: 'Lasken synastriaanne',
-    body: 'Asetan kaksi syntymäkarttaa päällekkäin ja katson, miten ne kohtaavat. Vain muutama sekunti.',
+    title: 'Laskemme synastriaanne',
+    body: 'Asetamme syntymäkartat päällekkäin ja katsomme, miten ne kohtaavat. Tähän menee vain muutama sekunti.',
   },
   teaser: {
     kicker: 'Parin synastria',
@@ -148,11 +148,11 @@ const coppia: Messages['coppia'] = {
     personB: 'Henkilö B',
     wrongData: 'Eivätkö tiedot ole oikein?',
     overallHigh:
-      'Teidän välillänne on vahva pohja. Koko tulkinta näyttää tarkasti, mistä tämä sopusointu syntyy ja miten sitä suojellaan ajan mittaan.',
+      'Teidän välillänne on vahva pohja. Koko tulkinta näyttää tarkasti, mistä tämä sopusointu syntyy ja miten voitte vaalia sitä jatkossakin.',
     overallMedium:
-      'Suhteessanne on sekä vahvuuksia että avoimia kohtia. Juuri tämä profiili tuottaa runsaimman tulkinnan, koska ymmärrettävää ja hyödynnettävää on paljon.',
+      'Suhteessanne on sekä vahvuuksia että avoimia kysymyksiä. Juuri tällaisesta asetelmasta syntyy rikkain tulkinta, koska ymmärrettävää ja hyödynnettävää on paljon.',
     overallLow:
-      'Luvut eivät ole arvosana: ne kertovat, missä suhde sujuu ja missä se kaipaa huomiota. Monimutkaisen dynamiikan parit löytävät tulkinnasta eniten.',
+      'Luvut eivät ole arvosana: ne kertovat, missä suhde sujuu ja missä se kaipaa huomiota. Parit, joiden dynamiikka on monisyinen, saavat tulkinnasta eniten irti.',
     primaryCta: 'Hanki koko synastria',
     securePayment: 'Turvallinen ja suojattu maksu',
     framing: {
@@ -171,7 +171,7 @@ const coppia: Messages['coppia'] = {
         contextLine:
           'Keskitason pistemäärä kertoo suhteesta, jossa on enemmän vivahteita kuin varmuuksia. Juuri vivahteet tekevät tulkinnasta mielenkiintoisen.',
         domainsSubtitle:
-          'Jokainen luku avaa kysymyksen. Koko tulkinnassa kysymykset saavat asiayhteytensä todellisista planeetoistanne.',
+          'Jokainen luku herättää kysymyksen. Koko tulkinta vastaa niihin planeettojenne todellisten asentojen pohjalta.',
         ctaLabel: 'Lue tulkinta',
         offerSubtitle: 'suhteestanne',
         extraBullet: 'Mikä toimii ja mikä kaipaa huomiota, alue alueelta',
@@ -181,53 +181,53 @@ const coppia: Messages['coppia'] = {
         contextLine:
           'Matala pistemäärä ei kerro, kuinka paljon pidätte toisistanne, vaan kuinka paljon on ymmärrettävää. Monimutkaiset suhteet antavat eniten takaisin, kun ne luetaan hyvin.',
         domainsSubtitle:
-          'Matalat luvut eivät ole tuomioita, vaan kohtia, joissa suhde kaipaa eniten huomiota. Koko tulkinta selittää syyn planeetta planeetalta.',
-        ctaLabel: 'Ymmärrä dynamiikka',
-        offerSubtitle: 'suhteenne ymmärtämiseksi',
-        extraBullet: 'Astrologiset syyt vaikeimpien dynamiikkojen takana',
+          'Matalat luvut eivät ole tuomioita vaan kohtia, joissa suhde kaipaa eniten huomiota. Koko tulkinta selittää syyn planeetta planeetalta.',
+        ctaLabel: 'Tutustu dynamiikkaan',
+        offerSubtitle: 'jotta ymmärrätte suhdettanne',
+        extraBullet: 'Vaikeimpien kohtien astrologiset syyt',
       },
     },
     domains: {
       sintonia_emotiva: {
         label: 'Tunneyhteys',
         high: 'Tunnette olevanne kotona',
-        medium: 'Koti, jota rakennetaan',
+        medium: 'Turvapaikka, jota rakennetaan',
         low: 'Mistä etsitte turvaa?',
       },
       attrazione: {
         label: 'Vetovoima',
         high: 'Kemia ja halu',
-        medium: 'Kemia, jota pitää tulkita',
-        low: 'Mikä oikeasti vie teidät lähemmäs toisianne?',
+        medium: 'Kemiaa, joka vaatii tulkintaa',
+        low: 'Mikä teitä oikeasti vetää yhteen?',
       },
       comunicazione: {
         label: 'Viestintä',
-        high: 'Sanat virtaavat',
+        high: 'Sanat soljuvat',
         medium: 'Eri kielet, sama tarkoitus',
-        low: 'Mihin keskustelu tökkii?',
+        low: 'Missä keskustelu takkuaa?',
       },
       stabilita: {
         label: 'Vakaus',
         high: 'Kestää aikaa',
-        medium: 'Perustukset valitaan itse',
+        medium: 'Perusta, jonka valitsette itse',
         low: 'Mihin suhde nojaa?',
       },
       crescita: {
         label: 'Kasvu',
-        high: 'Vauhditatte toisianne',
-        medium: 'Kasvua kitkan kanssa',
+        high: 'Saatte toisenne liikkeelle',
+        medium: 'Kasvua kitkan kautta',
         low: 'Mikä pitää teidät paikallaan?',
       },
       tensione: {
         label: 'Jännite',
-        high: 'Kitka, joka muuttaa',
-        medium: 'Rakentava kitka',
+        high: 'Kitkaa, joka muuttaa',
+        medium: 'Rakentavaa kitkaa',
         low: 'Näennäinen vai todellinen tyyneys?',
       },
     },
     excerptCaption: 'Ote tulkintanne yhteenvedosta',
     offerBullets: [
-      'Kahdeksan osiota: muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmainen kuvio, suunta',
+      'Kahdeksan osiota: muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmakuvio, suunta',
       'Ladattava PDF, pysyvä pääsy',
       'Noin 10 sivua selkeällä suomella',
     ],
@@ -235,42 +235,42 @@ const coppia: Messages['coppia'] = {
     faqItems: [
       {
         q: 'Mihin synastria perustuu?',
-        a: 'Synastria vertaa planeettojen todellisia asentoja kummankin syntymähetkellä. Emme käytä yleistä aurinkomerkkiä: laskemme kummankin täydellisen syntymäkartan ja analysoimme kahden kartan välisiä aspekteja.',
+        a: 'Synastria vertaa planeettojen todellisia asentoja kummankin syntymähetkellä. Emme tyydy pelkkään aurinkomerkkiin: laskemme kummankin koko syntymäkartan ja tutkimme karttojen välisiä aspekteja.',
       },
       {
         q: 'Voinko antaa synastrian lahjaksi?',
         a: 'Totta kai. Tarvitset vain molempien syntymätiedot. Maksun jälkeen saat PDF:n sähköpostiisi: voit välittää sen eteenpäin tai tulostaa sen lahjaksi.',
       },
       {
-        q: 'Kauanko tulkinnan saamiseen menee?',
+        q: 'Kuinka nopeasti saan tulkinnan?',
         a: 'Tulkinta luodaan muutamassa minuutissa maksun jälkeen. Saat sähköpostiviestin, jossa on linkki PDF-tiedostoon ja verkkoversioon.',
       },
       {
         q: 'Toimiiko se myös kriisissä oleville tai vasta tutustuneille pareille?',
-        a: 'Synastria kuvaa suhteen potentiaalia, ei sen nykytilaa. Siitä on hyötyä sekä vakiintuneen suhteen dynamiikan ymmärtämisessä että uuden yhteyden tutkimisessa.',
+        a: 'Synastria kuvaa suhteen mahdollisuuksia, ei sen tämänhetkistä tilaa. Siitä on apua sekä pitkän suhteen dynamiikan ymmärtämisessä että uuden suhteen alussa.',
       },
     ],
   },
   offerCard: {
     defaultBullets: [
-      'Kahdeksan osiota: muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmainen kuvio, suunta',
+      'Kahdeksan osiota: muotokuva, kemia, viestintä, tunnemaailma, haasteet, vakaus, karmakuvio, suunta',
       'Ladattava PDF, pysyvä pääsy',
       'Noin 10 sivua selkeällä suomella',
     ],
     kicker: 'Koko tulkinta',
-    titleLine1: 'Täydellinen astrologinen tulkinta',
+    titleLine1: 'Kattava astrologinen tulkinta',
     defaultSubtitle: 'suhteestanne',
     defaultCta: 'Hanki koko synastria',
     loadingCta: 'Avataan kassaa…',
-    secureNote: 'Turvallinen ja suojattu maksu. Saat sähköpostin, jonka avulla pääset tulkintaan.',
+    secureNote: 'Turvallinen ja suojattu maksu. Saat sähköpostiisi linkin tulkintaan.',
   },
   success: {
-    titleProblem: 'Ilmeni ongelma',
-    titleOk: 'Kiitos, maksu vastaanotettu',
+    titleProblem: 'Jokin meni pieleen',
+    titleOk: 'Kiitos, maksu on vastaanotettu',
     paypalError:
-      'Emme onnistuneet vahvistamaan PayPal-maksua. Ota yhteyttä, jos summa on veloitettu.',
+      'Emme onnistuneet vahvistamaan PayPal-maksua. Ota meihin yhteyttä, jos summa on jo veloitettu.',
     capturing: 'Vahvistamme PayPal-maksua…',
-    preparing: 'Valmistelen tiliäsi. Hetki…',
+    preparing: 'Valmistelemme tiliäsi. Hetki vain…',
   },
   activate: {
     titles: {
@@ -279,14 +279,14 @@ const coppia: Messages['coppia'] = {
       forgot: 'Palauta pääsy',
     },
     subtitles: {
-      signup: 'Päästäksesi synastriaraporttiisi',
-      signin: 'Syötä tunnuksesi päästäksesi synastriaraporttiisi.',
-      forgot: 'Kirjoita sähköpostiosoitteesi: lähetämme sinulle linkin salasanan nollaamista varten.',
+      signup: 'Tilin avulla pääset synastriaraporttiisi.',
+      signin: 'Anna tunnuksesi, niin pääset synastriaraporttiisi.',
+      forgot: 'Kirjoita sähköpostiosoitteesi, niin lähetämme linkin uuden salasanan asettamiseen.',
     },
     toasts: {
       checkEmailReset: {
         title: 'Tarkista sähköpostisi',
-        description: 'Jos osoite on rekisteröity, saat linkin salasanan nollaamista varten.',
+        description: 'Jos osoite on rekisteröity, saat linkin uuden salasanan asettamiseen.',
       },
       alreadyRegistered: 'Tällä sähköpostiosoitteella on jo tili. Kirjaudu sisään.',
       wrongCredentials: 'Sähköpostiosoite tai salasana on väärä.',
@@ -294,13 +294,13 @@ const coppia: Messages['coppia'] = {
   },
   reportProcessing: {
     preparing: 'Valmistelemme raporttianne',
-    writing: 'Kirjoitan raporttianne. Muutama minuutti...',
-    starting: 'Aloitan raportin kirjoittamisen...',
+    writing: 'Kirjoitamme raporttianne. Tämä vie muutaman minuutin…',
+    starting: 'Aloitamme raportin kirjoittamisen…',
     duration: 'Raportin luominen kestää 1–3 minuuttia.',
-    errorTitle: 'Ilmeni ongelma',
+    errorTitle: 'Jokin meni pieleen',
     errors: {
-      sessionNotFound: 'En löydä istuntoasi. Ota yhteyttä, jos ongelma jatkuu.',
-      failed: 'Luominen epäonnistui. Ota yhteyttä, jos ongelma jatkuu.',
+      sessionNotFound: 'Istuntoasi ei löydy. Ota meihin yhteyttä, jos ongelma jatkuu.',
+      failed: 'Raportin luominen epäonnistui. Ota meihin yhteyttä, jos ongelma jatkuu.',
       timeout: 'Luominen kestää odotettua pidempään. Yritä uudelleen muutaman minuutin kuluttua.',
     },
   },
@@ -345,12 +345,12 @@ const coppia: Messages['coppia'] = {
     opposites_attract: {
       label: 'Vastakohdat vetävät',
       definizione:
-        'Vahva romanttinen intensiteetti, jota ruokkivat selvät erot: jännite kuuluu vetovoimaan.',
+        'Voimakas romanttinen veto, jota selvät erot ruokkivat: jännite on osa vetovoimaa.',
     },
     karmic_lesson: {
       label: 'Opettava suhde',
       definizione:
-        'Vaativa dynamiikka, joka on syntynyt kehittämään: se vaatii tietoisuutta ja antaa vastineeksi muutoksen.',
+        'Vaativa asetelma, jonka tarkoitus on kasvattaa: se edellyttää tietoista otetta ja palkitsee muutoksella.',
     },
     steady_rock: {
       label: 'Vankka kallio',
@@ -366,7 +366,7 @@ const coppia: Messages['coppia'] = {
     },
     long_term_anchor: {
       label: 'Pitkän linjan ankkuri',
-      definizione: 'Vankka pohja, jolle tulevaisuuden voi rakentaa: vakaus tulee ennen kuohuntaa.',
+      definizione: 'Kestävä pohja, jolle tulevaisuuden voi rakentaa: vakaus tulee ennen kuohuntaa.',
     },
     mental_synergy: {
       label: 'Ajatusten yhteispeli',
@@ -382,11 +382,11 @@ const coppia: Messages['coppia'] = {
     },
     deep_bond: {
       label: 'Syvä side',
-      definizione: 'Syvä tunneturva: pari, jossa tulee nähdyksi ilman selityksiä.',
+      definizione: 'Syvä tunneturva: pari, jossa kumpikin tulee nähdyksi ilman selityksiä.',
     },
     balanced_connection: {
       label: 'Tasapainoinen yhteys',
-      definizione: 'Vakaa sekoitus erilaisia vahvuuksia: mikään teema ei hallitse, tasapaino on avain.',
+      definizione: 'Vakaa sekoitus erilaisia vahvuuksia: mikään yksittäinen teema ei hallitse, vaan tasapaino ratkaisee.',
     },
     discordant_layout: {
       label: 'Kitkainen asetelma',

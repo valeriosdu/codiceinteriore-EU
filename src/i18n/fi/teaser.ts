@@ -4,7 +4,7 @@ const teaser: Messages['teaser'] = {
   loading: {
     title: 'Viimeistelemme ensimmäistä tulkintaasi',
     slow: 'Tämä vie odotettua pidempään. Pysy tällä sivulla: yritämme automaattisesti uudelleen hetken kuluttua.',
-    normal: 'Tarkistamme syntymäkartan ja oivallukset, ennen kuin näytämme tarjouksen.',
+    normal: 'Tarkistamme syntymäkarttasi ja oivallukset, ennen kuin näytämme tarjouksen.',
     complex: 'Karttasi on poikkeuksellisen monipuolinen: tarvitsemme vielä pari minuuttia. Pysy tällä sivulla, olemme melkein valmiita.',
   },
   failed: {
@@ -19,7 +19,7 @@ const teaser: Messages['teaser'] = {
   },
   hero: {
     title: (name) => (name ? `${name}, tässä on ensimmäinen tulkintasi` : 'Tässä on ensimmäinen tulkintasi'),
-    subtitle: 'Tätä syntymäkartastasi nousee esiin ensimmäisellä lukukerralla.',
+    subtitle: 'Ensimmäinen katsaus siihen, mitä syntymäkarttasi kertoo.',
     wrongData: 'Eivätkö tiedot ole oikein?',
   },
   openFullReport: 'Avaa koko tulkinta',
@@ -28,10 +28,10 @@ const teaser: Messages['teaser'] = {
     baseCta: 'Hanki koko tulkinta',
     premiumName: 'Koko tulkinta + 1 kuukausi transiitteja',
     premiumPromise:
-      'Ymmärrä, mikä ohjaa sinua syvällä, ja näe selkeästi myös hetki, jota elät juuri nyt',
+      'Ymmärrä, mikä sinua syvimmiltään ohjaa, ja näe selkeästi myös hetki, jota elät juuri nyt',
     premiumFeatures: [
       'Kaikki, mitä koko tulkintaan kuuluu',
-      '1 kuukausi viikoittaisia, henkilökohtaisia tulkintoja jakson transiiteista',
+      'Kuukauden ajan viikoittainen, henkilökohtainen tulkinta ajankohtaisista transiiteista',
       'Lisätukea sen ymmärtämiseen, mikä sinussa herää tunnetasolla juuri nyt',
       'Lahjana: henkilökohtainen runo muutoksen tueksi',
     ],
@@ -39,11 +39,11 @@ const teaser: Messages['teaser'] = {
   },
   faq: {
     kicker: 'Usein kysyttyä',
-    heading: 'Täältä löydät vastaukset yleisimpiin kysymyksiin ennen ostoa.',
+    heading: 'Vastauksia yleisimpiin kysymyksiin ennen ostoa.',
   },
   bottomCta: 'Hanki koko tulkinta',
   reassurance: {
-    instantAccess: 'Pääsy heti',
+    instantAccess: 'Heti luettavissa',
     securePayment: 'Turvallinen maksu',
     humanLanguage: 'Kirjoitettu selkeällä kielellä',
   },

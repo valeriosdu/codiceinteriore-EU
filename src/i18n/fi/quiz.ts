@@ -11,34 +11,34 @@ const quiz: Messages['quiz'] = {
     intent: {
       question: 'Mitä haluaisit ymmärtää eniten?',
       options: [
-        'Omat toimintatapani rakkaudessa ja ihmissuhteissa',
-        'Mikä pitää minut paikallaan ja missä voin kasvaa',
+        'Miten toimin rakkaudessa ja suhteissa',
+        'Mikä minua jarruttaa ja missä voin kasvaa',
         'Kokonaiskuva itsestäni',
       ],
     },
     attachment: {
       question: {
-        self: 'Kun joku etääntyy tai muuttuu epäselväksi, mitä teet vaistomaisesti?',
-        other: 'Kun joku etääntyy tai muuttuu epäselväksi, mitä tämä henkilö tekee vaistomaisesti?',
+        self: 'Miten reagoit vaistomaisesti, kun joku etääntyy tai alkaa olla epämääräinen?',
+        other: 'Miten hän reagoi vaistomaisesti, kun joku etääntyy tai alkaa olla epämääräinen?',
       },
       options: {
         self: [
           'Haen lisää yhteyttä',
           'Vetäydyn ja otan etäisyyttä',
-          'Odotan jotain merkkiä',
+          'Jään odottamaan merkkiä',
         ],
         other: [
           'Hakee lisää yhteyttä',
           'Vetäytyy ja ottaa etäisyyttä',
-          'Odottaa jotain merkkiä',
+          'Jää odottamaan merkkiä',
         ],
       },
     },
     symptom: {
       question: 'Mitä tunnet useimmin, kun katsot elämääsi nyt?',
       options: [
-        'Minusta tuntuu, että jokin jää minulta huomaamatta, vaikka muut näkevät sen',
-        'Tiedän, mitä minun pitäisi tehdä, mutta en saa sitä tehtyä',
+        'Tuntuu, että minulta jää huomaamatta jotain, minkä muut näkevät',
+        'Tiedän, mitä pitäisi tehdä, mutta en saa sitä tehtyä',
         'Etenen, mutta en sinne, minne haluaisin',
         'Kaikki tuntuu pysähtyneeltä, ei vain sisälläni',
       ],
@@ -47,9 +47,9 @@ const quiz: Messages['quiz'] = {
       question: 'Kun mietit, kuka olisit voinut olla, mitä sinulle tulee mieleen?',
       options: [
         'Vapaampi versio minusta',
-        'Itseään enemmän toteuttava versio minusta',
-        'Varmempi versio minusta, vähemmän epäilyksiä',
-        'Päättäväisempi versio minusta, vähemmän odottava',
+        'Täydemmin elävä versio minusta',
+        'Varmempi versio minusta, vähemmän epäröivä',
+        'Päättäväisempi versio minusta, joka ei jää odottamaan',
       ],
     },
     date: {
@@ -59,13 +59,13 @@ const quiz: Messages['quiz'] = {
       year: 'Vuosi',
     },
     time: {
-      title: { self: 'Syntymäaikasi (kellonaika)', other: 'Hänen syntymäaikansa (kellonaika)' },
+      title: { self: 'Syntymäsi kellonaika', other: 'Hänen syntymänsä kellonaika' },
       hour: 'Tunti',
       minute: 'Minuutit',
-      hint: 'Jos et tiedä tarkkaa aikaa, valitse lähin mahdollinen.',
+      hint: 'Jos et tiedä tarkkaa aikaa, valitse lähin arvio.',
       unknown: {
         label: { self: 'En tiedä syntymäaikaani', other: 'En tiedä hänen syntymäaikaansa' },
-        note: 'Käytämme kello 12.00: tulkinta on silti pätevä, mutta nouseva merkki ja huoneet ovat vain suuntaa antavia.',
+        note: 'Käytämme kellonaikaa 12.00: tulkinta pätee silti, mutta nouseva merkki ja huoneet ovat vain suuntaa antavia.',
       },
     },
     place: {
@@ -77,12 +77,12 @@ const quiz: Messages['quiz'] = {
     },
     focus: {
       question: {
-        self: 'Mitä osaa ihmissuhdemalleistasi haluat ymmärtää paremmin?',
-        other: 'Mitä osaa hänen ihmissuhdemalleistaan haluat ymmärtää paremmin?',
+        self: 'Mitä ihmissuhdekuvioissasi haluat ymmärtää paremmin?',
+        other: 'Mitä hänen ihmissuhdekuvioissaan haluat ymmärtää paremmin?',
       },
       options: {
-        self: ['Miten valitset', 'Mitä kaavoja toistat', 'Miten suojaudut', 'Mitä todella etsit'],
-        other: ['Miten hän valitsee', 'Mitä kaavoja hän toistaa', 'Miten hän suojautuu', 'Mitä hän todella etsii'],
+        self: ['Miten valitset', 'Mitä kuvioita toistat', 'Miten suojaudut', 'Mitä todella etsit'],
+        other: ['Miten hän valitsee', 'Mitä kuvioita hän toistaa', 'Miten hän suojautuu', 'Mitä hän todella etsii'],
       },
     },
     name: {
@@ -122,7 +122,7 @@ const quiz: Messages['quiz'] = {
     continue: 'Jatka',
     resolvingPlace: 'Tarkistetaan paikkaa…',
     toPayment: 'Siirry maksamaan',
-    seeReading: 'Näe tulkintasi',
+    seeReading: 'Katso tulkintasi',
   },
   back: 'Takaisin',
 };

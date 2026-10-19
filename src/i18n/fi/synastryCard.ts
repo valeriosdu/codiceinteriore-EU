@@ -7,7 +7,7 @@ const synastryCard: Messages['synastryCard'] = {
     comunicazione: 'Viestintä',
     mondo_emotivo: 'Tunnemaailma',
     sfide: 'Haasteet kasvuna',
-    pattern_karmico: 'Karmainen kuvio',
+    pattern_karmico: 'Karmakuvio',
     direzione: 'Suunta',
   },
   pdf: {
@@ -39,7 +39,7 @@ const synastryCard: Messages['synastryCard'] = {
     includes: [
       'Parin muotokuva: keitä olette yhdessä ja millainen on suhteenne arkkityyppi',
       'Vetovoima, viestintä, tunnemaailma: missä toimitte ja missä on vaikeampaa',
-      'Haasteet kasvuna, karmaiset kuviot ja suhteen suunta',
+      'Haasteet kasvuna, karmakuviot ja suhteen suunta',
     ],
     cta: 'Tutustu parin synastriaan',
     note: 'Kertamaksu. Tarvitaan molempien syntymätiedot.',

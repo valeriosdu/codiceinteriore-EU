@@ -2,7 +2,7 @@ import type { Messages } from '@/i18n';
 
 const landingAttivazione: Messages['landingAttivazione'] = {
   seo: {
-    title: 'Syntymäkartta, kun tunnet jumittavasi | Carta Interior',
+    title: 'Syntymäkartta, kun tunnet olevasi jumissa | Carta Interior',
     description:
       'Tiedätkö, mitä haluat, mutta et pääse alkuun? Tulkinta näyttää, mikä sinua sytyttää ja mikä pysäyttää. Noin 10 sivua suomeksi. Aloita ilmaiseksi.',
     productName: 'Syntymäkartan tulkinta — liikkeelle lähtö',
@@ -13,9 +13,9 @@ const landingAttivazione: Messages['landingAttivazione'] = {
   hero: {
     titlePre: 'Oma',
     titleEm: 'syntymäkarttasi',
-    titlePost: ' selitettynä selkeästi',
+    titlePost: ', selkeästi selitettynä',
     subtitle:
-      'Näe, mikä sinua sytyttää, mikä pysäyttää ja miksi jotkin asiat eivät lähde liikkeelle, vaikka tiedät, mitä pitäisi tehdä.',
+      'Selvitä, mikä sinua sytyttää, mikä pysäyttää ja miksi jotkin asiat eivät lähde liikkeelle, vaikka tiedät, mitä pitäisi tehdä.',
     cta: 'Aloita kysely',
     microcopy: '2 minuutin kysely · Esitietoja ei tarvita',
     socialProofLine1: 'Yli 10 000 ihmistä',
@@ -25,9 +25,9 @@ const landingAttivazione: Messages['landingAttivazione'] = {
     heading: 'Mitä voit saada selville',
     items: [
       'Miksi jotkin asiat eivät käynnisty, vaikka tiedät, mitä pitäisi tehdä',
-      'Mikä sinua todella sytyttää, enemmän kuin luulet',
-      'Kaava, joka toistuu ilman että huomaat sitä',
-      'Oma syvä rytmisi, joka eroaa siitä, mitä sinulta odotetaan',
+      'Mikä sinua oikeasti sytyttää – ehkä jokin muu kuin luulet',
+      'Kuvio, joka toistuu huomaamattasi',
+      'Oma rytmisi, joka eroaa siitä, mitä sinulta odotetaan',
     ],
   },
   quote: {

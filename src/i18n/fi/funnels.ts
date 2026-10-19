@@ -5,20 +5,20 @@ const classica: FunnelCopy = {
     fallbackInsights: [
       {
         title: 'Et valitse sattumalta',
-        body: 'Kiintymisessäsi on tietty muoto: jokin rakenteessasi tunnistaa tietynlaisen intensiteetin jo ennen kuin ehdit ajatella. Kuvio ei ole ihmistyyppi, vaan tapa, jolla syttyt.',
+        body: 'Sinulla on oma, tarkka tapasi kiintyä: jokin sinussa tunnistaa tietynlaisen voimakkuuden, jo ennen kuin ehdit ajatella. Kuvio ei ole tietty ihmistyyppi vaan tapa, jolla itse syttyt.',
       },
       {
         title: 'Et ole sulkeutunut, vaan suojaat itseäsi',
-        body: 'Kun toinen tulee liian lähelle tai etääntyy, jokin sinussa aktivoituu. Se ei ole kylmyyttä eikä ristiriitaisuutta: se on tarkka puolustus, jolla on tehtävä, ei oire, joka pitäisi korjata.',
+        body: 'Kun toinen tulee liian lähelle tai etääntyy, jokin sinussa herää. Se ei ole kylmyyttä eikä ristiriitaisuutta: se on tarkka puolustus, jolla on tehtävä, ei oire, joka pitäisi korjata.',
       },
       {
         title: 'Mitä oikeasti etsit',
-        body: 'Kuvion ja puolustuksen alla on selkeä toive, ja sillä on hienovaraisempi muoto kuin sillä, mitä olet oppinut pyytämään. Sen tunnistaminen ei riko kuviota, vaan muuttaa tapaa, jolla elät sen sisällä.',
+        body: 'Kuvion ja puolustuksen alla on selvä toive, joka on hienovaraisempi kuin se, mitä olet oppinut pyytämään. Sen tunnistaminen ei riko kuviota, vaan muuttaa tapaasi elää sen sisällä.',
       },
     ],
-    offerHeadline: 'Olet lukenut esikatselun tulkinnastasi.',
+    offerHeadline: 'Luit juuri esikatselun tulkinnastasi.',
     offerSubhead:
-      'Lukemasi 3 katkelmaa ovat lyhyitä ja tiiviitä tiivistelmiä. Koko tulkinta antaa sinulle yhden johdonmukaisen kokonaiskuvan syntymäkartastasi kaikilta osin.',
+      'Lukemasi kolme katkelmaa ovat lyhyitä tiivistelmiä. Koko tulkinta kokoaa syntymäkarttasi kaikki osa-alueet yhdeksi johdonmukaiseksi kokonaiskuvaksi.',
     reportSectionsList: [
       'Syvä identiteetti',
       'Tunnedynamiikka',
@@ -29,46 +29,46 @@ const classica: FunnelCopy = {
     ],
     baseOffer: {
       promise:
-        'Jotta ymmärrät selkeämmin tunne-elämäsi, ihmissuhteesi ja perusrakenteesi ja näet, mikä elämässäsi toistuu.',
+        'Ymmärrät selkeämmin tunne-elämääsi, ihmissuhteitasi ja perusrakennettasi ja näet, mikä elämässäsi toistuu.',
       features: [
-        'Ymmärrät tunne-esteet, puolustukset ja toistuvat dynamiikat ihmisen kielellä, et ammattisanastolla',
+        'Ymmärrät tunnelukkosi, puolustuskeinosi ja toistuvat kuviosi arkikielellä, ilman ammattisanastoa',
         'Näet, miten nämä kuviot vaikuttavat ihmissuhteisiisi, työhösi, omaan suuntaasi ja elämänvalintoihisi',
-        'Saat käytännön vinkkejä siihen, mitä kannattaa tarkkailla, vahvistaa tai muuttaa omissa reaktiotavoissasi',
-        'Syvennä tulkintaa ilmaiseksi astrologioppaan avulla, joka vastaa kysymyksiisi',
-        'Pääsy tulkintaasi heti verkossa ja sähköpostitse',
+        'Saat käytännön vinkkejä siitä, mitä kannattaa tarkkailla, vahvistaa tai muuttaa omissa reaktiotavoissasi',
+        'Voit syventää tulkintaa maksutta astrologioppaan avulla: se vastaa kysymyksiisi',
+        'Tulkinta heti luettavissa verkossa ja sähköpostissa',
       ],
     },
     trustBullets: [
-      'Jos tulkinta tuntuu yleiseltä tai ei oikeasti kosketa sinua, palautamme rahasi viimeiseen senttiin asti.',
+      'Jos tulkinta tuntuu ylimalkaiselta tai ei oikeasti kosketa sinua, palautamme rahasi viimeistä senttiä myöten.',
     ],
     faqItems: [
       {
         q: 'Miten tämä eroaa verkosta löytyvistä ilmaisista astrologisista tulkinnoista?',
-        a: 'Verkosta löytämäsi ilmaiset tulkinnat pilkkovat usein kaiken erillisiin osiin: yksi merkitys jokaiselle planeetalle, yksi jokaiselle aspektille, yksi jokaiselle huoneelle. Täällä työ on erilaista: syntymäkarttasi luetaan elävänä kokonaisuutena, jossa painotetaan sitä, mikä todella on tärkeää, ja ihmissuhteet, tunteet, esteet ja oma suunta yhdistetään yhdeksi johdonmukaiseksi tulkinnaksi ilman ristiriitoja.',
+        a: 'Verkosta löytämäsi ilmaiset tulkinnat pilkkovat usein kaiken erillisiin osiin: yksi merkitys jokaiselle planeetalle, yksi jokaiselle aspektille, yksi jokaiselle huoneelle. Me teemme toisin: syntymäkarttasi luetaan elävänä kokonaisuutena, jossa painotetaan sitä, mikä todella on tärkeää, ja ihmissuhteet, tunteet, esteet ja oma suunta yhdistetään yhdeksi johdonmukaiseksi tulkinnaksi ilman ristiriitoja.',
       },
       {
-        q: 'Mitä saan tarkalleen, kun ostan tulkinnan?',
-        a: 'Saat täydellisen ja henkilökohtaisen 10-sivuisen tulkinnan syntymäkartastasi, kirjoitettuna selkeällä ja inhimillisellä kielellä. Tulkinta syventyy identiteettiin, tunnedynamiikkaan, ihmissuhteisiin, toistuviin kuvioihin, tärkeimpiin esteisiin ja omaan suuntaasi. Tulkinnan mukana saat myös 2 ilmaista kysymystä astrologioppaalle, jolta voit pyytää syvennystä mihin tahansa raporttisi tai karttasi osaan.',
+        q: 'Mitä tarkalleen saan, kun ostan tulkinnan?',
+        a: 'Saat syntymäkartastasi kattavan, henkilökohtaisen 10-sivuisen tulkinnan, joka on kirjoitettu selkeällä ja helposti lähestyttävällä kielellä. Tulkinta syventyy identiteettiin, tunnedynamiikkaan, ihmissuhteisiin, toistuviin kuvioihin, tärkeimpiin esteisiin ja omaan suuntaasi. Tulkinnan mukana saat myös 2 ilmaista kysymystä astrologioppaalle, jolta voit pyytää lisäselvitystä mistä tahansa raporttisi tai karttasi kohdasta.',
       },
       {
         q: 'Mikä on tulkinnan mukana tuleva astrologiopas?',
-        a: 'Kun olet lukenut raporttisi, voit esittää oppaalle henkilökohtaisia kysymyksiä mistä tahansa syntymäkarttasi osa-alueesta tai elämäntilanteestasi juuri nyt. Opas muodostaa vastauksen syntymätietojesi ja jo saamasi tulkinnan pohjalta ja toimittaa sen seuraavien tuntien kuluessa henkilökohtaiseen tilaasi ja sähköpostiisi. Koko tulkinnan mukana tulee 2 ilmaista kysymystä, ja voit syventää aihetta lisää ostamalla lisäkysymyspaketteja suoraan raportistasi.',
+        a: 'Kun olet lukenut raporttisi, voit esittää oppaalle henkilökohtaisia kysymyksiä mistä tahansa syntymäkarttasi osa-alueesta tai elämäntilanteestasi juuri nyt. Opas muodostaa vastauksen syntymätietojesi ja jo saamasi tulkinnan pohjalta ja toimittaa sen muutaman tunnin kuluessa omalle tilillesi ja sähköpostiisi. Koko tulkinnan mukana tulee 2 ilmaista kysymystä, ja voit jatkaa ostamalla lisää kysymyspaketteja suoraan raportistasi.',
       },
       {
         q: 'Miten koko tulkinta luodaan?',
-        a: 'Antamistasi syntymätiedoista lasketaan astrologinen syntymäkarttasi. Tämän pohjalta muotoutuu koko tulkinta, jossa käytetään tietokoneavusteista käsittelyä, joka perustuu laajaan ja jäsenneltyyn astrologiseen ja psykologiseen tietämykseen. Näin monia tietoja voidaan yhdistää toisiinsa ja muuttaa selkeäksi, johdonmukaiseksi ja henkilökohtaiseksi tulkinnaksi, joka eroaa verkosta löytyvistä yleisistä ja hajanaisista sisällöistä.',
+        a: 'Antamistasi syntymätiedoista lasketaan ensin syntymäkarttasi. Sen pohjalta koko tulkinta laaditaan tietokoneavusteisesti, laajaa ja jäsenneltyä astrologista ja psykologista tietämystä hyödyntäen. Näin monet tiedot voidaan yhdistää selkeäksi, johdonmukaiseksi ja henkilökohtaiseksi tulkinnaksi – aivan toisenlaiseksi kuin verkon yleiset ja hajanaiset sisällöt.',
       },
       {
         q: 'Täytyykö minun tuntea astrologiaa ymmärtääkseni tulkintaa?',
-        a: 'Ei. Tulkinta on kirjoitettu niin, että sen ymmärtää, vaikka et olisi koskaan opiskellut astrologiaa. Mukana voi olla astrologisia viittauksia, mutta ne käännetään aina konkreettisiksi, psykologisiksi ja ihmissuhteisiin liittyviksi merkityksiksi.',
+        a: 'Ei tarvitse. Tulkinta on kirjoitettu niin, että sen ymmärtää, vaikka et olisi koskaan opiskellut astrologiaa. Mukana voi olla astrologisia viittauksia, mutta ne selitetään aina konkreettisesti: mitä ne tarkoittavat psykologisesti ja ihmissuhteissa.',
       },
       {
         q: 'Mikä ero on koko tulkinnalla ja tarjouksella, johon sisältyvät ensimmäisen kuukauden transiitit?',
-        a: 'Koko tulkinta syventyy henkilökohtaiseen perusrakenteeseesi: tunteisiin, ihmissuhteisiin, valintoihin, esteisiin ja toistuviin kuvioihin syntymäkartastasi lähtien. Se on pysyvämpi tulkinta, joka liittyy siihen, mikä pyrkii toistumaan ajan mittaan. Ensimmäisen kuukauden sisältävä tarjous lisää viikoittaiset transiitit: tulkinnan siitä, miten kyseisen ajanjakson astrologiset liikkeet voivat aktivoida tiettyjä osia henkilökohtaisesta kartastasi ja auttaa sinua ymmärtämään paremmin hetkeä, jota elät juuri nyt. Lyhyesti: raportti selittää rakenteesi, transiitit näyttävät, miten sama rakenne liikkuu nykyhetkessä. Mukana on myös henkilökohtainen muutosruno lahjana.',
+        a: 'Koko tulkinta syventyy henkilökohtaiseen perusrakenteeseesi syntymäkarttasi pohjalta: tunteisiin, ihmissuhteisiin, valintoihin, esteisiin ja toistuviin kuvioihin. Se kuvaa sitä, mikä sinussa pysyy ja toistuu ajan mittaan. Transiitit sisältävä tarjous lisää tähän kuukauden viikoittaiset transiittitulkinnat: ne kertovat, miten planeettojen liikkeet juuri nyt herättävät tiettyjä osia kartastasi, ja auttavat sinua ymmärtämään hetkeä, jota elät. Lyhyesti sanottuna: raportti selittää rakenteesi, transiitit näyttävät, miten sama rakenne liikkuu nykyhetkessä. Mukana on myös henkilökohtainen muutosruno lahjana.',
       },
       {
-        q: 'Milloin saan pääsyn tulkintaan?',
-        a: 'Heti oston jälkeen. Kun maksu on tehty, voit aktivoida henkilökohtaisen pääsysi ja lukea raportin omalla alueellasi ja sähköpostitse.',
+        q: 'Milloin pääsen lukemaan tulkinnan?',
+        a: 'Heti oston jälkeen. Kun maksu on mennyt läpi, aktivoit tilisi ja voit lukea raportin omalla tililläsi ja sähköpostista.',
       },
     ],
   },
@@ -90,20 +90,20 @@ const attivazione: FunnelCopy = {
     fallbackInsights: [
       {
         title: 'Kyse ei ole laiskuudesta',
-        body: 'Se, mikä sinua jarruttaa, ei ole tahdon puutetta. Se on suojaus, jonka olet oppinut rakentamaan – aikanaan hyödyllinen. Nyt se pitää sinut paikallasi, ja sen toiminnan ymmärtäminen auttaa sinua lakkaamaan olemasta sen armoilla.',
+        body: 'Se, mikä sinua jarruttaa, ei ole tahdonvoiman puutetta. Se on suojakeino, jonka opit aikanaan ja joka silloin auttoi. Nyt se pitää sinut paikallasi. Kun ymmärrät, miten se toimii, se ei enää määrää tahtiasi.',
       },
       {
-        title: 'Et ole myöhässä, sinulla on vain toinen rytmi',
-        body: 'Tunnet olevasi myöhässä, koska vertaat itseäsi muiden aikatauluun. Mutta sinun rytmisi on erilainen: siinä on pidempiä taukoja, odottamattomia uudelleenkäynnistyksiä ja hetkiä, jolloin mitään ei tunnu tapahtuvan. Sen ymmärtäminen muuttaa tapaa, jolla näet itsesi.',
+        title: 'Et ole myöhässä, kuljet omaa tahtiasi',
+        body: 'Tunnet olevasi myöhässä, koska vertaat itseäsi muiden aikatauluun. Mutta sinun rytmisi on erilainen: siinä on pidempiä taukoja, yllättäviä uusia alkuja ja hetkiä, jolloin mitään ei tunnu tapahtuvan. Sen ymmärtäminen muuttaa tapaa, jolla näet itsesi.',
       },
       {
-        title: 'Mikä sinut oikeasti vapauttaa',
-        body: 'Kyse ei ole motivaatiosta. Lähdet liikkeelle, kun ympärilläsi on tietyt tarkat olosuhteet – sellaiset, jotka sopivat juuri sinulle, eivät ne, jotka toimivat muille. Syntymäkarttasi kertoo, mitkä ne ovat.',
+        title: 'Mikä saa sinut oikeasti liikkeelle',
+        body: 'Kyse ei ole motivaatiosta. Lähdet liikkeelle, kun ympärilläsi on tietyt olosuhteet – sellaiset, jotka sopivat juuri sinulle, eivät ne, jotka toimivat muille. Syntymäkarttasi kertoo, mitkä ne ovat.',
       },
     ],
-    offerHeadline: 'Olet lukenut esikatselun tulkinnastasi.',
+    offerHeadline: 'Luit juuri esikatselun tulkinnastasi.',
     offerSubhead:
-      'Nämä 3 kohtaa ovat tarkoituksella lyhyitä ja tiiviitä tiivistelmiä. Syntymäkarttasi on paljon laajempi. Koko tulkinta käy kaiken läpi perusteellisesti ja yhdistää eri puolet toisiinsa: mikä sinua oikeasti estää (ja mitä este suojaa), missä olosuhteissa pääset liikkeelle, ja oletko todella myöhässä vai seuraatko vain omaa luonnollista aikatauluasi. Noin 10 sivua selkeällä suomella, joita voit lukea uudelleen aina tarvittaessa.',
+      'Nämä kolme kohtaa ovat tarkoituksella lyhyitä tiivistelmiä. Syntymäkarttasi on paljon laajempi. Koko tulkinta käy kaiken läpi perusteellisesti ja yhdistää eri puolet toisiinsa: mikä sinua oikeasti estää (ja mitä este suojaa), missä olosuhteissa pääset liikkeelle ja oletko todella myöhässä vai seuraatko vain omaa luonnollista aikatauluasi. Noin 10 sivua selkeällä suomella – palaa niihin aina, kun tarvitset.',
     reportSectionsList: [
       'Syvä identiteetti',
       'Tunnedynamiikka',
@@ -114,48 +114,48 @@ const attivazione: FunnelCopy = {
     ],
     baseOffer: {
       promise:
-        'Jotta ymmärrät, miksi et pääse liikkeelle niin kuin haluaisit, mikä oikeasti saa sinut liikkeelle ja mitä syvää rytmiä jo noudatat. Kirjoitettu selkeästi, ihmisen kielellä.',
+        'Ymmärrät, miksi et pääse liikkeelle niin kuin haluaisit, mikä sinut oikeasti saa käyntiin ja millaista omaa rytmiä jo seuraat. Selkeästi ja arkikielellä kirjoitettu.',
       features: [
         'Ymmärrät, mikä sinua estää ja mitä este suojaa',
-        'Tunnistat olosuhteet, joissa pääset liikkeelle ja lähdet oikeasti käyntiin',
-        'Näet oman rytmisi: milloin kannattaa painaa ja milloin pysähtyä',
-        'Syvennä tulkintaa astrologioppaan avulla, joka vastaa kysymyksiisi, 2 syventävää kysymystä mukana',
-        'Pääsy tulkintaasi heti verkossa ja sähköpostitse',
+        'Tunnistat olosuhteet, joissa pääset oikeasti käyntiin',
+        'Näet oman rytmisi: milloin kannattaa painaa kaasua ja milloin pysähtyä',
+        'Voit syventää tulkintaa astrologioppaan avulla: kaksi kysymystä sisältyy hintaan',
+        'Tulkinta heti luettavissa verkossa ja sähköpostissa',
       ],
     },
     trustBullets: [
-      'Jos tulkinta tuntuu yleiseltä tai ei oikeasti kosketa sinua, palautamme rahasi viimeiseen senttiin asti.',
+      'Jos tulkinta tuntuu ylimalkaiselta tai ei oikeasti kosketa sinua, palautamme rahasi viimeistä senttiä myöten.',
       'Yksi johdonmukainen kokonaiskuva, joka yhdistää esteet, kuviot, liikkeelle lähdön ja oman suunnan.',
-      'Siksi lopussa kokonaiskuva on selkeä ja johdonmukainen.',
+      'Siksi lopputulos on selkeä ja helppo hahmottaa.',
     ],
     faqItems: [
       {
         q: 'Miten tämä eroaa verkosta löytyvistä ilmaisista astrologisista tulkinnoista?',
-        a: 'Verkon ilmaiset tulkinnat pilkkovat kaiken erillisiin osiin: yksi merkitys jokaiselle planeetalle, yksi jokaiselle aspektille, yksi jokaiselle huoneelle. Täällä työ on erilaista: syntymäkarttasi luetaan elävänä kokonaisuutena, jossa painotetaan sitä, mikä todella on tärkeää, ja identiteetti, tunteet, esteet, kuviot ja oma suunta yhdistetään yhdeksi johdonmukaiseksi tulkinnaksi ilman ristiriitoja.',
+        a: 'Verkon ilmaiset tulkinnat pilkkovat kaiken erillisiin osiin: yksi merkitys jokaiselle planeetalle, yksi jokaiselle aspektille, yksi jokaiselle huoneelle. Me teemme toisin: syntymäkarttasi luetaan elävänä kokonaisuutena, jossa painotetaan sitä, mikä todella on tärkeää, ja identiteetti, tunteet, esteet, kuviot ja oma suunta yhdistetään yhdeksi johdonmukaiseksi tulkinnaksi ilman ristiriitoja.',
       },
       {
-        q: 'Mitä saan tarkalleen, kun ostan tulkinnan?',
-        a: 'Saat täydellisen ja henkilökohtaisen 10-sivuisen tulkinnan syntymäkartastasi, kirjoitettuna selkeällä ja inhimillisellä kielellä. Tulkinta syventyy identiteettiin, tunnedynamiikkaan, tärkeimpiin esteisiin, toistuviin kuvioihin, siihen, mikä sinut oikeasti vapauttaa, ja syvään rytmiisi. Tulkinnan mukana saat myös 2 ilmaista kysymystä astrologioppaalle, jolta voit pyytää syvennystä mihin tahansa raporttisi tai karttasi osaan.',
+        q: 'Mitä tarkalleen saan, kun ostan tulkinnan?',
+        a: 'Saat syntymäkartastasi kattavan, henkilökohtaisen 10-sivuisen tulkinnan, joka on kirjoitettu selkeällä ja helposti lähestyttävällä kielellä. Tulkinta syventyy identiteettiin, tunnedynamiikkaan, tärkeimpiin esteisiin, toistuviin kuvioihin, siihen, mikä saa sinut oikeasti liikkeelle, sekä omaan rytmiisi. Tulkinnan mukana saat myös 2 ilmaista kysymystä astrologioppaalle, jolta voit pyytää lisäselvitystä mistä tahansa raporttisi tai karttasi kohdasta.',
       },
       {
         q: 'Mikä on tulkinnan mukana tuleva astrologiopas?',
-        a: 'Kun olet lukenut raporttisi, voit esittää oppaalle henkilökohtaisia kysymyksiä mistä tahansa syntymäkarttasi osa-alueesta tai elämäntilanteestasi juuri nyt. Opas muodostaa vastauksen syntymätietojesi ja jo saamasi tulkinnan pohjalta ja toimittaa sen seuraavien tuntien kuluessa henkilökohtaiseen tilaasi ja sähköpostiisi. Koko tulkinnan mukana tulee 2 ilmaista kysymystä, ja voit syventää aihetta lisää ostamalla lisäkysymyspaketteja suoraan raportistasi.',
+        a: 'Kun olet lukenut raporttisi, voit esittää oppaalle henkilökohtaisia kysymyksiä mistä tahansa syntymäkarttasi osa-alueesta tai elämäntilanteestasi juuri nyt. Opas muodostaa vastauksen syntymätietojesi ja jo saamasi tulkinnan pohjalta ja toimittaa sen muutaman tunnin kuluessa omalle tilillesi ja sähköpostiisi. Koko tulkinnan mukana tulee 2 ilmaista kysymystä, ja voit jatkaa ostamalla lisää kysymyspaketteja suoraan raportistasi.',
       },
       {
         q: 'Miten koko tulkinta luodaan?',
-        a: 'Antamistasi syntymätiedoista lasketaan astrologinen syntymäkarttasi. Tämän pohjalta muotoutuu koko tulkinta, jossa käytetään tietokoneavusteista käsittelyä, joka perustuu laajaan ja jäsenneltyyn astrologiseen ja psykologiseen tietämykseen. Näin monia tietoja voidaan yhdistää toisiinsa ja muuttaa selkeäksi, johdonmukaiseksi ja henkilökohtaiseksi tulkinnaksi, joka eroaa verkosta löytyvistä yleisistä ja hajanaisista sisällöistä.',
+        a: 'Antamistasi syntymätiedoista lasketaan ensin syntymäkarttasi. Sen pohjalta koko tulkinta laaditaan tietokoneavusteisesti, laajaa ja jäsenneltyä astrologista ja psykologista tietämystä hyödyntäen. Näin monet tiedot voidaan yhdistää selkeäksi, johdonmukaiseksi ja henkilökohtaiseksi tulkinnaksi – aivan toisenlaiseksi kuin verkon yleiset ja hajanaiset sisällöt.',
       },
       {
         q: 'Täytyykö minun tuntea astrologiaa ymmärtääkseni tulkintaa?',
-        a: 'Ei. Tulkinta on kirjoitettu niin, että sen ymmärtää, vaikka et olisi koskaan opiskellut astrologiaa. Mukana voi olla astrologisia viittauksia, mutta ne käännetään aina konkreettisiksi ja psykologisiksi merkityksiksi.',
+        a: 'Ei tarvitse. Tulkinta on kirjoitettu niin, että sen ymmärtää, vaikka et olisi koskaan opiskellut astrologiaa. Mukana voi olla astrologisia viittauksia, mutta ne selitetään aina konkreettisesti ja psykologisesti.',
       },
       {
         q: 'Mikä ero on koko tulkinnalla ja tarjouksella, johon sisältyvät ensimmäisen kuukauden transiitit?',
-        a: 'Koko tulkinta syventyy henkilökohtaiseen perusrakenteeseesi: tunteisiin, esteisiin, kuvioihin ja suuntaan syntymäkartastasi lähtien. Se on pysyvämpi tulkinta, joka liittyy siihen, mikä pyrkii toistumaan ajan mittaan. Ensimmäisen kuukauden sisältävä tarjous lisää viikoittaiset transiitit: tulkinnan siitä, miten kyseisen ajanjakson astrologiset liikkeet voivat aktivoida tiettyjä osia henkilökohtaisesta kartastasi ja auttaa sinua ymmärtämään paremmin hetkeä, jota elät juuri nyt. Lyhyesti: raportti selittää rakenteesi, transiitit näyttävät, miten sama rakenne liikkuu nykyhetkessä. Mukana on myös henkilökohtainen muutosruno lahjana.',
+        a: 'Koko tulkinta syventyy henkilökohtaiseen perusrakenteeseesi syntymäkarttasi pohjalta: tunteisiin, esteisiin, kuvioihin ja suuntaan. Se kuvaa sitä, mikä sinussa pysyy ja toistuu ajan mittaan. Transiitit sisältävä tarjous lisää tähän kuukauden viikoittaiset transiittitulkinnat: ne kertovat, miten planeettojen liikkeet juuri nyt herättävät tiettyjä osia kartastasi, ja auttavat sinua ymmärtämään hetkeä, jota elät. Lyhyesti sanottuna: raportti selittää rakenteesi, transiitit näyttävät, miten sama rakenne liikkuu nykyhetkessä. Mukana on myös henkilökohtainen muutosruno lahjana.',
       },
       {
-        q: 'Milloin saan pääsyn tulkintaan?',
-        a: 'Heti oston jälkeen. Kun maksu on tehty, voit aktivoida henkilökohtaisen pääsysi ja lukea raportin omalla alueellasi ja sähköpostitse.',
+        q: 'Milloin pääsen lukemaan tulkinnan?',
+        a: 'Heti oston jälkeen. Kun maksu on mennyt läpi, aktivoit tilisi ja voit lukea raportin omalla tililläsi ja sähköpostista.',
       },
     ],
   },

@@ -4,7 +4,7 @@ const checkoutReview: Messages['checkoutReview'] = {
   products: {
     base: {
       name: 'Syntymäkartan koko tulkinta',
-      bullets: ['10 sivun koko tulkinta', 'Pääsy heti verkossa ja sähköpostitse'],
+      bullets: ['10 sivun koko tulkinta', 'Heti luettavissa verkossa ja sähköpostissa'],
     },
     premium: {
       name: 'Koko tulkinta + 1 kuukausi transiitteja',
@@ -33,14 +33,14 @@ const checkoutReview: Messages['checkoutReview'] = {
   },
   title: 'Tilauksen yhteenveto',
   subtitle: 'Tarkista tilauksesi tiedot.',
-  instantAccess: 'Pääsy heti',
+  instantAccess: 'Heti luettavissa',
   total: 'Yhteensä',
   howToPay: 'Miten haluat maksaa?',
   cardLabel: 'Luotto- tai pankkikortti',
-  paypalNote: 'Nopea ja turvallinen oman tilisi kautta',
+  paypalNote: 'Nopeasti ja turvallisesti omalla tililläsi',
   securePayment: 'Turvallinen maksu',
   moneyBack: 'Tyytyväisyystakuu',
-  noSubscription: 'Ei jatkuvaa tilausta',
+  noSubscription: 'Ei kestotilausta',
   errors: {
     noSession: 'Istuntoa ei löydy. Päivitä sivu ja yritä uudelleen.',
     payment: 'Maksussa tapahtui virhe. Yritä uudelleen.',

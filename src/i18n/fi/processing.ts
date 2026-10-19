@@ -3,7 +3,7 @@ import type { Messages } from '@/i18n';
 const processing: Messages['processing'] = {
   messages: [
     'Luemme syntymätietojasi',
-    'Kartoitamme ihmissuhdekaavojasi',
+    'Kartoitamme ihmissuhdekuvioitasi',
     'Muutamme syntymäkarttasi selkeiksi oivalluksiksi',
     'Valmistelemme ensimmäistä tulkintaasi',
   ],
