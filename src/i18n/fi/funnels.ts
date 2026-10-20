@@ -9,7 +9,7 @@ const classica: FunnelCopy = {
       },
       {
         title: 'Et ole sulkeutunut, vaan suojaat itseäsi',
-        body: 'Kun toinen tulee liian lähelle tai etääntyy, jokin sinussa herää. Se ei ole kylmyyttä eikä ristiriitaisuutta: se on tarkka puolustus, jolla on tehtävä, ei oire, joka pitäisi korjata.',
+        body: 'Kun toinen tulee liian lähelle tai etääntyy, jokin sinussa herää. Se ei ole kylmyyttä eikä ristiriitaisuutta: se on tarkka puolustus, jolla on tehtävä, ei vika, joka pitäisi korjata.',
       },
       {
         title: 'Mitä oikeasti etsit',
@@ -31,7 +31,7 @@ const classica: FunnelCopy = {
       promise:
         'Ymmärrät selkeämmin tunne-elämääsi, ihmissuhteitasi ja perusrakennettasi ja näet, mikä elämässäsi toistuu.',
       features: [
-        'Ymmärrät tunnelukkosi, puolustuskeinosi ja toistuvat kuviosi arkikielellä, ilman ammattisanastoa',
+        'Ymmärrät tunne-elämäsi solmukohdat, puolustuskeinosi ja toistuvat kuviosi arkikielellä, ilman ammattisanastoa',
         'Näet, miten nämä kuviot vaikuttavat ihmissuhteisiisi, työhösi, omaan suuntaasi ja elämänvalintoihisi',
         'Saat käytännön vinkkejä siitä, mitä kannattaa tarkkailla, vahvistaa tai muuttaa omissa reaktiotavoissasi',
         'Voit syventää tulkintaa maksutta astrologioppaan avulla: se vastaa kysymyksiisi',
