@@ -20,10 +20,12 @@
 export const LLM_CHAT_COMPLETIONS_URL =
   "https://openrouter.ai/api/v1/chat/completions";
 
-// DeepSeek V4 Pro on OpenRouter: supports tool/function calling (required — the
-// reports request structured output via forced tool_choice) and up to 384k
-// output tokens, comfortably above our 16k/32k max_tokens.
-export const LONG_REPORT_MODEL = "deepseek/deepseek-v4-pro";
+// Gemini 3.8 Flash on OpenRouter (64k max output, above our 16k/32k max_tokens).
+// Switched from deepseek/deepseek-v4-pro on 2026-10-23: its Finnish reports came
+// back with systematically dropped doubled letters ("etä" for "että") and at
+// half the normal length (2 of the last 10), and its Finnish prose was clumsy.
+// To go back, set this to "deepseek/deepseek-v4-pro".
+export const LONG_REPORT_MODEL = "google/gemini-3.8-flash";
 
 export function getLlmApiKey(): string {
   return Deno.env.get("OPENROUTER_API_KEY") || "";

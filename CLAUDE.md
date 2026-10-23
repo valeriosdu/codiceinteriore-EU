@@ -14,7 +14,7 @@ The owner has a Python/R/data-science background, not a frontend specialist — 
 - **Auth**: Supabase Auth, Google OAuth only; transactional/auth email via Brevo (`auth-email-hook` is the optional per-user localized path)
 - **Payments**: Stripe (primary), PayPal (secondary)
 - **AI**: two providers, both through OpenAI-compatible chat/completions.
-  - **Long reports** (`generate-report`, `generate-synastry-report`, `process-transit-cycle`): **DeepSeek V4 Pro via OpenRouter** (`deepseek/deepseek-v4-pro`), secret `OPENROUTER_API_KEY`, config in [_shared/llm.ts](supabase/functions/_shared/llm.ts). Moved off Gemini in June 2026 because of frequent 503 "overloaded" errors; no automatic fallback, `recover-pending-reports` re-drives anything left unfinished.
+  - **Long reports** (`generate-report`, `generate-synastry-report`, `process-transit-cycle`): **Gemini 3.8 Flash via OpenRouter** (`google/gemini-3.8-flash`), secret `OPENROUTER_API_KEY`, config in [_shared/llm.ts](supabase/functions/_shared/llm.ts). It ran on DeepSeek V4 Pro (`deepseek/deepseek-v4-pro`) from June to 23 Oct 2026; moved off it because Finnish reports came back corrupted (dropped doubled letters, half length, 2 of 10) and clumsy. Before that it ran on Gemini and was moved off in June 2026 because of frequent 503 "overloaded" errors; no automatic fallback, `recover-pending-reports` re-drives anything left unfinished. Prices: Google lists 3.8 Flash at $0.75/$3.75 per 1M tokens until 2026-12-31, then double.
   - **Short paths** call Gemini directly (`generativelanguage.googleapis.com/v1beta/openai/...`, secret `GEMINI_API_KEY`): teasers `process-session-insights` / `process-synastry-insights` on `gemini-3.5-flash-lite`; astrology Q&A, `support-draft` and `admin-translate` on `gemini-3.1-flash-lite`.
   - Every call is logged to `ai_generation_metrics` (model, tokens, duration, success): query it before reasoning about LLM cost. Prompts stay in English and only the output language changes, via `outputLanguageDirective` in `_shared/prompts/lang.ts`.
 - **Markets / languages**: multi-market app — markets `it` (default), `es`, `us`, `nl`, `fi`; languages `it`, `es`, `en`, `nl`, `fi`. Designed to add more. **`market` ≠ `language`** (see below). UI/content is localized via typed TS catalogs (`src/i18n/`), no i18n dependency.
@@ -125,7 +125,7 @@ Many of these are market-aware: they read `market` from the session/checkout row
 
 **Edge function secrets (Supabase Function secrets — never commit, never put in `.env`)**:
 - `SUPABASE_SERVICE_ROLE_KEY` — full DB admin
-- `OPENROUTER_API_KEY` — long reports (DeepSeek V4 Pro)
+- `OPENROUTER_API_KEY` — long reports (Gemini 3.8 Flash)
 - `GEMINI_API_KEY` — Google AI (teasers, Q&A, support drafts)
 - `BREVO_API_KEY` — transactional email
 - `STRIPE_SECRET_KEY`(+`_TEST`), `STRIPE_WEBHOOK_SECRET`(+`_TEST`), `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET`, `STRIPE_PRICE_*`
