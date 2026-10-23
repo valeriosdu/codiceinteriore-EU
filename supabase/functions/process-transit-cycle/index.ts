@@ -1275,7 +1275,19 @@ const WORD_COUNT_MINIMUMS = {
   closing_text: 90,
 };
 
-const validateTransitInterpretation = (value: any) => {
+// The minimums above were calibrated on Italian. Finnish packs the same
+// content into fewer, longer words (cases and compounds instead of
+// prepositions): real fi outputs landed at 85-94% of the minimum and every
+// fi cycle was stuck on word_count_below_minimum.
+const WORD_COUNT_SCALE: Partial<Record<PromptLang, number>> = { fi: 0.8 };
+
+const validateTransitInterpretation = (value: any, lang: PromptLang = "it") => {
+  const scale = WORD_COUNT_SCALE[lang] ?? 1;
+  const minimums = {
+    overall_reading: Math.round(WORD_COUNT_MINIMUMS.overall_reading * scale),
+    period_focus: Math.round(WORD_COUNT_MINIMUMS.period_focus * scale),
+    closing_text: Math.round(WORD_COUNT_MINIMUMS.closing_text * scale),
+  };
   if (
     !value?.summary ||
     !Array.isArray(value?.summary?.main_themes) ||
@@ -1303,23 +1315,23 @@ const validateTransitInterpretation = (value: any) => {
   }
 
   const overallWc = wordCount(value.summary.overall_reading);
-  if (overallWc < WORD_COUNT_MINIMUMS.overall_reading) {
+  if (overallWc < minimums.overall_reading) {
     throw new Error(
-      `transit_interpretation_failed: word_count_below_minimum (field=summary.overall_reading, got=${overallWc}, min=${WORD_COUNT_MINIMUMS.overall_reading})`,
+      `transit_interpretation_failed: word_count_below_minimum (field=summary.overall_reading, got=${overallWc}, min=${minimums.overall_reading})`,
     );
   }
   for (let i = 0; i < value.periods.length; i++) {
     const focusWc = wordCount(value.periods[i].focus);
-    if (focusWc < WORD_COUNT_MINIMUMS.period_focus) {
+    if (focusWc < minimums.period_focus) {
       throw new Error(
-        `transit_interpretation_failed: word_count_below_minimum (field=periods[${i}].focus, got=${focusWc}, min=${WORD_COUNT_MINIMUMS.period_focus})`,
+        `transit_interpretation_failed: word_count_below_minimum (field=periods[${i}].focus, got=${focusWc}, min=${minimums.period_focus})`,
       );
     }
   }
   const closingWc = wordCount(value.closing.text);
-  if (closingWc < WORD_COUNT_MINIMUMS.closing_text) {
+  if (closingWc < minimums.closing_text) {
     throw new Error(
-      `transit_interpretation_failed: word_count_below_minimum (field=closing.text, got=${closingWc}, min=${WORD_COUNT_MINIMUMS.closing_text})`,
+      `transit_interpretation_failed: word_count_below_minimum (field=closing.text, got=${closingWc}, min=${minimums.closing_text})`,
     );
   }
 
@@ -1562,7 +1574,7 @@ async function interpretTransits(
     }
 
     try {
-      const validated = validateTransitInterpretation(parsed);
+      const validated = validateTransitInterpretation(parsed, lang);
       recordAiMetric(supabaseAdmin, {
         ...metricBase,
         durationMs: Date.now() - t0,
