@@ -34,10 +34,11 @@ const TRANSITS_ENDPOINT = "/api/v1/transits/calculate";
 const SNAPSHOT_COUNT = 10;
 const SNAPSHOT_STEP_DAYS = 3.3;
 // The 10 transit calls start staggered by this many ms instead of all at once:
-// the provider's ~10 req/s limit is shared with the live funnel (astrology-chart,
-// geo-lookup), so a simultaneous burst leaves no headroom. 100ms spreads them
-// over ~0.9s. Bump if 100ms still proves too tight.
-const TRANSIT_STAGGER_MS = 100;
+// the provider's rate limit is shared with the live funnel (astrology-chart,
+// geo-lookup), so a simultaneous burst leaves no headroom. 250ms = 4 req/s,
+// under the 5 req/s of FreeAstroAPI's entry plan, and spreads the 10 calls over
+// ~2.3s. (100ms was ~10 req/s, sized for the previous plan.)
+const TRANSIT_STAGGER_MS = 250;
 
 const EXCLUDED_TRANSIT_PLANETS = new Set(["moon", "true_node", "lilith"]);
 // Fast transits stay personal: targeting Saturn/Pluto/etc. with Mars adds
