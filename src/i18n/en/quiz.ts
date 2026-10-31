@@ -46,11 +46,8 @@ const quiz: Messages['quiz'] = {
       ],
     },
     bridge: {
-      youAnswered: 'You answered',
       exampleLabel: 'Illustrative example',
       showsLabel: 'Your birth chart can show you:',
-      chartIs:
-        'A birth chart is a snapshot of the sky at the moment you were born. It doesn’t predict the future: it describes how you’re built, what lights you up, what holds you back and the rhythm you work at.',
       next: 'All you need is your date, time and place of birth. Your opening reading is free.',
       variants: [
         {

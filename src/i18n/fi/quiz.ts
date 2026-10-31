@@ -44,11 +44,8 @@ const quiz: Messages['quiz'] = {
       ],
     },
     bridge: {
-      youAnswered: 'Vastasit',
       exampleLabel: 'Havainnollistava esimerkki',
       showsLabel: 'Syntymäkartta voi näyttää sinulle:',
-      chartIs:
-        'Syntymäkartta on tilannekuva planeettojen asemista syntymähetkelläsi. Se ei ennusta tulevaa, vaan kuvaa perusrakennettasi: mikä sinua sytyttää, mikä jarruttaa ja missä rytmissä toimit.',
       next: 'Tarvitset vain syntymäpäivän, kellonajan ja syntymäpaikan. Ensimmäinen tulkintasi on ilmainen.',
       variants: [
         {

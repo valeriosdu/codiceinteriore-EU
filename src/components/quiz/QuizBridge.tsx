@@ -4,10 +4,10 @@ import { useI18n } from "@/i18n/I18nProvider";
 import ChartDetail, { type BridgeVariant } from "./ChartDetail";
 import { PLANET_GLYPHS, glyphStroke, type PlanetKey } from "./glyphs";
 
-// Schermata dopo la domanda 1 del funnel attivazione: rispecchia la risposta,
-// spiega cosa fa un tema natale e mostra un dettaglio di carta (illustrativo)
-// legato a quella risposta. Contenuto e variante dipendono dall'indice della
-// risposta nell'elenco opzioni, cosi' funziona identico in ogni lingua.
+// Schermata dopo la domanda 1 del funnel attivazione: un titolo legato alla
+// risposta, un dettaglio di carta (illustrativo) che mostra cosa si legge in un
+// tema natale e la prova sociale. Contenuto e variante dipendono dall'indice
+// della risposta nell'elenco opzioni, cosi' funziona identico in ogni lingua.
 
 type LegendKind = PlanetKey | "ac" | "mc" | "square" | "phase";
 
@@ -47,14 +47,10 @@ const LegendGlyph = ({ kind }: { kind: LegendKind }) => (
 );
 
 interface QuizBridgeProps {
-  /** Risposta alla domanda 1 cosi' come e' stata scelta (testo localizzato). */
-  answer: string;
   variant: BridgeVariant;
-  /** False se la risposta non e' tra le opzioni (es. ?step=2 diretto): niente specchio. */
-  matched: boolean;
 }
 
-const QuizBridge = ({ answer, variant, matched }: QuizBridgeProps) => {
+const QuizBridge = ({ variant }: QuizBridgeProps) => {
   const { m } = useI18n();
   const b = m.quiz.steps.bridge;
   const v = b.variants[variant];
@@ -62,15 +58,8 @@ const QuizBridge = ({ answer, variant, matched }: QuizBridgeProps) => {
   const kinds = LEGEND_KINDS[variant];
 
   return (
-    <div className="space-y-3.5">
-      {matched && (
-        <div className="rounded-lg border-l-2 border-primary bg-primary/5 px-3 py-1.5">
-          <p className="text-[10px] uppercase tracking-[0.16em] text-primary/80">{b.youAnswered}</p>
-          <p className="mt-0.5 text-[13px] italic leading-snug text-foreground/80">“{answer}”</p>
-        </div>
-      )}
-
-      <h2 className="font-display text-[1.5rem] font-semibold leading-[1.2] text-foreground">{v.headline}</h2>
+    <div className="space-y-4">
+      <h2 className="font-display text-[1.6rem] font-semibold leading-[1.2] text-foreground">{v.headline}</h2>
       <p className="text-sm leading-relaxed text-foreground/75">{v.body}</p>
 
       <motion.figure
@@ -84,7 +73,7 @@ const QuizBridge = ({ answer, variant, matched }: QuizBridgeProps) => {
           {b.exampleLabel}
         </div>
         <div className="flex items-center gap-1 px-2 pb-1">
-          <ChartDetail variant={variant} className="h-auto w-[52%] shrink-0" />
+          <ChartDetail variant={variant} className="h-auto w-[56%] shrink-0" />
           <ul className="flex-1 space-y-2.5 pr-2">
             {kinds.map((kind, i) => (
               <li key={kind} className="flex items-center gap-2">
@@ -99,14 +88,11 @@ const QuizBridge = ({ answer, variant, matched }: QuizBridgeProps) => {
         </figcaption>
       </motion.figure>
 
-      <p className="text-xs leading-relaxed text-muted-foreground [@media(max-height:720px)]:hidden">{b.chartIs}</p>
-
-      <p className="flex items-center gap-2 text-xs text-foreground/70">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-        <span>
-          <span className="font-semibold text-foreground">{proof.socialProofLine1}</span> {proof.socialProofLine2}
-        </span>
-      </p>
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3.5 text-center">
+        <Sparkles className="mx-auto mb-1 h-4 w-4 text-primary/70" aria-hidden="true" />
+        <p className="font-display text-[1.7rem] font-semibold leading-tight text-primary lining-nums">{proof.socialProofLine1}</p>
+        <p className="mt-0.5 text-sm text-foreground/75">{proof.socialProofLine2}</p>
+      </div>
     </div>
   );
 };

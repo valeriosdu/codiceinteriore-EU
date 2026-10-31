@@ -1,5 +1,5 @@
 // Schermata "ponte" dopo la domanda 1 del funnel attivazione: ogni risposta
-// porta alla sua variante (titolo, legenda, specchio), il ponte non conta come
+// porta alla sua variante (titolo, legenda), il ponte non conta come
 // passo della barra e Continua porta alla data. Gira sul catalogo del mercato di
 // build, quindi vale per ogni lingua: i testi attesi si leggono dal catalogo.
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,6 +14,7 @@ import Quiz from "@/pages/Quiz";
 
 const q = getMessages(MARKET.language).quiz;
 const bridge = q.steps.bridge;
+const proof = getMessages(MARKET.language).landingAttivazione.hero;
 const answers = q.steps.symptom.options;
 
 const mount = (entry: string) =>
@@ -51,11 +52,12 @@ describe("ponte dopo la domanda 1 (funnel attivazione)", () => {
   });
 
   answers.forEach((answer, i) => {
-    it(`risposta ${i + 1}: mostra la sua variante e rispecchia la risposta`, () => {
+    it(`risposta ${i + 1}: mostra la sua variante, la prova sociale e il passo successivo`, () => {
       mount("/quiz?funnel=attivazione");
       fireEvent.click(screen.getByText(answer));
       return screen.findByRole("heading", { name: bridge.variants[i].headline }).then(() => {
-        expect(screen.getByText(`“${answer}”`)).toBeTruthy();
+        // fi scrive "10 000" con uno spazio non separabile: il matcher normalizza gli spazi del DOM, non quelli attesi.
+        expect(screen.getByText(proof.socialProofLine1.replace(/\s+/g, " "))).toBeTruthy();
         // In fi la prima voce e' "MC", scritta anche dentro il disegno: basta che ci sia.
         expect(screen.getAllByText(bridge.variants[i].legend[0]).length).toBeGreaterThan(0);
         expect(screen.getByText(bridge.next)).toBeTruthy();
@@ -74,10 +76,9 @@ describe("ponte dopo la domanda 1 (funnel attivazione)", () => {
     expect(screen.getByText(q.stepOf(2, 6))).toBeTruthy();
   });
 
-  it("senza risposta (step=2 diretto) mostra una variante senza lo specchio", async () => {
+  it("senza risposta (step=2 diretto) mostra comunque una variante", async () => {
     mount("/quiz?funnel=attivazione&step=2");
     await screen.findByRole("heading", { name: bridge.variants[1].headline });
-    expect(screen.queryByText(bridge.youAnswered)).toBeNull();
   });
 
   it("gli altri funnel non hanno il ponte", () => {

@@ -44,11 +44,8 @@ const quiz = {
       ],
     },
     bridge: {
-      youAnswered: 'Hai risposto',
       exampleLabel: 'Esempio illustrativo',
       showsLabel: 'Il tema natale può mostrarti:',
-      chartIs:
-        'Il tema natale è la fotografia del cielo nel momento in cui sei nato. Non predice il futuro: descrive come sei costruito, cosa ti accende, cosa ti frena e con che ritmo funzioni.',
       next: 'Ti servono solo data, ora e luogo di nascita. La tua lettura iniziale è gratuita.',
       variants: [
         {

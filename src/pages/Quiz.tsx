@@ -59,9 +59,9 @@ const FULL_STEPS: StepKey[] = ['attachment', 'date', 'time', 'place', 'focus', '
 // Attivazione angle (/lp/attivazione, ?funnel=attivazione). Replaces classica's
 // attachment+focus with two angle-specific questions: sintomo (opening) and
 // narrazione (penultimate). Skeleton steps in the middle are identical. 'bridge'
-// is an interstitial right after the opening answer: it mirrors it, explains what
-// a birth chart shows and previews a chart detail. It is not a question, so the
-// progress bar does not count it.
+// is an interstitial right after the opening answer: a headline tied to that
+// answer, a chart detail that previews what a birth chart shows, and social
+// proof. It is not a question, so the progress bar does not count it.
 const ATTIVAZIONE_STEPS: StepKey[] = ['symptom', 'bridge', 'date', 'time', 'place', 'narrative', 'name'];
 const GIFT_STEPS: StepKey[] = ['date', 'time', 'place', 'name'];
 
@@ -154,7 +154,7 @@ const Quiz = () => {
   const [symptom, setSymptom] = useState(data.symptomResponse || '');
   const [narrative, setNarrative] = useState(data.narrativeResponse || '');
   const symptomIndex = q.steps.symptom.options.indexOf(symptom);
-  // Answer not in the list (a direct ?step=2): fall back to the "I know what to do" variant, without the mirror.
+  // Answer not in the list (a direct ?step=2): fall back to the "I know what to do" variant.
   const bridgeVariant = (symptomIndex >= 0 ? symptomIndex : 1) as 0 | 1 | 2 | 3;
   // 0 / -1 = not picked yet. The wheels open on their anchor while unset, but
   // these only become valid once the user actually swipes/taps the wheel.
@@ -436,7 +436,7 @@ const Quiz = () => {
               )}
 
               {stepKey === 'bridge' && (
-                <QuizBridge answer={symptom} variant={bridgeVariant} matched={symptomIndex >= 0} />
+                <QuizBridge variant={bridgeVariant} />
               )}
 
               {stepKey === 'narrative' && (

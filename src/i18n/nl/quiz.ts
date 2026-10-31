@@ -46,11 +46,8 @@ const quiz: Messages['quiz'] = {
       ],
     },
     bridge: {
-      youAnswered: 'Je antwoord',
       exampleLabel: 'Illustratief voorbeeld',
       showsLabel: 'Je geboortehoroscoop kan je laten zien:',
-      chartIs:
-        'Je geboortehoroscoop is een foto van de hemel op het moment waarop je geboren werd. Hij voorspelt de toekomst niet: hij beschrijft hoe je in elkaar zit, wat je aanzet, wat je tegenhoudt en welk ritme bij je past.',
       next: 'Je hebt alleen je geboortedatum, geboortetijd en geboorteplaats nodig. Je eerste duiding is gratis.',
       variants: [
         {

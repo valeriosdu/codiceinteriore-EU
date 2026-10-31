@@ -46,11 +46,8 @@ const quiz: Messages['quiz'] = {
       ],
     },
     bridge: {
-      youAnswered: 'Has respondido',
       exampleLabel: 'Ejemplo ilustrativo',
       showsLabel: 'La carta natal puede mostrarte:',
-      chartIs:
-        'La carta natal es la fotografía del cielo en el momento en que naciste. No predice el futuro: describe cómo eres, qué te enciende, qué te frena y a qué ritmo funcionas.',
       next: 'Solo necesitas tu fecha, hora y lugar de nacimiento. Tu lectura inicial es gratuita.',
       variants: [
         {
