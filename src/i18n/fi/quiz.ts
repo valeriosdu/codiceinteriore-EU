@@ -43,6 +43,40 @@ const quiz: Messages['quiz'] = {
         'Kaikki tuntuu pysähtyneeltä, ei vain sisälläni',
       ],
     },
+    bridge: {
+      youAnswered: 'Vastasit',
+      exampleLabel: 'Havainnollistava esimerkki',
+      showsLabel: 'Syntymäkartta voi näyttää sinulle:',
+      chartIs:
+        'Syntymäkartta on tilannekuva planeettojen asemista syntymähetkelläsi. Se ei ennusta tulevaa, vaan kuvaa perusrakennettasi: mikä sinua sytyttää, mikä jarruttaa ja missä rytmissä toimit.',
+      next: 'Tarvitset vain syntymäpäivän, kellonajan ja syntymäpaikan. Ensimmäinen tulkintasi on ilmainen.',
+      variants: [
+        {
+          headline: 'Sinulta ei puutu mitään. Sinulta puuttuu kartta.',
+          body: 'Muut eivät näe enempää: he havaitsevat asiat eri tavalla kuin sinä. Sinun havaintotavallasi on selkeä rakenne, ja sen voi lukea.',
+          shows: 'miten havainnoit asioita ja mitä suodatat pois huomaamattasi.',
+          legend: ['Kuu', 'Merkurius', 'Nouseva merkki'],
+        },
+        {
+          headline: 'Kyse ei ole laiskuudesta eikä tahdonvoiman puutteesta.',
+          body: 'Jokaisella on oma tapansa lähteä liikkeelle: toiset syttyvät heti, toiset tarvitsevat ensin tiettyjä olosuhteita. Kun tiedät, mitä itse tarvitset, suhtaudut itseesi toisin.',
+          shows: 'oman tapasi lähteä liikkeelle eli sen, mikä sinua sytyttää ja mikä jarruttaa.',
+          legend: ['Mars', 'Saturnus', 'Neliö'],
+        },
+        {
+          headline: 'Etenet kyllä. Mutta minne oma rytmisi sinut veisi?',
+          body: 'Eteneminen ei riitä, jos suunnan ovat valinneet olosuhteet. Tärkeää on suunta, joka sopii luontoosi, ja kohta, jossa polkusi on poikennut.',
+          shows: 'suunnan, joka sopii luontoosi, ja kohdan, jossa polkusi on poikennut.',
+          legend: ['MC', 'Kuun solmut'],
+        },
+        {
+          headline: 'Joskus kaikki pysähtyy yhtä aikaa. Yleensä se on vaihe, ei pysyvä tila.',
+          body: 'Kun kaikki tuntuu pysähtyneeltä, käyt usein läpi vaihetta, jolla on alku ja loppu. Voit lukea, milloin se alkaa ja milloin se menee ohi.',
+          shows: 'omat jaksosi eli milloin vaihe alkaa ja milloin se päättyy.',
+          legend: ['Saturnus', 'Jupiter', 'Vaihe'],
+        },
+      ],
+    },
     narrative: {
       question: 'Kun mietit, kuka olisit voinut olla, mitä sinulle tulee mieleen?',
       options: [

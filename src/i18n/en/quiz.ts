@@ -45,6 +45,40 @@ const quiz: Messages['quiz'] = {
         'Everything feels stuck, and not just inside me',
       ],
     },
+    bridge: {
+      youAnswered: 'You answered',
+      exampleLabel: 'Illustrative example',
+      showsLabel: 'Your birth chart can show you:',
+      chartIs:
+        'A birth chart is a snapshot of the sky at the moment you were born. It doesn’t predict the future: it describes how you’re built, what lights you up, what holds you back and the rhythm you work at.',
+      next: 'All you need is your date, time and place of birth. Your opening reading is free.',
+      variants: [
+        {
+          headline: 'You’re not missing something. You’re missing the map.',
+          body: 'It’s not that other people see more. They simply perceive things differently from you, and your way has a clear structure that can be read.',
+          shows: 'how you perceive things and what you filter out without noticing it.',
+          legend: ['Moon', 'Mercury', 'Ascendant'],
+        },
+        {
+          headline: 'It’s not laziness, and it’s not a lack of willpower.',
+          body: 'Everyone gets started differently: some people light up right away, others need the right conditions. Knowing yours changes how you judge yourself.',
+          shows: 'your way of getting started, what lights you up and what holds you back.',
+          legend: ['Mars', 'Saturn', 'Square'],
+        },
+        {
+          headline: 'You’re moving. But where would your own rhythm take you?',
+          body: 'Moving forward isn’t enough if circumstances chose the direction. What matters is the one you’re built for, and the point where your path shifted.',
+          shows: 'the direction you’re built for and where your path shifted.',
+          legend: ['Midheaven', 'Lunar Nodes'],
+        },
+        {
+          headline: 'Sometimes everything stalls at once. Usually it’s a phase, not a permanent state.',
+          body: 'When everything feels stuck, you’re often going through a period that has a beginning and an end. You can read when it starts and when it passes.',
+          shows: 'your cycles, including when a phase opens and when it closes.',
+          legend: ['Saturn', 'Jupiter', 'Phase'],
+        },
+      ],
+    },
     narrative: {
       question: 'When you think about who you could have been, what comes to mind?',
       options: [

@@ -43,6 +43,40 @@ const quiz = {
         'Tutto sembra fermo, non solo dentro di me',
       ],
     },
+    bridge: {
+      youAnswered: 'Hai risposto',
+      exampleLabel: 'Esempio illustrativo',
+      showsLabel: 'Il tema natale può mostrarti:',
+      chartIs:
+        'Il tema natale è la fotografia del cielo nel momento in cui sei nato. Non predice il futuro: descrive come sei costruito, cosa ti accende, cosa ti frena e con che ritmo funzioni.',
+      next: 'Ti servono solo data, ora e luogo di nascita. La tua lettura iniziale è gratuita.',
+      variants: [
+        {
+          headline: 'Non ti manca qualcosa. Ti manca la mappa.',
+          body: 'Non è che gli altri vedano di più: percepiscono in modo diverso dal tuo. E il tuo modo ha una struttura precisa, che si può leggere.',
+          shows: 'come percepisci e cosa filtri senza accorgertene.',
+          legend: ['Luna', 'Mercurio', 'Ascendente'],
+        },
+        {
+          headline: 'Non è pigrizia e non è mancanza di volontà.',
+          body: 'Il modo di partire è personale: c’è chi si accende subito e chi ha bisogno di condizioni precise. Conoscere le tue cambia il modo in cui ti giudichi.',
+          shows: 'il tuo modo di partire: cosa ti accende e cosa ti frena.',
+          legend: ['Marte', 'Saturno', 'Quadratura'],
+        },
+        {
+          headline: 'Ti stai muovendo. Ma verso dove ti porta il tuo ritmo?',
+          body: 'Andare avanti non basta se la direzione l’hanno scelta le circostanze. Conta quella per cui sei costruito, e il punto in cui il percorso si è spostato.',
+          shows: 'la direzione per cui sei costruito e dove il tuo percorso si è spostato.',
+          legend: ['Medio Cielo', 'Nodi Lunari'],
+        },
+        {
+          headline: 'A volte tutto si ferma insieme. Di solito è una fase, non uno stato.',
+          body: 'Quando tutto sembra fermo, spesso stai attraversando un periodo che ha un inizio e una fine. Si può leggere quando comincia e quando passa.',
+          shows: 'i tuoi cicli: quando una fase si apre e quando si chiude.',
+          legend: ['Saturno', 'Giove', 'Fase'],
+        },
+      ],
+    },
     narrative: {
       question: 'Quando pensi a chi avresti potuto essere, cosa ti viene in mente?',
       options: [

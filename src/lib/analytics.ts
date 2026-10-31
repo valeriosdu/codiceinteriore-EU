@@ -12,7 +12,9 @@ export type FunnelEventName =
   | "report_generation_failed"
   | "landing_classica_viewed"
   | "landing_attivazione_viewed"
-  | "quiz_intent_selected";
+  | "quiz_intent_selected"
+  | "quiz_bridge_viewed"
+  | "quiz_bridge_continue";
 
 const ANON_KEY = "ci_anon_id";
 

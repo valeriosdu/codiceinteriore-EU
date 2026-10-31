@@ -45,6 +45,40 @@ const quiz: Messages['quiz'] = {
         'Alles lijkt stil te staan, en niet alleen vanbinnen',
       ],
     },
+    bridge: {
+      youAnswered: 'Je antwoord',
+      exampleLabel: 'Illustratief voorbeeld',
+      showsLabel: 'Je geboortehoroscoop kan je laten zien:',
+      chartIs:
+        'Je geboortehoroscoop is een foto van de hemel op het moment waarop je geboren werd. Hij voorspelt de toekomst niet: hij beschrijft hoe je in elkaar zit, wat je aanzet, wat je tegenhoudt en welk ritme bij je past.',
+      next: 'Je hebt alleen je geboortedatum, geboortetijd en geboorteplaats nodig. Je eerste duiding is gratis.',
+      variants: [
+        {
+          headline: 'Je mist niets. Je hebt alleen de kaart nog niet.',
+          body: 'Anderen zien niet meer dan jij: ze nemen anders waar. En jouw manier van waarnemen heeft een duidelijke structuur die je kunt lezen.',
+          shows: 'hoe je dingen waarneemt en wat je ongemerkt wegfiltert.',
+          legend: ['Maan', 'Mercurius', 'Ascendant'],
+        },
+        {
+          headline: 'Het is geen luiheid en geen gebrek aan wilskracht.',
+          body: 'Hoe je op gang komt, is persoonlijk: de één vliegt er meteen in, de ander heeft bepaalde voorwaarden nodig. Je eigen voorwaarden kennen verandert hoe je over jezelf oordeelt.',
+          shows: 'hoe je op gang komt, oftewel wat je aanzet en wat je tegenhoudt.',
+          legend: ['Mars', 'Saturnus', 'Vierkant'],
+        },
+        {
+          headline: 'Je komt vooruit. Maar is dat de richting van je eigen ritme?',
+          body: 'Vooruitgaan is niet genoeg als de omstandigheden de richting hebben gekozen. Wat telt, is de richting waar jij voor gemaakt bent en het punt waar je pad is afgebogen.',
+          shows: 'de richting waar jij voor gemaakt bent en waar je pad is afgebogen.',
+          legend: ['Medium Coeli', 'Maansknopen'],
+        },
+        {
+          headline: 'Soms staat alles tegelijk stil. Meestal is het een fase, geen blijvende toestand.',
+          body: 'Als alles stil lijkt te staan, zit je vaak in een periode met een begin en een einde. Het is te lezen wanneer die begint en wanneer die overgaat.',
+          shows: 'je cycli, oftewel wanneer een fase begint en wanneer die eindigt.',
+          legend: ['Saturnus', 'Jupiter', 'Fase'],
+        },
+      ],
+    },
     narrative: {
       question: 'Als je denkt aan wie je had kunnen zijn, wat komt er dan bij je op?',
       options: [

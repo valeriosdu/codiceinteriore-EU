@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuiz, hasFreshFunnelSession, getPurchaseSessionId } from '@/context/QuizContext';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/ProgressBar';
+import QuizBridge from '@/components/quiz/QuizBridge';
 import PlaceAutocomplete, { type PlaceAutocompleteHandle } from '@/components/PlaceAutocomplete';
 import Header from '@/components/Header';
 import { trackEvent } from '@/lib/analytics';
@@ -43,6 +44,7 @@ type StepKey =
   | 'intent'
   | 'attachment'
   | 'symptom'
+  | 'bridge'
   | 'narrative'
   | 'date'
   | 'time'
@@ -56,8 +58,11 @@ type StepKey =
 const FULL_STEPS: StepKey[] = ['attachment', 'date', 'time', 'place', 'focus', 'name'];
 // Attivazione angle (/lp/attivazione, ?funnel=attivazione). Replaces classica's
 // attachment+focus with two angle-specific questions: sintomo (opening) and
-// narrazione (penultimate). Skeleton steps in the middle are identical.
-const ATTIVAZIONE_STEPS: StepKey[] = ['symptom', 'date', 'time', 'place', 'narrative', 'name'];
+// narrazione (penultimate). Skeleton steps in the middle are identical. 'bridge'
+// is an interstitial right after the opening answer: it mirrors it, explains what
+// a birth chart shows and previews a chart detail. It is not a question, so the
+// progress bar does not count it.
+const ATTIVAZIONE_STEPS: StepKey[] = ['symptom', 'bridge', 'date', 'time', 'place', 'narrative', 'name'];
 const GIFT_STEPS: StepKey[] = ['date', 'time', 'place', 'name'];
 
 // Single-select "card" questions: tapping an answer commits and advances on its
@@ -138,11 +143,19 @@ const Quiz = () => {
   const [step, setStep] = useState(initialStep);
   const stepKey = STEPS[step - 1];
 
+  // The bridge is an interstitial, not a question: the bar shows only the
+  // questions, and on the bridge it stays where the opening answer left it.
+  const countedSteps = STEPS.filter(k => k !== 'bridge');
+  const progressCurrent = stepKey === 'bridge' ? 1 : countedSteps.indexOf(stepKey) + 1;
+
   // Local state
   const [intent, setIntent] = useState(data.desiredAngle || '');
   const [attachment, setAttachment] = useState(data.attachmentResponse || '');
   const [symptom, setSymptom] = useState(data.symptomResponse || '');
   const [narrative, setNarrative] = useState(data.narrativeResponse || '');
+  const symptomIndex = q.steps.symptom.options.indexOf(symptom);
+  // Answer not in the list (a direct ?step=2): fall back to the "I know what to do" variant, without the mirror.
+  const bridgeVariant = (symptomIndex >= 0 ? symptomIndex : 1) as 0 | 1 | 2 | 3;
   // 0 / -1 = not picked yet. The wheels open on their anchor while unset, but
   // these only become valid once the user actually swipes/taps the wheel.
   const [day, setDay] = useState<number>(data.birthDate?.day || 0);
@@ -161,6 +174,10 @@ const Quiz = () => {
   useEffect(() => {
     trackEvent('quiz_started', { initial_step: initialStep, for_other: forOther }, { once: true });
   }, [initialStep, forOther]);
+
+  useEffect(() => {
+    if (stepKey === 'bridge') trackEvent('quiz_bridge_viewed', { variant: bridgeVariant });
+  }, [stepKey, bridgeVariant]);
 
   // Mirror the URL-derived angle into QuizContext so Processing.tsx can read
   // it when creating the session row. URL param is the source of truth; this
@@ -183,6 +200,7 @@ const Quiz = () => {
       case 'intent': return intent !== '';
       case 'attachment': return attachment !== '';
       case 'symptom': return symptom !== '';
+      case 'bridge': return true;
       case 'narrative': return narrative !== '';
       // On the wheels (mobile) one gesture on any wheel is enough: the others
       // count as the value they already show in the selection band, which is
@@ -207,6 +225,8 @@ const Quiz = () => {
       updateData({ attachmentResponse: attachment });
     } else if (stepKey === 'symptom') {
       updateData({ symptomResponse: symptom });
+    } else if (stepKey === 'bridge') {
+      trackEvent('quiz_bridge_continue', { variant: bridgeVariant });
     } else if (stepKey === 'narrative') {
       updateData({ narrativeResponse: narrative });
     } else if (stepKey === 'date') {
@@ -343,9 +363,9 @@ const Quiz = () => {
       ) : undefined} />
 
       <div className="container max-w-md mx-auto flex-1 flex flex-col py-2 sm:py-4 min-h-0">
-        <ProgressBar current={step} total={TOTAL_STEPS} label={helperTextFor(stepKey) || undefined} />
+        <ProgressBar current={progressCurrent} total={countedSteps.length} label={helperTextFor(stepKey) || undefined} />
 
-        <div className="flex-1 flex items-center py-3 sm:py-8 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 flex py-3 sm:py-8 min-h-0 overflow-y-auto overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepKey}
@@ -353,7 +373,7 @@ const Quiz = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.3 }}
-              className="w-full space-y-6"
+              className="w-full my-auto space-y-6"
             >
               {stepKey === 'intent' && (
                 <>
@@ -413,6 +433,10 @@ const Quiz = () => {
                     ))}
                   </div>
                 </>
+              )}
+
+              {stepKey === 'bridge' && (
+                <QuizBridge answer={symptom} variant={bridgeVariant} matched={symptomIndex >= 0} />
               )}
 
               {stepKey === 'narrative' && (
@@ -597,6 +621,9 @@ const Quiz = () => {
 
         {!AUTO_ADVANCE_STEPS.includes(stepKey) && (
           <div className="pb-4 sm:pb-8 shrink-0">
+            {stepKey === 'bridge' && (
+              <p className="pb-3 pt-2 text-center text-[13px] font-medium leading-snug text-foreground">{q.steps.bridge.next}</p>
+            )}
             <Button
               variant="premium"
               size="quiz"

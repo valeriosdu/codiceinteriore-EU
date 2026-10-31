@@ -45,6 +45,40 @@ const quiz: Messages['quiz'] = {
         'Todo parece detenido, no solo dentro de mí',
       ],
     },
+    bridge: {
+      youAnswered: 'Has respondido',
+      exampleLabel: 'Ejemplo ilustrativo',
+      showsLabel: 'La carta natal puede mostrarte:',
+      chartIs:
+        'La carta natal es la fotografía del cielo en el momento en que naciste. No predice el futuro: describe cómo eres, qué te enciende, qué te frena y a qué ritmo funcionas.',
+      next: 'Solo necesitas tu fecha, hora y lugar de nacimiento. Tu lectura inicial es gratuita.',
+      variants: [
+        {
+          headline: 'No te falta algo. Te falta el mapa.',
+          body: 'No es que los demás vean más: perciben de una forma distinta a la tuya. Y tu forma tiene una estructura precisa, que se puede leer.',
+          shows: 'cómo percibes y qué filtras sin darte cuenta.',
+          legend: ['Luna', 'Mercurio', 'Ascendente'],
+        },
+        {
+          headline: 'No es pereza ni falta de voluntad.',
+          body: 'La forma de arrancar es personal: hay quien se enciende enseguida y quien necesita condiciones precisas. Conocer las tuyas cambia cómo te juzgas.',
+          shows: 'tu forma de arrancar: qué te enciende y qué te frena.',
+          legend: ['Marte', 'Saturno', 'Cuadratura'],
+        },
+        {
+          headline: 'Te estás moviendo. Pero ¿hacia dónde te lleva tu ritmo?',
+          body: 'Avanzar no basta si la dirección la han elegido las circunstancias. Importa la que encaja con tu manera de ser, y el punto en el que tu camino se desvió.',
+          shows: 'la dirección que encaja con tu manera de ser y dónde se desvió tu camino.',
+          legend: ['Medio Cielo', 'Nodos Lunares'],
+        },
+        {
+          headline: 'A veces todo se detiene a la vez. Normalmente es una fase, no un estado.',
+          body: 'Cuando todo parece detenido, a menudo estás atravesando un periodo que tiene un principio y un final. Se puede leer cuándo empieza y cuándo pasa.',
+          shows: 'tus ciclos: cuándo se abre una fase y cuándo se cierra.',
+          legend: ['Saturno', 'Júpiter', 'Fase'],
+        },
+      ],
+    },
     narrative: {
       question: 'Cuando piensas en quién podrías haber sido, ¿qué te viene a la mente?',
       options: [
